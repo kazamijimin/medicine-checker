@@ -704,7 +704,7 @@ export default function MedicinesPage() {
             <span style={currentStyles.errorIcon}>⚠️</span>
             {error}
             <div style={currentStyles.errorSuggestions}>
-              Try searching for: "Tylenol", "Aspirin", "Ibuprofen", or "Metformin"
+              Try searching for: &quot;Tylenol&quot;, &quot;Aspirin&quot;, &quot;Ibuprofen&quot;, or &quot;Metformin&quot;
             </div>
           </div>
         )}
@@ -712,7 +712,7 @@ export default function MedicinesPage() {
         {/* Results Count */}
         {medicines.length > 0 && (
           <div style={currentStyles.resultsCount}>
-            Found {medicines.length} medicine(s) for "{searchTerm}"
+            Found {medicines.length} medicine(s) for &quot;{searchTerm}&quot;
             {selectedCategory !== 'all' && ` in ${selectedCategory} category`}
           </div>
         )}
@@ -778,7 +778,7 @@ export default function MedicinesPage() {
         {/* No Results */}
         {searchTerm && !apiLoading && medicines.length === 0 && !error && (
           <div style={currentStyles.noResults}>
-            <h3>No medicines found for "{searchTerm}"
+            <h3>No medicines found for &quot;{searchTerm}&quot;
               {selectedCategory !== 'all' && ` in ${selectedCategory} category`}
             </h3>
             <p>This could happen because:</p>
@@ -936,7 +936,7 @@ export default function MedicinesPage() {
 
               <div style={currentStyles.disclaimer}>
                 <strong>Disclaimer:</strong> This information is for educational purposes only. 
-                Always consult with a healthcare professional before taking any medication.
+                Always consult with a healthcare professional before taking any medication. Don&apos;t rely solely on this information for medical decisions.
               </div>
             </div>
           </div>
@@ -1559,7 +1559,7 @@ if (typeof document !== 'undefined') {
     
     .medicine-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15) !important;
+      box-shadow: 0 8px 25px rgba(0, 167, 69, 0.15) !important;
     }
     
     .quick-search-button:hover {
