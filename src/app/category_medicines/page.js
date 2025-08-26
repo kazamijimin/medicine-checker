@@ -5,6 +5,7 @@ import { auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Image from 'next/image';
 
 // Pre-defined medicine categories with sample medicines
 const medicineCategories = {
@@ -727,9 +728,11 @@ export default function MedicinesPage() {
                 onClick={() => setSelectedMedicine(medicine)}
               >
                 <div style={currentStyles.medicineImageContainer}>
-                  <img 
+                  <Image 
                     src={medicine.imageUrl}
                     alt={medicine.name}
+                    width={120}
+                    height={80}
                     style={currentStyles.medicineImage}
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -846,9 +849,11 @@ export default function MedicinesPage() {
             
             <div style={currentStyles.modalHeader}>
               <div style={currentStyles.modalImageContainer}>
-                <img 
+                <Image 
                   src={selectedMedicine.imageUrl}
                   alt={selectedMedicine.name}
+                  width={80}
+                  height={60}
                   style={currentStyles.modalImage}
                   onError={(e) => {
                     e.target.style.display = 'none';

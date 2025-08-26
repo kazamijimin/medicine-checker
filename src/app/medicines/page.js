@@ -5,6 +5,7 @@ import { auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Image from 'next/image';
 
 // Pre-defined medicine categories with sample medicines
 const medicineCategories = {
@@ -310,7 +311,7 @@ export default function MedicinesPage() {
       
       try {
         const fdaResponse = await fetch(
-          `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${query}"&limit=10`
+          `https://api.fda.gov/drug/label.json?search=openfda.brand_name:${encodeURIComponent(`"${query}"`)}}&limit=10`
         );
 
         if (fdaResponse.ok) {
@@ -457,6 +458,9 @@ export default function MedicinesPage() {
           <div style={currentStyles.errorMessage}>
             <span style={currentStyles.errorIcon}>⚠️</span>
             {error}
+            <div style={currentStyles.errorSuggestions}>
+              Try searching for: &quot;Tylenol&quot;, &quot;Aspirin&quot;, &quot;Ibuprofen&quot;, or &quot;Metformin&quot;
+            </div>
           </div>
         )}
 
@@ -480,6 +484,8 @@ export default function MedicinesPage() {
                     <Image
                       src={medicine.imageUrl}
                       alt={medicine.name}
+                      width={120}
+                      height={80}
                       style={currentStyles.medicineImage}
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -562,6 +568,8 @@ export default function MedicinesPage() {
                           <Image 
                             src={getMedicineImage(medicine.name, medicine.category)}
                             alt={medicine.name}
+                            width={120}
+                            height={80}
                             style={currentStyles.medicineImage}
                             onError={(e) => {
                               e.target.style.display = 'none';
@@ -631,6 +639,8 @@ export default function MedicinesPage() {
                 <Image
                   src={selectedMedicine.imageUrl || getMedicineImage(selectedMedicine.name, selectedMedicine.category)}
                   alt={selectedMedicine.name}
+                  width={80}
+                  height={60}
                   style={currentStyles.modalImage}
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -940,6 +950,7 @@ const baseStyles = {
   },
   errorMessage: {
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
     gap: "8px",
     padding: "16px",
@@ -949,10 +960,14 @@ const baseStyles = {
     border: "1px solid #f5c6cb",
     marginBottom: "24px",
     textAlign: "center",
-    justifyContent: "center",
   },
   errorIcon: {
     fontSize: "18px",
+  },
+  errorSuggestions: {
+    marginTop: "8px",
+    fontSize: "12px",
+    opacity: 0.8,
   },
   modalOverlay: {
     position: "fixed",
@@ -1187,6 +1202,12 @@ const darkStyles = {
     backgroundColor: "#1a2d3a",
     borderColor: "#2a5a8a",
     color: "#87ceeb",
+  },
+  errorMessage: {
+    ...baseStyles.errorMessage,
+    backgroundColor: "#2d1a1a",
+    borderColor: "#5a2a2a",
+    color: "#ff6b6b",
   },
 };
 
