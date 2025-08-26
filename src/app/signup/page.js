@@ -6,6 +6,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import Image from 'next/image';
 
 // Password validation function
 const validatePassword = (password) => {
@@ -286,9 +287,11 @@ export default function SignupPage() {
             <div style={currentStyles.profilePictureContainer}>
               <div style={currentStyles.profilePicture}>
                 {formData.profilePicture ? (
-                  <img 
+                  <Image 
                     src={URL.createObjectURL(formData.profilePicture)} 
                     alt="Profile" 
+                    width={56}
+                    height={56}
                     style={currentStyles.profileImage}
                   />
                 ) : (
@@ -450,10 +453,7 @@ export default function SignupPage() {
   return (
     <>
       {/* Import Poppins Font */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
+
       
       <div style={currentStyles.container}>
         {/* Dark/Light Mode Toggle */}

@@ -290,11 +290,7 @@ export default function LoginPage() {
 
   return (
     <>
-      {/* Import Poppins Font */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
+
       
       <div style={currentStyles.container}>
         {/* Dark/Light Mode Toggle */}
@@ -394,7 +390,7 @@ export default function LoginPage() {
 
             {/* Signup Link */}
             <p style={currentStyles.signupLink}>
-              Don't have an account? <a href="/signup" style={currentStyles.link}>Sign up here</a>
+              Don&apos;t have an account? <a href="/signup" style={currentStyles.link}>Sign up here</a>
             </p>
 
             {/* Divider */}
