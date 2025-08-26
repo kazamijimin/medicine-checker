@@ -663,7 +663,7 @@ export default function MedicinesPage() {
           
           {apiLoading && (
             <div style={currentStyles.loadingIndicator}>
-              Searching {selectedCategory !== 'all' ? `${selectedCategory} category and ` : ''}FDA and RxNav databases for &quot;{searchTerm}&quot;...
+              Searching {selectedCategory !== 'all' ? `${selectedCategory} category and ` : ''}FDA and RxNav databases for {searchTerm}...
             </div>
           )}
 

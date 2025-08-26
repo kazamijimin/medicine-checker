@@ -420,7 +420,7 @@ export default function MedicinesPage() {
           
           {apiLoading && (
             <div style={currentStyles.loadingIndicator}>
-              Searching for "{searchTerm}"...
+              Searching for &quot;{searchTerm}&quot;...
             </div>
           )}
         </div>
@@ -465,7 +465,7 @@ export default function MedicinesPage() {
           <div>
             {medicines.length > 0 && (
               <div style={currentStyles.resultsCount}>
-                Found {medicines.length} medicine(s) for "{searchTerm}"
+                Found {medicines.length} medicine(s) for &quot;{searchTerm}&quot;
               </div>
             )}
             
@@ -477,7 +477,7 @@ export default function MedicinesPage() {
                   onClick={() => setSelectedMedicine(medicine)}
                 >
                   <div style={currentStyles.medicineImageContainer}>
-                    <img 
+                    <Image
                       src={medicine.imageUrl}
                       alt={medicine.name}
                       style={currentStyles.medicineImage}
@@ -516,7 +516,7 @@ export default function MedicinesPage() {
 
             {searchTerm && !apiLoading && medicines.length === 0 && !error && (
               <div style={currentStyles.noResults}>
-                <h3>No medicines found for "{searchTerm}"</h3>
+                <h3>No medicines found for &quot;{searchTerm}&quot;</h3>
                 <button 
                   onClick={() => {
                     setSearchTerm('');
@@ -559,7 +559,7 @@ export default function MedicinesPage() {
                         })}
                       >
                         <div style={currentStyles.medicineImageContainer}>
-                          <img 
+                          <Image 
                             src={getMedicineImage(medicine.name, medicine.category)}
                             alt={medicine.name}
                             style={currentStyles.medicineImage}
@@ -628,7 +628,7 @@ export default function MedicinesPage() {
             
             <div style={currentStyles.modalHeader}>
               <div style={currentStyles.modalImageContainer}>
-                <img 
+                <Image
                   src={selectedMedicine.imageUrl || getMedicineImage(selectedMedicine.name, selectedMedicine.category)}
                   alt={selectedMedicine.name}
                   style={currentStyles.modalImage}
