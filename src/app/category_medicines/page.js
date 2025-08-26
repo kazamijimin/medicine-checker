@@ -663,7 +663,7 @@ export default function MedicinesPage() {
           
           {apiLoading && (
             <div style={currentStyles.loadingIndicator}>
-              Searching {selectedCategory !== 'all' ? `${selectedCategory} category and ` : ''}FDA and RxNav databases for "{searchTerm}"...
+              Searching {selectedCategory !== 'all' ? `${selectedCategory} category and ` : ''}FDA and RxNav databases for &apos;{searchTerm}&apos;
             </div>
           )}
 
@@ -814,8 +814,8 @@ export default function MedicinesPage() {
               <li><strong>Categories:</strong> Filter by medicine category for focused search</li>
               <li><strong>Brand names:</strong> Tylenol, Advil, Motrin, Lipitor</li>
               <li><strong>Generic names:</strong> Acetaminophen, Ibuprofen, Atorvastatin</li>
-              <li><strong>Active ingredients:</strong> Search by what's in the medicine</li>
-              <li><strong>Partial matches:</strong> Try "Ibup" if "Ibuprofen" doesn't work</li>
+              <li><strong>Active ingredients:</strong> Search by what&apos;s in the medicine</li>
+              <li><strong>Partial matches:</strong> Try &quot;Ibup&quot; if &quot;Ibuprofen&quot; doesn&apos;t work</li>
             </ul>
             
             <h4>Database Coverage:</h4>
