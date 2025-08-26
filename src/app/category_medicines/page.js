@@ -663,7 +663,7 @@ export default function MedicinesPage() {
           
           {apiLoading && (
             <div style={currentStyles.loadingIndicator}>
-              Searching {selectedCategory !== 'all' ? `${selectedCategory} category and ` : ''}FDA and RxNav databases for &apos;{searchTerm}&apos;
+              Searching {selectedCategory !== 'all' ? `${selectedCategory} category and ` : ''}FDA and RxNav databases for &quot;{searchTerm}&quot;...
             </div>
           )}
 
@@ -786,8 +786,8 @@ export default function MedicinesPage() {
               <li>The medicine name might be spelled differently</li>
               <li>It might not be in the {selectedCategory !== 'all' ? `${selectedCategory} category or ` : ''}FDA or RxNav databases</li>
               <li>Try searching with brand name or generic name</li>
-              <li>Try partial names (e.g., "Tylen" instead of "Tylenol")</li>
-              <li>Try selecting "All Categories" to search in all categories</li>
+              <li>Try partial names (e.g., &quot;Tylen&quot; instead of &quot;Tylenol&quot;)</li>
+              <li>Try selecting &quot;All Categories&quot; to search in all categories</li>
             </ul>
             <div style={currentStyles.suggestions}>
               <strong>Try these common medicines:</strong>
