@@ -2,22 +2,145 @@
 
 import { useState } from "react";
 import { auth } from "@/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "@/firebase";
 import { useRouter } from "next/navigation";
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   const router = useRouter();
 
+  // Function to upload profile picture to Supabase
+  const uploadProfilePicture = async (photoURL, userId) => {
+    try {
+      if (!photoURL) return null;
+
+      // Fetch the image from Google
+      const response = await fetch(photoURL);
+      const blob = await response.blob();
+      
+      // Create a unique filename
+      const fileName = `profiles/${userId}/profile-${Date.now()}.jpg`;
+      
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('profile-pictures')
+        .upload(fileName, blob, {
+          contentType: 'image/jpeg',
+          upsert: true
+        });
+
+      if (error) {
+        console.error('Supabase upload error:', error);
+        return null;
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      return null;
+    }
+  };
+
+  // Function to save user data to Firestore
+  const saveUserToFirestore = async (user, supabasePhotoURL = null) => {
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      
+      // Check if user already exists
+      const userSnap = await getDoc(userRef);
+      
+      if (!userSnap.exists()) {
+        // New user - create document
+        const userData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || null,
+          photoURL: supabasePhotoURL || user.photoURL || null,
+          originalGooglePhotoURL: user.photoURL || null,
+          phoneNumber: user.phoneNumber || null,
+          emailVerified: user.emailVerified,
+          provider: user.providerData[0]?.providerId || 'email',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isActive: true,
+          role: 'user',
+          profile: {
+            firstName: user.displayName?.split(' ')[0] || '',
+            lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+            dateOfBirth: null,
+            gender: null,
+            location: null,
+            bio: null
+          },
+          preferences: {
+            theme: 'light',
+            notifications: {
+              email: true,
+              push: true,
+              sms: false
+            },
+            privacy: {
+              profileVisible: true,
+              dataSharing: false
+            }
+          },
+          healthData: {
+            allergies: [],
+            medications: [],
+            conditions: [],
+            emergencyContact: null
+          }
+        };
+
+        await setDoc(userRef, userData);
+        console.log('New user created in Firestore:', userData);
+      } else {
+        // Existing user - update last login and photo if needed
+        const existingData = userSnap.data();
+        const updateData = {
+          updatedAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          emailVerified: user.emailVerified
+        };
+
+        // Update photo URL if new Supabase URL is provided
+        if (supabasePhotoURL && supabasePhotoURL !== existingData.photoURL) {
+          updateData.photoURL = supabasePhotoURL;
+          updateData.originalGooglePhotoURL = user.photoURL;
+        }
+
+        await setDoc(userRef, updateData, { merge: true });
+        console.log('Existing user updated in Firestore');
+      }
+    } catch (error) {
+      console.error('Error saving user to Firestore:', error);
+      throw error;
+    }
+  };
+
   // Function to get user-friendly error messages
   const getErrorMessage = (errorCode) => {
-    console.log("Error code received:", errorCode); // Debug log
+    console.log("Error code received:", errorCode);
     switch (errorCode) {
       case 'auth/user-not-found':
         return "No account found with this email address. Please check your email or sign up.";
@@ -41,6 +164,14 @@ export default function LoginPage() {
         return "Firebase API key is invalid. Please contact support.";
       case 'auth/app-not-authorized':
         return "This app is not authorized to use Firebase Authentication.";
+      case 'auth/popup-closed-by-user':
+        return "Sign-in was cancelled. Please try again.";
+      case 'auth/popup-blocked':
+        return "Sign-in popup was blocked. Please allow popups and try again.";
+      case 'auth/cancelled-popup-request':
+        return "Sign-in was cancelled. Please try again.";
+      case 'auth/account-exists-with-different-credential':
+        return "An account already exists with this email. Please sign in with your original method.";
       default:
         return `Login failed: ${errorCode || 'Unknown error'}. Please try again.`;
     }
@@ -75,43 +206,72 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     
-    // Debug logs
-    console.log("Login attempt started");
-    console.log("Auth object:", auth);
-    console.log("Email:", email);
-    console.log("Password length:", password.length);
-    
-    // Validate form first
     if (!validateForm()) {
-      console.log("Form validation failed");
       return;
     }
     
     setIsLoading(true);
 
     try {
-      // Check if auth is properly initialized
-      if (!auth) {
-        throw new Error("Firebase auth not initialized");
-      }
-
-      console.log("Attempting Firebase sign in...");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log("Login successful:", userCredential.user);
       
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Save/update user in Firestore
+      await saveUserToFirestore(userCredential.user);
+      
+      router.push("/");
     } catch (err) {
-      console.error("Login error details:", {
-        code: err.code,
-        message: err.message,
-        stack: err.stack
-      });
-      
-      // Set user-friendly error message
+      console.error("Login error:", err);
       setError(getErrorMessage(err.code));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Google Sign-In function with Firestore and Supabase integration
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setIsGoogleLoading(true);
+
+    try {
+      const provider = new GoogleAuthProvider();
+      
+      provider.addScope('email');
+      provider.addScope('profile');
+      
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      console.log("Google sign-in successful:", user);
+      
+      // Upload profile picture to Supabase if available
+      let supabasePhotoURL = null;
+      if (user.photoURL) {
+        console.log("Uploading profile picture to Supabase...");
+        supabasePhotoURL = await uploadProfilePicture(user.photoURL, user.uid);
+        console.log("Supabase photo URL:", supabasePhotoURL);
+      }
+      
+      // Save user data to Firestore
+      await saveUserToFirestore(user, supabasePhotoURL);
+      
+      // Get access token if needed
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+      
+      console.log("User successfully authenticated and saved to database");
+      
+      // Redirect to dashboard
+      router.push("/");
+      
+    } catch (err) {
+      console.error("Google sign-in error:", err);
+      setError(getErrorMessage(err.code));
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -214,11 +374,11 @@ export default function LoginPage() {
               {/* Login Button */}
               <button 
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isGoogleLoading}
                 style={{
                   ...currentStyles.submitButton,
-                  opacity: isLoading ? 0.6 : 1,
-                  cursor: isLoading ? "not-allowed" : "pointer"
+                  opacity: (isLoading || isGoogleLoading) ? 0.6 : 1,
+                  cursor: (isLoading || isGoogleLoading) ? "not-allowed" : "pointer"
                 }}
               >
                 {isLoading ? (
@@ -246,11 +406,25 @@ export default function LoginPage() {
             <div style={currentStyles.socialButtons}>
               <button 
                 type="button"
-                style={currentStyles.socialButton}
-                onClick={() => setError("Google login is not available yet.")}
+                style={{
+                  ...currentStyles.socialButton,
+                  opacity: (isLoading || isGoogleLoading) ? 0.6 : 1,
+                  cursor: (isLoading || isGoogleLoading) ? "not-allowed" : "pointer"
+                }}
+                onClick={handleGoogleSignIn}
+                disabled={isLoading || isGoogleLoading}
               >
-                <span style={currentStyles.socialIcon}>🔵</span>
-                Google
+                {isGoogleLoading ? (
+                  <>
+                    <span style={currentStyles.spinner}></span>
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    <span style={currentStyles.socialIcon}>🔵</span>
+                    Google
+                  </>
+                )}
               </button>
               <button 
                 type="button"
@@ -645,3 +819,36 @@ if (typeof document !== 'undefined') {
   `;
   document.head.appendChild(style);
 }
+
+// In your login component or auth handler
+
+
+const handleGoogleLogin = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Check if user document exists in Firestore
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      // Create user document with Google profile data
+      await setDoc(userDocRef, {
+        firstName: user.displayName?.split(' ')[0] || '',
+        lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+        email: user.email,
+        createdAt: new Date().toISOString(),
+        userId: user.uid,
+        hasProfilePicture: !!user.photoURL,
+        profilePictureUrl: user.photoURL, // Google's photo URL
+        provider: 'google'
+      });
+    }
+
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("Google login error:", error);
+  }
+};
