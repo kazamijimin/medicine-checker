@@ -15,6 +15,25 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Smooth scroll function
+  const smoothScrollTo = (elementId) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+    }
+  };
+
+  // Handle navigation click
+  const handleNavClick = (e, sectionId) => {
+    e.preventDefault();
+    smoothScrollTo(sectionId);
+    setMobileMenuOpen(false); // Close mobile menu if open
+  };
+
   // Fetch user's profile picture
   useEffect(() => {
     const fetchUserProfilePicture = async () => {
@@ -175,9 +194,27 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
 
         {/* Desktop Navigation */}
         <div style={currentStyles.navLinks}>
-          <a href="#features" style={currentStyles.navLink}>Features</a>
-          <a href="#about" style={currentStyles.navLink}>About</a>
-          <a href="#contact" style={currentStyles.navLink}>Contact</a>
+          <a 
+            href="#features" 
+            style={currentStyles.navLink}
+            onClick={(e) => handleNavClick(e, 'features')}
+          >
+            Features
+          </a>
+          <a 
+            href="#about" 
+            style={currentStyles.navLink}
+            onClick={(e) => handleNavClick(e, 'about')}
+          >
+            About
+          </a>
+          <a 
+            href="#contact" 
+            style={currentStyles.navLink}
+            onClick={(e) => handleNavClick(e, 'contact')}
+          >
+            Contact
+          </a>
           
           {/* Theme Toggle */}
           <ThemeToggle isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
@@ -305,21 +342,21 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
             <a 
               href="#features" 
               style={currentStyles.mobileNavLink}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => handleNavClick(e, 'features')}
             >
               Features
             </a>
             <a 
               href="#about" 
               style={currentStyles.mobileNavLink}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => handleNavClick(e, 'about')}
             >
               About
             </a>
             <a 
               href="#contact" 
               style={currentStyles.mobileNavLink}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => handleNavClick(e, 'contact')}
             >
               Contact
             </a>
@@ -449,6 +486,7 @@ const baseStyles = {
     transition: "color 0.3s ease",
     position: "relative",
     padding: "8px 0",
+    cursor: "pointer",
   },
   userMenu: {
     position: "relative",
@@ -578,6 +616,7 @@ const baseStyles = {
     padding: "10px 0",
     borderBottom: "1px solid rgba(255,255,255,0.1)",
     transition: "color 0.3s ease",
+    cursor: "pointer",
   },
   mobileUserSection: {
     marginTop: "10px",
@@ -831,6 +870,11 @@ if (typeof document !== 'undefined') {
       to {
         width: 100%;
       }
+    }
+
+    /* Smooth scrolling for the entire page */
+    html {
+      scroll-behavior: smooth;
     }
   `;
   document.head.appendChild(style);

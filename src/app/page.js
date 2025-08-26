@@ -6,6 +6,10 @@ import { onAuthStateChanged } from "firebase/auth";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
+import Features from "@/components/Features";
+import About from "@/components/About";
+import Contact from "@/components/Contact";
+import Home from "@/components/ui/Home";
 
 export default function HomePage() {
   const [user, setUser] = useState(null);
@@ -62,6 +66,11 @@ export default function HomePage() {
         {/* Navbar Component */}
         <Navbar user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         <Hero user={user} isDarkMode={isDarkMode} currentStyles={currentStyles} />
+        <Features isDarkMode={isDarkMode} />
+        <About isDarkMode={isDarkMode} />
+        <Contact isDarkMode={isDarkMode} />
+        <Home isDarkMode={isDarkMode} />
+
         <Footer isDarkTheme={isDarkMode} />
 
       </div>
