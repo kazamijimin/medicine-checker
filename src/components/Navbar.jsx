@@ -34,6 +34,21 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
     setMobileMenuOpen(false); // Close mobile menu if open
   };
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
+        setMobileMenuOpen(false);
+      }
+      if (profileDropdownOpen && !event.target.closest('.profile-container')) {
+        setProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [mobileMenuOpen, profileDropdownOpen]);
+
   // Fetch user's profile picture
   useEffect(() => {
     const fetchUserProfilePicture = async () => {
@@ -108,6 +123,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
     try {
       await signOut(auth);
       setProfileDropdownOpen(false);
+      setMobileMenuOpen(false);
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -150,7 +166,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
 
   const getMobileProfileImageSrc = () => {
     if (loading) {
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}&background=10b981&color=fff&size=30`;
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}&background=10b981&color=fff&size=40`;
     }
     
     if (userProfilePicture) {
@@ -161,7 +177,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
       return user.photoURL;
     }
     
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}&background=10b981&color=fff&size=30`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}&background=10b981&color=fff&size=40`;
   };
 
   // Helper function to get display name
@@ -184,20 +200,21 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
   };
 
   return (
-    <nav style={currentStyles.nav}>
+    <nav style={currentStyles.nav} className="navbar">
       <div style={currentStyles.navContainer}>
         {/* Logo */}
-        <div style={currentStyles.logo} onClick={() => router.push('/')}>
+        <div style={currentStyles.logo} onClick={() => router.push('/')} className="logo">
           <span style={currentStyles.logoIcon}>💊</span>
           <span style={currentStyles.logoText}>MediChecker</span>
         </div>
 
         {/* Desktop Navigation */}
-        <div style={currentStyles.navLinks}>
+        <div style={currentStyles.navLinks} className="nav-links">
           <a 
             href="#features" 
             style={currentStyles.navLink}
             onClick={(e) => handleNavClick(e, 'features')}
+            className="nav-link"
           >
             Features
           </a>
@@ -205,6 +222,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
             href="#about" 
             style={currentStyles.navLink}
             onClick={(e) => handleNavClick(e, 'about')}
+            className="nav-link"
           >
             About
           </a>
@@ -212,18 +230,22 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
             href="#contact" 
             style={currentStyles.navLink}
             onClick={(e) => handleNavClick(e, 'contact')}
+            className="nav-link"
           >
             Contact
           </a>
           
           {/* Theme Toggle */}
-          <ThemeToggle isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          <div className="theme-toggle-desktop">
+            <ThemeToggle isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </div>
           
           {user ? (
             <div style={currentStyles.userMenu}>
               <div 
                 style={currentStyles.profileContainer}
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="profile-container"
               >
                 <img 
                   src={getProfileImageSrc()}
@@ -234,7 +256,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getDisplayName())}&background=10b981&color=fff&size=35`;
                   }}
                 />
-                <span style={currentStyles.userName}>
+                <span style={currentStyles.userName} className="user-name-desktop">
                   {getDisplayName()} {/* This will show only first name or email username */}
                 </span>
                 <span style={currentStyles.dropdownArrow}>▼</span>
@@ -242,7 +264,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
               
               {/* Profile Dropdown */}
               {profileDropdownOpen && (
-                <div style={currentStyles.dropdown}>
+                <div style={currentStyles.dropdown} className="dropdown">
                   <div style={{
                     padding: "12px 16px",
                     borderBottom: "1px solid rgba(255,255,255,0.1)",
@@ -280,10 +302,11 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
               )}
             </div>
           ) : (
-            <div style={currentStyles.authButtons}>
+            <div style={currentStyles.authButtons} className="auth-buttons-desktop">
               <button 
                 onClick={() => router.push('/login')}
                 style={currentStyles.loginBtn}
+                className="login-btn"
                 onMouseEnter={(e) => {
                   e.target.style.background = 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)';
                   e.target.style.color = 'white';
@@ -298,6 +321,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
               <button 
                 onClick={() => router.push('/signup')}
                 style={currentStyles.signUpBtn}
+                className="signup-btn"
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-2px)';
                   e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
@@ -317,6 +341,8 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           style={currentStyles.mobileMenuBtn}
+          className="mobile-menu-btn"
+          aria-label="Toggle mobile menu"
         >
           <span style={currentStyles.hamburger}>
             <span style={{
@@ -337,27 +363,39 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div style={currentStyles.mobileMenu}>
+        <div style={currentStyles.mobileMenu} className="mobile-menu mobile-menu-container">
           <div style={currentStyles.mobileMenuContent}>
+            {/* Mobile Theme Toggle */}
+            <div style={currentStyles.mobileThemeToggle}>
+              <span style={currentStyles.themeLabel}>Theme</span>
+              <ThemeToggle isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+            </div>
+
             <a 
               href="#features" 
               style={currentStyles.mobileNavLink}
               onClick={(e) => handleNavClick(e, 'features')}
+              className="mobile-nav-link"
             >
+              <span style={currentStyles.mobileNavIcon}>✨</span>
               Features
             </a>
             <a 
               href="#about" 
               style={currentStyles.mobileNavLink}
               onClick={(e) => handleNavClick(e, 'about')}
+              className="mobile-nav-link"
             >
+              <span style={currentStyles.mobileNavIcon}>ℹ️</span>
               About
             </a>
             <a 
               href="#contact" 
               style={currentStyles.mobileNavLink}
               onClick={(e) => handleNavClick(e, 'contact')}
+              className="mobile-nav-link"
             >
+              <span style={currentStyles.mobileNavIcon}>📧</span>
               Contact
             </a>
             
@@ -369,19 +407,15 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                     alt="Profile"
                     style={currentStyles.mobileAvatar}
                     onError={(e) => {
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getDisplayName())}&background=10b981&color=fff&size=30`;
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getDisplayName())}&background=10b981&color=fff&size=40`;
                     }}
                   />
-                  <div>
+                  <div style={currentStyles.mobileUserDetails}>
                     <span style={currentStyles.mobileUserName}>
-                      {getDisplayName()} {/* First name only */}
+                      {getDisplayName(true)} {/* Full name in mobile */}
                     </span>
-                    <div style={{
-                      fontSize: "12px",
-                      color: "#10b981",
-                      fontWeight: "500"
-                    }}>
-                      {getDisplayName(true)} {/* Full name below */}
+                    <div style={currentStyles.mobileUserEmail}>
+                      {user?.email}
                     </div>
                   </div>
                 </div>
@@ -391,8 +425,9 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                     setMobileMenuOpen(false);
                   }}
                   style={currentStyles.mobileDashboardBtn}
+                  className="mobile-btn"
                 >
-                  Profile
+                  👤 Profile
                 </button>
                 <button 
                   onClick={() => {
@@ -400,8 +435,9 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                     setMobileMenuOpen(false);
                   }}
                   style={currentStyles.mobileDashboardBtn}
+                  className="mobile-btn"
                 >
-                  Dashboard
+                  📊 Dashboard
                 </button>
                 <button 
                   onClick={() => {
@@ -409,8 +445,9 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                     setMobileMenuOpen(false);
                   }}
                   style={currentStyles.mobileSignOutBtn}
+                  className="mobile-btn"
                 >
-                  Sign Out
+                  🚪 Sign Out
                 </button>
               </div>
             ) : (
@@ -421,8 +458,9 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                     setMobileMenuOpen(false);
                   }}
                   style={currentStyles.mobileLoginBtn}
+                  className="mobile-btn"
                 >
-                  Login
+                  🔐 Login
                 </button>
                 <button 
                   onClick={() => {
@@ -430,8 +468,9 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                     setMobileMenuOpen(false);
                   }}
                   style={currentStyles.mobileSignUpBtn}
+                  className="mobile-btn"
                 >
-                  Sign Up
+                  🚀 Sign Up
                 </button>
               </div>
             )}
@@ -442,7 +481,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
   );
 }
 
-// Base Styles with Emerald/Teal Theme
+// Base Styles with Enhanced Mobile Responsiveness
 const baseStyles = {
   nav: {
     position: "fixed",
@@ -453,36 +492,38 @@ const baseStyles = {
     backdropFilter: "blur(10px)",
     borderBottom: "1px solid rgba(255,255,255,0.1)",
     transition: "all 0.3s ease",
+    fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   },
   navContainer: {
     maxWidth: "1200px",
     margin: "0 auto",
-    padding: "0 20px",
+    padding: "0 16px", // Reduced for mobile
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    height: "70px",
+    height: "60px", // Reduced height for mobile
   },
   logo: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    fontSize: "24px",
+    gap: "8px", // Reduced gap for mobile
+    fontSize: "20px", // Smaller on mobile
     fontWeight: "700",
     cursor: "pointer",
     transition: "transform 0.2s ease",
   },
   logoIcon: {
-    fontSize: "28px",
+    fontSize: "24px", // Smaller on mobile
   },
   navLinks: {
     display: "flex",
     alignItems: "center",
-    gap: "30px",
+    gap: "24px", // Reduced gap
   },
   navLink: {
     textDecoration: "none",
     fontWeight: "500",
+    fontSize: "14px", // Smaller font
     transition: "color 0.3s ease",
     position: "relative",
     padding: "8px 0",
@@ -496,21 +537,25 @@ const baseStyles = {
   profileContainer: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "8px", // Reduced gap
     cursor: "pointer",
-    padding: "8px 12px",
+    padding: "6px 10px", // Smaller padding
     borderRadius: "8px",
     transition: "background-color 0.3s ease",
   },
   avatar: {
-    width: "35px",
-    height: "35px",
+    width: "32px", // Smaller avatar
+    height: "32px",
     borderRadius: "50%",
     objectFit: "cover",
     border: "2px solid #10b981",
   },
+  userName: {
+    fontSize: "13px", // Smaller text
+    fontWeight: "500",
+  },
   dropdownArrow: {
-    fontSize: "12px",
+    fontSize: "10px", // Smaller arrow
     transition: "transform 0.3s ease",
   },
   dropdown: {
@@ -518,9 +563,9 @@ const baseStyles = {
     top: "100%",
     right: 0,
     marginTop: "8px",
-    minWidth: "150px",
-    borderRadius: "8px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    minWidth: "160px",
+    borderRadius: "12px",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
     overflow: "hidden",
     zIndex: 1001,
   },
@@ -533,6 +578,7 @@ const baseStyles = {
     cursor: "pointer",
     fontFamily: "'Poppins', sans-serif",
     fontWeight: "500",
+    fontSize: "14px",
     transition: "background-color 0.3s ease",
   },
   dropdownItemDanger: {
@@ -545,30 +591,33 @@ const baseStyles = {
     cursor: "pointer",
     fontFamily: "'Poppins', sans-serif",
     fontWeight: "500",
+    fontSize: "14px",
     transition: "background-color 0.3s ease",
   },
   authButtons: {
     display: "flex",
-    gap: "15px",
+    gap: "12px", // Reduced gap
   },
   loginBtn: {
-    padding: "10px 20px",
+    padding: "8px 16px", // Smaller padding
     background: "transparent",
     border: "2px solid #10b981",
     borderRadius: "8px",
     color: "#10b981",
     fontWeight: "600",
+    fontSize: "13px", // Smaller font
     cursor: "pointer",
     transition: "all 0.3s ease",
     fontFamily: "'Poppins', sans-serif",
   },
   signUpBtn: {
-    padding: "10px 20px",
+    padding: "8px 16px", // Smaller padding
     background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
     border: "none",
     borderRadius: "8px",
     color: "white",
     fontWeight: "600",
+    fontSize: "13px", // Smaller font
     cursor: "pointer",
     transition: "all 0.3s ease",
     fontFamily: "'Poppins', sans-serif",
@@ -579,21 +628,23 @@ const baseStyles = {
     border: "none",
     cursor: "pointer",
     padding: "8px",
-    borderRadius: "4px",
+    borderRadius: "6px",
+    transition: "background-color 0.3s ease",
   },
   hamburger: {
     display: "flex",
     flexDirection: "column",
-    width: "24px",
-    height: "18px",
+    width: "22px", // Slightly smaller
+    height: "16px",
     justifyContent: "space-between",
   },
   hamburgerLine: {
     width: "100%",
     height: "2px",
-    backgroundColor: "#333",
+    backgroundColor: "#10b981",
     transition: "all 0.3s ease",
     transformOrigin: "center",
+    borderRadius: "1px",
   },
   mobileMenu: {
     display: "none",
@@ -601,90 +652,156 @@ const baseStyles = {
     top: "100%",
     left: 0,
     right: 0,
+    maxHeight: "calc(100vh - 60px)",
+    overflowY: "auto",
     borderTop: "1px solid rgba(255,255,255,0.1)",
     animation: "slideDown 0.3s ease",
   },
   mobileMenuContent: {
-    padding: "20px",
+    padding: "16px", // Reduced padding
     display: "flex",
     flexDirection: "column",
-    gap: "15px",
+    gap: "12px", // Reduced gap
+  },
+  mobileThemeToggle: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "12px 16px",
+    marginBottom: "8px",
+    borderRadius: "12px",
+    border: "1px solid rgba(255,255,255,0.1)",
+  },
+  themeLabel: {
+    fontSize: "14px",
+    fontWeight: "500",
   },
   mobileNavLink: {
     textDecoration: "none",
     fontWeight: "500",
-    padding: "10px 0",
-    borderBottom: "1px solid rgba(255,255,255,0.1)",
-    transition: "color 0.3s ease",
+    fontSize: "16px",
+    padding: "14px 16px",
+    borderRadius: "12px",
+    transition: "all 0.3s ease",
     cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+  },
+  mobileNavIcon: {
+    fontSize: "16px",
+    width: "20px",
+    textAlign: "center",
   },
   mobileUserSection: {
-    marginTop: "10px",
-    paddingTop: "20px",
+    marginTop: "8px",
+    paddingTop: "16px",
     borderTop: "1px solid rgba(255,255,255,0.1)",
     display: "flex",
     flexDirection: "column",
-    gap: "15px",
+    gap: "12px",
   },
   mobileUserInfo: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "12px",
+    padding: "12px 16px",
+    borderRadius: "12px",
+    border: "1px solid rgba(255,255,255,0.1)",
   },
   mobileAvatar: {
-    width: "30px",
-    height: "30px",
+    width: "40px", // Larger avatar for mobile
+    height: "40px",
     borderRadius: "50%",
     objectFit: "cover",
     border: "2px solid #10b981",
   },
+  mobileUserDetails: {
+    flex: 1,
+    minWidth: 0,
+  },
+  mobileUserName: {
+    fontWeight: "600",
+    fontSize: "16px",
+    display: "block",
+    marginBottom: "2px",
+  },
+  mobileUserEmail: {
+    fontSize: "12px",
+    opacity: 0.7,
+    fontWeight: "400",
+  },
   mobileAuthButtons: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
-    marginTop: "10px",
-    paddingTop: "20px",
+    gap: "12px",
+    marginTop: "8px",
+    paddingTop: "16px",
     borderTop: "1px solid rgba(255,255,255,0.1)",
   },
   mobileLoginBtn: {
-    padding: "12px",
+    padding: "14px 16px",
     background: "transparent",
     border: "2px solid #10b981",
-    borderRadius: "8px",
+    borderRadius: "12px",
     color: "#10b981",
     fontWeight: "600",
+    fontSize: "16px",
     cursor: "pointer",
     fontFamily: "'Poppins', sans-serif",
+    transition: "all 0.3s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
   },
   mobileSignUpBtn: {
-    padding: "12px",
+    padding: "14px 16px",
     background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "12px",
     color: "white",
     fontWeight: "600",
+    fontSize: "16px",
     cursor: "pointer",
     fontFamily: "'Poppins', sans-serif",
+    transition: "all 0.3s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
   },
   mobileDashboardBtn: {
-    padding: "12px",
+    padding: "12px 16px",
     background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "12px",
     color: "white",
     fontWeight: "600",
+    fontSize: "14px",
     cursor: "pointer",
     fontFamily: "'Poppins', sans-serif",
+    transition: "all 0.3s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
   },
   mobileSignOutBtn: {
-    padding: "12px",
+    padding: "12px 16px",
     background: "transparent",
     border: "2px solid #dc3545",
-    borderRadius: "8px",
+    borderRadius: "12px",
     color: "#dc3545",
     fontWeight: "600",
+    fontSize: "14px",
     cursor: "pointer",
     fontFamily: "'Poppins', sans-serif",
+    transition: "all 0.3s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
   },
 };
 
@@ -707,20 +824,26 @@ const lightStyles = {
     color: "#334155",
   },
   userName: {
+    ...baseStyles.userName,
     color: "#334155",
-    fontWeight: "500",
-    fontSize: "14px",
+  },
+  themeLabel: {
+    ...baseStyles.themeLabel,
+    color: "#334155",
   },
   mobileUserName: {
+    ...baseStyles.mobileUserName,
     color: "#334155",
-    fontWeight: "500",
-    fontSize: "14px",
+  },
+  mobileUserEmail: {
+    ...baseStyles.mobileUserEmail,
+    color: "#334155",
   },
   profileContainer: {
     ...baseStyles.profileContainer,
-    "&:hover": {
-      backgroundColor: "rgba(16, 185, 129, 0.05)",
-    }
+  },
+  mobileMenuBtn: {
+    ...baseStyles.mobileMenuBtn,
   },
   dropdown: {
     ...baseStyles.dropdown,
@@ -730,13 +853,6 @@ const lightStyles = {
   dropdownItem: {
     ...baseStyles.dropdownItem,
     color: "#334155",
-    "&:hover": {
-      backgroundColor: "rgba(16, 185, 129, 0.05)",
-    }
-  },
-  hamburgerLine: {
-    ...baseStyles.hamburgerLine,
-    backgroundColor: "#10b981",
   },
   mobileMenu: {
     ...baseStyles.mobileMenu,
@@ -746,7 +862,16 @@ const lightStyles = {
   mobileNavLink: {
     ...baseStyles.mobileNavLink,
     color: "#334155",
-    borderBottom: "1px solid rgba(0,0,0,0.1)",
+  },
+  mobileThemeToggle: {
+    ...baseStyles.mobileThemeToggle,
+    background: "rgba(248,250,252,0.5)",
+    border: "1px solid rgba(0,0,0,0.1)",
+  },
+  mobileUserInfo: {
+    ...baseStyles.mobileUserInfo,
+    background: "rgba(248,250,252,0.5)",
+    border: "1px solid rgba(0,0,0,0.1)",
   },
   mobileUserSection: {
     ...baseStyles.mobileUserSection,
@@ -777,14 +902,20 @@ const darkStyles = {
     color: "#f1f5f9",
   },
   userName: {
+    ...baseStyles.userName,
     color: "#f1f5f9",
-    fontWeight: "500",
-    fontSize: "14px",
+  },
+  themeLabel: {
+    ...baseStyles.themeLabel,
+    color: "#f1f5f9",
   },
   mobileUserName: {
+    ...baseStyles.mobileUserName,
     color: "#f1f5f9",
-    fontWeight: "500",
-    fontSize: "14px",
+  },
+  mobileUserEmail: {
+    ...baseStyles.mobileUserEmail,
+    color: "#f1f5f9",
   },
   dropdown: {
     ...baseStyles.dropdown,
@@ -795,10 +926,6 @@ const darkStyles = {
     ...baseStyles.dropdownItem,
     color: "#f1f5f9",
   },
-  hamburgerLine: {
-    ...baseStyles.hamburgerLine,
-    backgroundColor: "#10b981",
-  },
   mobileMenu: {
     ...baseStyles.mobileMenu,
     background: "rgba(26,26,26,0.98)",
@@ -807,7 +934,16 @@ const darkStyles = {
   mobileNavLink: {
     ...baseStyles.mobileNavLink,
     color: "#f1f5f9",
-    borderBottom: "1px solid rgba(255,255,255,0.1)",
+  },
+  mobileThemeToggle: {
+    ...baseStyles.mobileThemeToggle,
+    background: "rgba(45,45,45,0.5)",
+    border: "1px solid rgba(255,255,255,0.1)",
+  },
+  mobileUserInfo: {
+    ...baseStyles.mobileUserInfo,
+    background: "rgba(45,45,45,0.5)",
+    border: "1px solid rgba(255,255,255,0.1)",
   },
   mobileUserSection: {
     ...baseStyles.mobileUserSection,
@@ -819,10 +955,12 @@ const darkStyles = {
   },
 };
 
-// Add CSS animations
+// Enhanced CSS animations and media queries
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
     @keyframes slideDown {
       from {
         opacity: 0;
@@ -834,6 +972,7 @@ if (typeof document !== 'undefined') {
       }
     }
     
+    /* Mobile-first responsive design */
     @media (max-width: 768px) {
       .nav-links {
         display: none !important;
@@ -846,21 +985,99 @@ if (typeof document !== 'undefined') {
       .mobile-menu {
         display: block !important;
       }
+      
+      .theme-toggle-desktop {
+        display: none !important;
+      }
+      
+      .user-name-desktop {
+        display: none !important;
+      }
+      
+      .auth-buttons-desktop .login-btn,
+      .auth-buttons-desktop .signup-btn {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+      }
     }
     
-    .logo:hover {
-      transform: scale(1.05);
+    @media (max-width: 480px) {
+      .navbar .logo {
+        font-size: 18px !important;
+      }
+      
+      .navbar .logo span:first-child {
+        font-size: 20px !important;
+      }
+      
+      .mobile-menu-content {
+        padding: 12px !important;
+      }
     }
     
-    .nav-link:hover::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-      animation: slideIn 0.3s ease;
+    @media (max-width: 320px) {
+      .navbar {
+        height: 55px !important;
+      }
+      
+      .nav-container {
+        height: 55px !important;
+        padding: 0 12px !important;
+      }
+      
+      .logo {
+        font-size: 16px !important;
+        gap: 6px !important;
+      }
+      
+      .logo span:first-child {
+        font-size: 18px !important;
+      }
+    }
+    
+    /* Desktop hover effects */
+    @media (min-width: 769px) {
+      .logo:hover {
+        transform: scale(1.05);
+      }
+      
+      .nav-link:hover::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        animation: slideIn 0.3s ease;
+      }
+      
+      .profile-container:hover {
+        background-color: rgba(16, 185, 129, 0.05) !important;
+      }
+      
+      .dropdown-item:hover {
+        background-color: rgba(16, 185, 129, 0.05) !important;
+      }
+    }
+    
+    /* Mobile touch improvements */
+    @media (max-width: 768px) {
+      .mobile-nav-link:hover,
+      .mobile-nav-link:active {
+        background-color: rgba(16, 185, 129, 0.1) !important;
+        transform: translateX(4px);
+      }
+      
+      .mobile-btn:hover,
+      .mobile-btn:active {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      
+      .mobile-menu-btn:hover {
+        background-color: rgba(16, 185, 129, 0.1) !important;
+      }
     }
     
     @keyframes slideIn {
@@ -875,6 +1092,26 @@ if (typeof document !== 'undefined') {
     /* Smooth scrolling for the entire page */
     html {
       scroll-behavior: smooth;
+    }
+    
+    /* Improve touch targets */
+    @media (max-width: 768px) {
+      .mobile-nav-link,
+      .mobile-btn {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+      }
+    }
+    
+    /* Hide scrollbar but keep functionality */
+    .mobile-menu {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .mobile-menu::-webkit-scrollbar {
+      display: none;
     }
   `;
   document.head.appendChild(style);

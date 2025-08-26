@@ -469,7 +469,7 @@ const baseStyles = {
   container: {
     minHeight: "100vh",
     display: "flex",
-    fontFamily: "'Poppins', sans-serif",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     position: "relative",
   },
   themeToggle: {
@@ -585,7 +585,7 @@ const baseStyles = {
     borderColor: "#e9ecef",
     borderRadius: "12px",
     fontSize: "16px",
-    fontFamily: "'Poppins', sans-serif",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     transition: "border-color 0.3s ease",
     outline: "none",
     boxSizing: "border-box",
@@ -619,9 +619,10 @@ const baseStyles = {
     fontWeight: "600",
     cursor: "pointer",
     transition: "transform 0.2s ease",
-    fontFamily: "'Poppins', sans-serif",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     marginBottom: "20px"
   },
+  
   loadingContent: {
     display: "flex",
     alignItems: "center",
@@ -704,7 +705,7 @@ const baseStyles = {
     fontSize: "14px",
     fontWeight: "500",
     transition: "all 0.3s ease",
-    fontFamily: "'Poppins', sans-serif"
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
   },
   socialIcon: {
     fontSize: "18px"
