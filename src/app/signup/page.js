@@ -62,6 +62,7 @@ export default function SignupPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isClient, setIsClient] = useState(false); // 👈 ADD THIS
   const [passwordStrength, setPasswordStrength] = useState({
     score: 0,
     feedback: "",
@@ -70,8 +71,15 @@ export default function SignupPage() {
   
   const router = useRouter();
 
-  // Check if mobile device
+  // 👇 FIX: Initialize client state first
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // 👇 FIX: Only run window code when client-side
+  useEffect(() => {
+    if (!isClient) return;
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -80,7 +88,7 @@ export default function SignupPage() {
     window.addEventListener('resize', checkMobile);
     
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [isClient]); // 👈 Add isClient dependency
 
   // Define steps
   const steps = [
@@ -541,9 +549,439 @@ export default function SignupPage() {
     }
   };
 
-  const currentStyles = isDarkMode ? darkStyles : lightStyles;
+  // 👇 FIX: Create styles function that's safe for SSR
+  const createBaseStyles = () => ({
+    container: {
+      minHeight: "100vh",
+      display: "flex",
+      fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      position: "relative",
+      flexDirection: "column", // Safe default
+    },
+    themeToggle: {
+      position: "fixed",
+      top: "15px",
+      right: "15px",
+      zIndex: 1000,
+      background: "rgba(255, 255, 255, 0.2)",
+      border: "none",
+      borderRadius: "50%",
+      width: "45px",
+      height: "45px",
+      fontSize: "18px",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      backdropFilter: "blur(10px)",
+      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    },
+    leftSection: {
+      flex: 1,
+      position: "relative",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: "300px"
+    },
+    imageContainer: {
+      width: "100%",
+      height: "100%",
+      backgroundImage: `
+        linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)),
+        url('https://t4.ftcdn.net/jpg/02/10/45/39/360_F_210453925_spHdLHUcDJS76oWKzFp4mQeCKW8WisER.jpg')
+      `,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    overlayContent: {
+      textAlign: "center",
+      color: "white",
+      padding: "40px",
+      maxWidth: "400px"
+    },
+    overlayTitle: {
+      fontSize: "clamp(24px, 4vw, 32px)",
+      fontWeight: "700",
+      marginBottom: "20px",
+      textShadow: "0 2px 4px rgba(0,0,0,0.3)"
+    },
+    overlayText: {
+      fontSize: "clamp(14px, 2.5vw, 16px)",
+      lineHeight: "1.6",
+      marginBottom: "40px",
+      opacity: 0.95,
+      fontWeight: "400"
+    },
+    features: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "20px"
+    },
+    feature: {
+      display: "flex",
+      alignItems: "center",
+      gap: "15px",
+      fontSize: "clamp(13px, 2vw, 15px)"
+    },
+    featureIcon: {
+      fontSize: "20px",
+      width: "35px",
+      height: "35px",
+      background: "rgba(255,255,255,0.2)",
+      borderRadius: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backdropFilter: "blur(10px)"
+    },
+    featureText: {
+      fontWeight: "500"
+    },
+    rightSection: {
+      flex: 1,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+      overflow: "auto",
+      minHeight: "100vh",
+      width: "100%",
+      boxSizing: "border-box"
+    },
+    formContainer: {
+      width: "100%",
+      maxWidth: "420px",
+      padding: "20px",
+      boxSizing: "border-box",
+      margin: "0 auto"
+    },
+    progressContainer: {
+      marginBottom: "30px"
+    },
+    progressBar: {
+      width: "100%",
+      height: "4px",
+      backgroundColor: "#e9ecef",
+      borderRadius: "2px",
+      overflow: "hidden",
+      marginBottom: "8px"
+    },
+    progressFill: {
+      height: "100%",
+      background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+      transition: "width 0.3s ease",
+      borderRadius: "2px"
+    },
+    progressText: {
+      fontSize: "12px",
+      color: "#6c757d",
+      textAlign: "center",
+      margin: 0,
+      fontWeight: "500"
+    },
+    header: {
+      textAlign: "center",
+      marginBottom: "30px",
+      paddingTop: "20px"
+    },
+    stepContent: {
+      marginBottom: "30px"
+    },
+    profilePictureContainer: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "15px"
+    },
+    profilePicture: {
+      width: "100px",
+      height: "100px",
+      borderRadius: "50%",
+      border: "3px solid #28a745",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "#f8f9fa",
+      overflow: "hidden"
+    },
+    profileImage: {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      borderRadius: "50%"
+    },
+    profilePlaceholder: {
+      fontSize: "36px",
+      color: "#6c757d"
+    },
+    hiddenInput: {
+      display: "none"
+    },
+    profileLabel: {
+      color: "#28a745",
+      cursor: "pointer",
+      fontSize: "14px",
+      textDecoration: "none",
+      fontWeight: "500",
+      padding: "12px 24px",
+      border: "2px solid #28a745",
+      borderRadius: "8px",
+      backgroundColor: "transparent",
+      transition: "all 0.3s ease",
+      minHeight: "44px",
+      display: "flex",
+      alignItems: "center",
+      touchAction: "manipulation"
+    },
+    removeButton: {
+      color: "#dc3545",
+      cursor: "pointer",
+      fontSize: "12px",
+      fontWeight: "500",
+      padding: "8px 16px",
+      border: "1px solid #dc3545",
+      borderRadius: "6px",
+      backgroundColor: "transparent",
+      transition: "all 0.3s ease"
+    },
+    input: {
+      width: "100%",
+      padding: "14px 18px",
+      borderWidth: "2px",
+      borderStyle: "solid",
+      borderColor: "#e9ecef",
+      borderRadius: "10px",
+      fontSize: "16px",
+      fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      transition: "border-color 0.3s ease",
+      outline: "none",
+      boxSizing: "border-box",
+      marginBottom: "16px",
+      WebkitAppearance: "none",
+      touchAction: "manipulation",
+      minHeight: "50px"
+    },
+    passwordContainer: {
+      position: "relative",
+      marginBottom: "16px"
+    },
+    passwordToggle: {
+      position: "absolute",
+      right: "15px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "18px",
+      padding: "8px",
+      minWidth: "40px",
+      minHeight: "40px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: "5px",
+      touchAction: "manipulation"
+    },
+    passwordStrength: {
+      marginTop: "-12px",
+      marginBottom: "16px"
+    },
+    strengthBarContainer: {
+      width: "100%",
+      height: "4px",
+      backgroundColor: "#e9ecef",
+      borderRadius: "2px",
+      overflow: "hidden",
+      marginBottom: "6px"
+    },
+    strengthBar: {
+      height: "100%",
+      borderRadius: "2px",
+      transition: "all 0.3s ease"
+    },
+    strengthText: {
+      fontSize: "12px",
+      fontWeight: "500"
+    },
+    checkboxContainer: {
+      display: "flex",
+      alignItems: "flex-start",
+      gap: "12px",
+      padding: "20px",
+      border: "2px solid #e9ecef",
+      borderRadius: "12px",
+      backgroundColor: "#f8f9fa"
+    },
+    checkbox: {
+      marginTop: "3px",
+      flexShrink: 0,
+      width: "18px",
+      height: "18px",
+      minWidth: "18px",
+      minHeight: "18px"
+    },
+    checkboxLabel: {
+      fontSize: "14px",
+      lineHeight: "1.5",
+      fontWeight: "400"
+    },
+    link: {
+      color: "#28a745",
+      textDecoration: "none",
+      fontWeight: "500",
+      padding: "2px",
+      borderRadius: "3px"
+    },
+    buttonContainer: {
+      display: "flex",
+      gap: "12px",
+      marginBottom: "20px",
+      flexDirection: "row"
+    },
+    backButton: {
+      flex: 1,
+      background: "transparent",
+      color: "#6c757d",
+      border: "2px solid #e9ecef",
+      padding: "16px",
+      borderRadius: "10px",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      minHeight: "50px",
+      touchAction: "manipulation",
+      WebkitAppearance: "none"
+    },
+    nextButton: {
+      flex: 2,
+      background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+      color: "white",
+      border: "none",
+      padding: "16px",
+      borderRadius: "10px",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "transform 0.2s ease",
+      fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      minHeight: "50px",
+      touchAction: "manipulation",
+      WebkitAppearance: "none"
+    },
+    submitButton: {
+      flex: 2,
+      background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+      color: "white",
+      border: "none",
+      padding: "16px",
+      borderRadius: "10px",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "transform 0.2s ease",
+      fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      minHeight: "50px",
+      touchAction: "manipulation",
+      WebkitAppearance: "none"
+    },
+    loadingContent: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "10px"
+    },
+    spinner: {
+      width: "16px",
+      height: "16px",
+      border: "2px solid transparent",
+      borderTop: "2px solid white",
+      borderRadius: "50%",
+      animation: "spin 1s linear infinite"
+    },
+    errorContainer: {
+      marginBottom: "20px"
+    },
+    error: {
+      fontSize: "14px",
+      textAlign: "left",
+      margin: "0",
+      fontWeight: "500",
+      padding: "12px 16px",
+      borderRadius: "8px",
+      backgroundColor: "#ffe6e6",
+      color: "#dc3545",
+      border: "1px solid #f5c6cb",
+      display: "flex",
+      alignItems: "flex-start",
+      gap: "8px",
+      lineHeight: "1.4",
+      wordBreak: "break-word"
+    },
+    errorIcon: {
+      fontSize: "16px",
+      marginTop: "1px",
+      flexShrink: 0
+    },
+    loginLink: {
+      textAlign: "center",
+      fontSize: "14px",
+      margin: "0",
+      fontWeight: "400",
+      lineHeight: "1.5"
+    }
+  });
+
+  // 👇 FIX: Update styles to be responsive when client-side
+  const getResponsiveStyles = () => {
+    const baseStyles = createBaseStyles();
+    
+    if (!isClient) return baseStyles;
+    
+    // Apply responsive styles only when client-side
+    return {
+      ...baseStyles,
+      container: {
+        ...baseStyles.container,
+        flexDirection: isMobile ? "column" : "row",
+      }
+    };
+  };
+
+  const baseStyles = getResponsiveStyles();
+  const currentStyles = isDarkMode ? { ...baseStyles, ...darkStyleOverrides } : { ...baseStyles, ...lightStyleOverrides };
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
+
+  // 👇 FIX: Don't render anything until client-side
+  if (!isClient) {
+    return (
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        fontFamily: "system-ui, sans-serif"
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{
+            width: "50px",
+            height: "50px",
+            border: "3px solid #e9ecef",
+            borderTop: "3px solid #28a745",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+            margin: "0 auto 20px"
+          }}></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -671,400 +1109,9 @@ export default function SignupPage() {
   );
 }
 
-// Base styles with comprehensive mobile responsiveness
-const baseStyles = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    position: "relative",
-    // Mobile: Stack vertically, Desktop: Side by side
-    flexDirection: window?.innerWidth < 768 ? "column" : "row",
-  },
-  themeToggle: {
-    position: "fixed",
-    top: "15px",
-    right: "15px",
-    zIndex: 1000,
-    background: "rgba(255, 255, 255, 0.2)",
-    border: "none",
-    borderRadius: "50%",
-    width: "45px",
-    height: "45px",
-    fontSize: "18px",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    backdropFilter: "blur(10px)",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-  },
-  leftSection: {
-    flex: 1,
-    position: "relative",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "300px"
-  },
-  imageContainer: {
-    width: "100%",
-    height: "100%",
-    backgroundImage: `
-      linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)),
-      url('https://t4.ftcdn.net/jpg/02/10/45/39/360_F_210453925_spHdLHUcDJS76oWKzFp4mQeCKW8WisER.jpg')
-    `,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  overlayContent: {
-    textAlign: "center",
-    color: "white",
-    padding: "40px",
-    maxWidth: "400px"
-  },
-  overlayTitle: {
-    fontSize: "clamp(24px, 4vw, 32px)",
-    fontWeight: "700",
-    marginBottom: "20px",
-    textShadow: "0 2px 4px rgba(0,0,0,0.3)"
-  },
-  overlayText: {
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    lineHeight: "1.6",
-    marginBottom: "40px",
-    opacity: 0.95,
-    fontWeight: "400"
-  },
-  features: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px"
-  },
-  feature: {
-    display: "flex",
-    alignItems: "center",
-    gap: "15px",
-    fontSize: "clamp(13px, 2vw, 15px)"
-  },
-  featureIcon: {
-    fontSize: "20px",
-    width: "35px",
-    height: "35px",
-    background: "rgba(255,255,255,0.2)",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backdropFilter: "blur(10px)"
-  },
-  featureText: {
-    fontWeight: "500"
-  },
+// 👇 FIX: Move style overrides outside component
+const lightStyleOverrides = {
   rightSection: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "20px",
-    overflow: "auto",
-    minHeight: "100vh",
-    width: "100%",
-    boxSizing: "border-box"
-  },
-  formContainer: {
-    width: "100%",
-    maxWidth: "420px",
-    padding: "20px",
-    boxSizing: "border-box",
-    margin: "0 auto"
-  },
-  progressContainer: {
-    marginBottom: "30px"
-  },
-  progressBar: {
-    width: "100%",
-    height: "4px",
-    backgroundColor: "#e9ecef",
-    borderRadius: "2px",
-    overflow: "hidden",
-    marginBottom: "8px"
-  },
-  progressFill: {
-    height: "100%",
-    background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-    transition: "width 0.3s ease",
-    borderRadius: "2px"
-  },
-  progressText: {
-    fontSize: "12px",
-    color: "#6c757d",
-    textAlign: "center",
-    margin: 0,
-    fontWeight: "500"
-  },
-  header: {
-    textAlign: "center",
-    marginBottom: "30px",
-    paddingTop: "20px"
-  },
-  stepContent: {
-    marginBottom: "30px"
-  },
-  profilePictureContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "15px"
-  },
-  profilePicture: {
-    width: "100px",
-    height: "100px",
-    borderRadius: "50%",
-    border: "3px solid #28a745",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f8f9fa",
-    overflow: "hidden"
-  },
-  profileImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    borderRadius: "50%"
-  },
-  profilePlaceholder: {
-    fontSize: "36px",
-    color: "#6c757d"
-  },
-  hiddenInput: {
-    display: "none"
-  },
-  profileLabel: {
-    color: "#28a745",
-    cursor: "pointer",
-    fontSize: "14px",
-    textDecoration: "none",
-    fontWeight: "500",
-    padding: "12px 24px",
-    border: "2px solid #28a745",
-    borderRadius: "8px",
-    backgroundColor: "transparent",
-    transition: "all 0.3s ease",
-    minHeight: "44px",
-    display: "flex",
-    alignItems: "center",
-    touchAction: "manipulation"
-  },
-  removeButton: {
-    color: "#dc3545",
-    cursor: "pointer",
-    fontSize: "12px",
-    fontWeight: "500",
-    padding: "8px 16px",
-    border: "1px solid #dc3545",
-    borderRadius: "6px",
-    backgroundColor: "transparent",
-    transition: "all 0.3s ease"
-  },
-  input: {
-    width: "100%",
-    padding: "14px 18px",
-    borderWidth: "2px",
-    borderStyle: "solid",
-    borderColor: "#e9ecef",
-    borderRadius: "10px",
-    fontSize: "16px", // Prevents zoom on iOS
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    transition: "border-color 0.3s ease",
-    outline: "none",
-    boxSizing: "border-box",
-    marginBottom: "16px",
-    // Mobile optimizations
-    WebkitAppearance: "none",
-    touchAction: "manipulation",
-    minHeight: "50px"
-  },
-  passwordContainer: {
-    position: "relative",
-    marginBottom: "16px"
-  },
-  passwordToggle: {
-    position: "absolute",
-    right: "15px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "18px",
-    padding: "8px",
-    minWidth: "40px",
-    minHeight: "40px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "5px",
-    touchAction: "manipulation"
-  },
-  passwordStrength: {
-    marginTop: "-12px",
-    marginBottom: "16px"
-  },
-  strengthBarContainer: {
-    width: "100%",
-    height: "4px",
-    backgroundColor: "#e9ecef",
-    borderRadius: "2px",
-    overflow: "hidden",
-    marginBottom: "6px"
-  },
-  strengthBar: {
-    height: "100%",
-    borderRadius: "2px",
-    transition: "all 0.3s ease"
-  },
-  strengthText: {
-    fontSize: "12px",
-    fontWeight: "500"
-  },
-  checkboxContainer: {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "12px",
-    padding: "20px",
-    border: "2px solid #e9ecef",
-    borderRadius: "12px",
-    backgroundColor: "#f8f9fa"
-  },
-  checkbox: {
-    marginTop: "3px",
-    flexShrink: 0,
-    width: "18px",
-    height: "18px",
-    minWidth: "18px",
-    minHeight: "18px"
-  },
-  checkboxLabel: {
-    fontSize: "14px",
-    lineHeight: "1.5",
-    fontWeight: "400"
-  },
-  link: {
-    color: "#28a745",
-    textDecoration: "none",
-    fontWeight: "500",
-    padding: "2px",
-    borderRadius: "3px"
-  },
-  buttonContainer: {
-    display: "flex",
-    gap: "12px",
-    marginBottom: "20px",
-    flexDirection: "row"
-  },
-  backButton: {
-    flex: 1,
-    background: "transparent",
-    color: "#6c757d",
-    border: "2px solid #e9ecef",
-    padding: "16px",
-    borderRadius: "10px",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    minHeight: "50px",
-    touchAction: "manipulation",
-    WebkitAppearance: "none"
-  },
-  nextButton: {
-    flex: 2,
-    background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-    color: "white",
-    border: "none",
-    padding: "16px",
-    borderRadius: "10px",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "transform 0.2s ease",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    minHeight: "50px",
-    touchAction: "manipulation",
-    WebkitAppearance: "none"
-  },
-  submitButton: {
-    flex: 2,
-    background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-    color: "white",
-    border: "none",
-    padding: "16px",
-    borderRadius: "10px",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "transform 0.2s ease",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    minHeight: "50px",
-    touchAction: "manipulation",
-    WebkitAppearance: "none"
-  },
-  loadingContent: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "10px"
-  },
-  spinner: {
-    width: "16px",
-    height: "16px",
-    border: "2px solid transparent",
-    borderTop: "2px solid white",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite"
-  },
-  errorContainer: {
-    marginBottom: "20px"
-  },
-  error: {
-    fontSize: "14px",
-    textAlign: "left",
-    margin: "0",
-    fontWeight: "500",
-    padding: "12px 16px",
-    borderRadius: "8px",
-    backgroundColor: "#ffe6e6",
-    color: "#dc3545",
-    border: "1px solid #f5c6cb",
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "8px",
-    lineHeight: "1.4",
-    wordBreak: "break-word"
-  },
-  errorIcon: {
-    fontSize: "16px",
-    marginTop: "1px",
-    flexShrink: 0
-  },
-  loginLink: {
-    textAlign: "center",
-    fontSize: "14px",
-    margin: "0",
-    fontWeight: "400",
-    lineHeight: "1.5"
-  }
-};
-
-// Light mode styles
-const lightStyles = {
-  ...baseStyles,
-  rightSection: {
-    ...baseStyles.rightSection,
     backgroundColor: "white",
   },
   title: {
@@ -1080,40 +1127,31 @@ const lightStyles = {
     fontWeight: "400"
   },
   input: {
-    ...baseStyles.input,
     backgroundColor: "white",
     color: "#333"
   },
   checkboxContainer: {
-    ...baseStyles.checkboxContainer,
     backgroundColor: "#f8f9fa",
     borderColor: "#e9ecef"
   },
   checkboxLabel: {
-    ...baseStyles.checkboxLabel,
     color: "#6c757d"
   },
   backButton: {
-    ...baseStyles.backButton,
     backgroundColor: "white",
     color: "#6c757d",
     borderColor: "#e9ecef"
   },
   passwordToggle: {
-    ...baseStyles.passwordToggle,
     color: "#6c757d"
   },
   loginLink: {
-    ...baseStyles.loginLink,
     color: "#6c757d"
   }
 };
 
-// Dark mode styles
-const darkStyles = {
-  ...baseStyles,
+const darkStyleOverrides = {
   rightSection: {
-    ...baseStyles.rightSection,
     backgroundColor: "#1a1a1a",
   },
   title: {
@@ -1129,48 +1167,40 @@ const darkStyles = {
     fontWeight: "400"
   },
   progressText: {
-    ...baseStyles.progressText,
     color: "#b0b0b0"
   },
   input: {
-    ...baseStyles.input,
     backgroundColor: "#2d2d2d",
     color: "#ffffff",
     borderColor: "#404040"
   },
   checkboxContainer: {
-    ...baseStyles.checkboxContainer,
     backgroundColor: "#2d2d2d",
     borderColor: "#404040"
   },
   checkboxLabel: {
-    ...baseStyles.checkboxLabel,
     color: "#b0b0b0"
   },
   backButton: {
-    ...baseStyles.backButton,
     backgroundColor: "#2d2d2d",
     color: "#b0b0b0",
     borderColor: "#404040"
   },
   error: {
-    ...baseStyles.error,
     color: "#ff6b6b",
     backgroundColor: "#2d1a1a",
     borderColor: "#5a2a2a"
   },
   passwordToggle: {
-    ...baseStyles.passwordToggle,
     color: "#b0b0b0"
   },
   loginLink: {
-    ...baseStyles.loginLink,
     color: "#b0b0b0"
   }
 };
 
-// Add CSS for animations and mobile-specific styles
-if (typeof document !== 'undefined') {
+// 👇 FIX: Only add styles when in browser
+if (typeof window !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
     @keyframes spin {
@@ -1182,17 +1212,6 @@ if (typeof document !== 'undefined') {
     @media (max-width: 768px) {
       body {
         overflow-x: hidden;
-      }
-      
-      /* Hide image section on mobile */
-      .left-section {
-        display: none !important;
-      }
-      
-      /* Full width form on mobile */
-      .right-section {
-        flex: 1 !important;
-        width: 100% !important;
       }
       
       /* Prevent zoom on input focus for iOS */
@@ -1208,35 +1227,6 @@ if (typeof document !== 'undefined') {
         .button-container {
           flex-direction: column !important;
         }
-        
-        .back-button,
-        .next-button,
-        .submit-button {
-          flex: 1 !important;
-        }
-      }
-    }
-    
-    /* Very small screens */
-    @media (max-width: 320px) {
-      .form-container {
-        padding: 15px !important;
-      }
-      
-      .profile-picture {
-        width: 80px !important;
-        height: 80px !important;
-      }
-    }
-    
-    /* Landscape phone orientation */
-    @media (max-width: 768px) and (orientation: landscape) {
-      .form-container {
-        padding: 10px;
-      }
-      
-      .header {
-        margin-bottom: 20px;
       }
     }
     
@@ -1254,30 +1244,11 @@ if (typeof document !== 'undefined') {
         transform: translateY(-1px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       }
-      
-      .profile-label:hover {
-        background-color: #28a745;
-        color: white;
-      }
-      
-      .link:hover {
-        text-decoration: underline;
-      }
     }
     
     /* Touch feedback */
     button:active {
       transform: scale(0.98);
-    }
-    
-    /* Safe area insets for iOS devices with notches */
-    @supports (padding: max(0px)) {
-      .container {
-        padding-left: max(20px, env(safe-area-inset-left));
-        padding-right: max(20px, env(safe-area-inset-right));
-        padding-top: max(20px, env(safe-area-inset-top));
-        padding-bottom: max(20px, env(safe-area-inset-bottom));
-      }
     }
   `;
   document.head.appendChild(style);
