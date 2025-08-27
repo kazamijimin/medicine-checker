@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { auth, db } from "@/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
@@ -59,6 +59,9 @@ export default function SignupPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({
     score: 0,
     feedback: "",
@@ -66,6 +69,18 @@ export default function SignupPage() {
   });
   
   const router = useRouter();
+
+  // Check if mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Define steps
   const steps = [
@@ -100,10 +115,23 @@ export default function SignupPage() {
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMessage("Profile picture must be less than 5MB");
+        return;
+      }
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrorMessage("Please select a valid image file");
+        return;
+      }
+      
       setFormData(prev => ({
         ...prev,
         profilePicture: file
       }));
+      setErrorMessage("");
     }
   };
 
@@ -132,6 +160,10 @@ export default function SignupPage() {
           setErrorMessage("First name is required");
           return false;
         }
+        if (formData.firstName.trim().length < 2) {
+          setErrorMessage("First name must be at least 2 characters");
+          return false;
+        }
         return true;
 
       case 'middleName':
@@ -140,6 +172,10 @@ export default function SignupPage() {
       case 'lastName':
         if (!formData.lastName.trim()) {
           setErrorMessage("Last name is required");
+          return false;
+        }
+        if (formData.lastName.trim().length < 2) {
+          setErrorMessage("Last name must be at least 2 characters");
           return false;
         }
         return true;
@@ -269,9 +305,31 @@ export default function SignupPage() {
       router.push("/login");
     } catch (error) {
       console.error("Signup error:", error);
-      setErrorMessage(error.message);
+      
+      // User-friendly error messages
+      if (error.code === 'auth/email-already-in-use') {
+        setErrorMessage("An account with this email already exists. Please use a different email or sign in.");
+      } else if (error.code === 'auth/weak-password') {
+        setErrorMessage("Password is too weak. Please choose a stronger password.");
+      } else if (error.code === 'auth/invalid-email') {
+        setErrorMessage("Please enter a valid email address.");
+      } else {
+        setErrorMessage(error.message || "An error occurred during signup. Please try again.");
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle Enter key press
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (currentStep === steps.length - 1) {
+        performSignup();
+      } else {
+        nextStep();
+      }
     }
   };
 
@@ -290,8 +348,8 @@ export default function SignupPage() {
                   <Image 
                     src={URL.createObjectURL(formData.profilePicture)} 
                     alt="Profile" 
-                    width={56}
-                    height={56}
+                    width={80}
+                    height={80}
                     style={currentStyles.profileImage}
                   />
                 ) : (
@@ -306,8 +364,17 @@ export default function SignupPage() {
                 style={currentStyles.hiddenInput}
               />
               <label htmlFor="profilePic" style={currentStyles.profileLabel}>
-                Choose Profile Picture
+                {formData.profilePicture ? "Change Picture" : "Choose Profile Picture"}
               </label>
+              {formData.profilePicture && (
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, profilePicture: null }))}
+                  style={currentStyles.removeButton}
+                >
+                  Remove Picture
+                </button>
+              )}
             </div>
           </div>
         );
@@ -320,8 +387,10 @@ export default function SignupPage() {
               placeholder="Enter your first name"
               value={formData.firstName}
               onChange={(e) => handleInputChange("firstName", e.target.value)}
+              onKeyPress={handleKeyPress}
               style={currentStyles.input}
               autoFocus
+              maxLength={50}
             />
           </div>
         );
@@ -334,8 +403,10 @@ export default function SignupPage() {
               placeholder="Enter your middle name (optional)"
               value={formData.middleName}
               onChange={(e) => handleInputChange("middleName", e.target.value)}
+              onKeyPress={handleKeyPress}
               style={currentStyles.input}
               autoFocus
+              maxLength={50}
             />
           </div>
         );
@@ -348,8 +419,10 @@ export default function SignupPage() {
               placeholder="Enter your last name"
               value={formData.lastName}
               onChange={(e) => handleInputChange("lastName", e.target.value)}
+              onKeyPress={handleKeyPress}
               style={currentStyles.input}
               autoFocus
+              maxLength={50}
             />
           </div>
         );
@@ -361,9 +434,11 @@ export default function SignupPage() {
               type="email"
               placeholder="Enter your email address"
               value={formData.email}
-              onChange={(e) => handleInputChange("email", e.target.value)}
+              onChange={(e) => handleInputChange("email", e.target.value.toLowerCase())}
+              onKeyPress={handleKeyPress}
               style={currentStyles.input}
               autoFocus
+              autoComplete="email"
             />
           </div>
         );
@@ -374,6 +449,7 @@ export default function SignupPage() {
             <select
               value={formData.gender}
               onChange={(e) => handleInputChange("gender", e.target.value)}
+              onKeyPress={handleKeyPress}
               style={currentStyles.input}
               autoFocus
             >
@@ -391,20 +467,30 @@ export default function SignupPage() {
           <div style={currentStyles.stepContent}>
             <div style={currentStyles.passwordContainer}>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 style={currentStyles.input}
                 autoFocus
+                autoComplete="new-password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={currentStyles.passwordToggle}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
               {formData.password && (
                 <div style={currentStyles.passwordStrength}>
-                  <div style={{
-                    ...currentStyles.strengthBar,
-                    width: `${(passwordStrength.score / 5) * 100}%`,
-                    backgroundColor: passwordStrength.color
-                  }}></div>
+                  <div style={currentStyles.strengthBarContainer}>
+                    <div style={{
+                      ...currentStyles.strengthBar,
+                      width: `${(passwordStrength.score / 5) * 100}%`,
+                      backgroundColor: passwordStrength.color
+                    }}></div>
+                  </div>
                   <span style={{...currentStyles.strengthText, color: passwordStrength.color}}>
                     {passwordStrength.feedback}
                   </span>
@@ -413,12 +499,21 @@ export default function SignupPage() {
             </div>
             <div style={currentStyles.passwordContainer}>
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                onKeyPress={handleKeyPress}
                 style={currentStyles.input}
+                autoComplete="new-password"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={currentStyles.passwordToggle}
+              >
+                {showConfirmPassword ? '🙈' : '👁️'}
+              </button>
             </div>
           </div>
         );
@@ -435,7 +530,7 @@ export default function SignupPage() {
                 style={currentStyles.checkbox}
               />
               <label htmlFor="terms" style={currentStyles.checkboxLabel}>
-                I agree to the <a href="/terms" style={currentStyles.link}>Terms & Conditions</a> and <a href="/privacy" style={currentStyles.link}>Privacy Policy</a>
+                I agree to the <a href="/terms" style={currentStyles.link} target="_blank">Terms & Conditions</a> and <a href="/privacy" style={currentStyles.link} target="_blank">Privacy Policy</a>
               </label>
             </div>
           </div>
@@ -452,9 +547,6 @@ export default function SignupPage() {
 
   return (
     <>
-      {/* Import Poppins Font */}
-
-      
       <div style={currentStyles.container}>
         {/* Dark/Light Mode Toggle */}
         <button 
@@ -464,31 +556,33 @@ export default function SignupPage() {
           {isDarkMode ? '☀️' : '🌙'}
         </button>
 
-        {/* Left Side - Image Section */}
-        <div style={currentStyles.leftSection}>
-          <div style={currentStyles.imageContainer}>
-            <div style={currentStyles.overlayContent}>
-              <h2 style={currentStyles.overlayTitle}>Welcome to MediChecker</h2>
-              <p style={currentStyles.overlayText}>
-                Your trusted healthcare companion for medicine verification and health management.
-              </p>
-              <div style={currentStyles.features}>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>💊</span>
-                  <span style={currentStyles.featureText}>Verify Medicines</span>
-                </div>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>🏥</span>
-                  <span style={currentStyles.featureText}>Health Tracking</span>
-                </div>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>🔒</span>
-                  <span style={currentStyles.featureText}>Secure & Private</span>
+        {/* Left Side - Image Section (Hidden on mobile) */}
+        {!isMobile && (
+          <div style={currentStyles.leftSection}>
+            <div style={currentStyles.imageContainer}>
+              <div style={currentStyles.overlayContent}>
+                <h2 style={currentStyles.overlayTitle}>Welcome to MediChecker</h2>
+                <p style={currentStyles.overlayText}>
+                  Your trusted healthcare companion for medicine verification and health management.
+                </p>
+                <div style={currentStyles.features}>
+                  <div style={currentStyles.feature}>
+                    <span style={currentStyles.featureIcon}>💊</span>
+                    <span style={currentStyles.featureText}>Verify Medicines</span>
+                  </div>
+                  <div style={currentStyles.feature}>
+                    <span style={currentStyles.featureIcon}>🏥</span>
+                    <span style={currentStyles.featureText}>Health Tracking</span>
+                  </div>
+                  <div style={currentStyles.feature}>
+                    <span style={currentStyles.featureIcon}>🔒</span>
+                    <span style={currentStyles.featureText}>Secure & Private</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Right Side - Form Section */}
         <div style={currentStyles.rightSection}>
@@ -517,7 +611,12 @@ export default function SignupPage() {
 
             {/* Error Message */}
             {errorMessage && (
-              <p style={currentStyles.error}>{errorMessage}</p>
+              <div style={currentStyles.errorContainer}>
+                <p style={currentStyles.error}>
+                  <span style={currentStyles.errorIcon}>⚠️</span>
+                  {errorMessage}
+                </p>
+              </div>
             )}
 
             {/* Navigation Buttons */}
@@ -535,13 +634,21 @@ export default function SignupPage() {
               {isLastStep ? (
                 <button 
                   onClick={performSignup}
-                  disabled={isLoading}
+                  disabled={isLoading || !termsAccepted}
                   style={{
                     ...currentStyles.submitButton,
-                    opacity: isLoading ? 0.6 : 1
+                    opacity: (isLoading || !termsAccepted) ? 0.6 : 1,
+                    cursor: (isLoading || !termsAccepted) ? "not-allowed" : "pointer"
                   }}
                 >
-                  {isLoading ? "Creating Account..." : "Create Account"}
+                  {isLoading ? (
+                    <span style={currentStyles.loadingContent}>
+                      <span style={currentStyles.spinner}></span>
+                      Creating Account...
+                    </span>
+                  ) : (
+                    "Create Account"
+                  )}
                 </button>
               ) : (
                 <button 
@@ -564,28 +671,31 @@ export default function SignupPage() {
   );
 }
 
-// Base styles with responsive design
+// Base styles with comprehensive mobile responsiveness
 const baseStyles = {
   container: {
     minHeight: "100vh",
     display: "flex",
-    fontFamily: "'Poppins', sans-serif",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     position: "relative",
+    // Mobile: Stack vertically, Desktop: Side by side
+    flexDirection: window?.innerWidth < 768 ? "column" : "row",
   },
   themeToggle: {
-    position: "absolute",
-    top: "20px",
-    right: "20px",
+    position: "fixed",
+    top: "15px",
+    right: "15px",
     zIndex: 1000,
     background: "rgba(255, 255, 255, 0.2)",
     border: "none",
     borderRadius: "50%",
-    width: "50px",
-    height: "50px",
-    fontSize: "20px",
+    width: "45px",
+    height: "45px",
+    fontSize: "18px",
     cursor: "pointer",
     transition: "all 0.3s ease",
-    backdropFilter: "blur(10px)"
+    backdropFilter: "blur(10px)",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
   },
   leftSection: {
     flex: 1,
@@ -615,7 +725,7 @@ const baseStyles = {
     maxWidth: "400px"
   },
   overlayTitle: {
-    fontSize: "clamp(28px, 5vw, 42px)",
+    fontSize: "clamp(24px, 4vw, 32px)",
     fontWeight: "700",
     marginBottom: "20px",
     textShadow: "0 2px 4px rgba(0,0,0,0.3)"
@@ -639,9 +749,9 @@ const baseStyles = {
     fontSize: "clamp(13px, 2vw, 15px)"
   },
   featureIcon: {
-    fontSize: "22px",
-    width: "40px",
-    height: "40px",
+    fontSize: "20px",
+    width: "35px",
+    height: "35px",
     background: "rgba(255,255,255,0.2)",
     borderRadius: "50%",
     display: "flex",
@@ -659,13 +769,16 @@ const baseStyles = {
     justifyContent: "center",
     padding: "20px",
     overflow: "auto",
-    minHeight: "100vh"
+    minHeight: "100vh",
+    width: "100%",
+    boxSizing: "border-box"
   },
   formContainer: {
     width: "100%",
-    maxWidth: "450px",
+    maxWidth: "420px",
     padding: "20px",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    margin: "0 auto"
   },
   progressContainer: {
     marginBottom: "30px"
@@ -693,7 +806,8 @@ const baseStyles = {
   },
   header: {
     textAlign: "center",
-    marginBottom: "30px"
+    marginBottom: "30px",
+    paddingTop: "20px"
   },
   stepContent: {
     marginBottom: "30px"
@@ -718,7 +832,8 @@ const baseStyles = {
   profileImage: {
     width: "100%",
     height: "100%",
-    objectFit: "cover"
+    objectFit: "cover",
+    borderRadius: "50%"
   },
   profilePlaceholder: {
     fontSize: "36px",
@@ -731,40 +846,85 @@ const baseStyles = {
     color: "#28a745",
     cursor: "pointer",
     fontSize: "14px",
-    textDecoration: "underline",
+    textDecoration: "none",
     fontWeight: "500",
-    padding: "8px 16px",
+    padding: "12px 24px",
     border: "2px solid #28a745",
     borderRadius: "8px",
+    backgroundColor: "transparent",
+    transition: "all 0.3s ease",
+    minHeight: "44px",
+    display: "flex",
+    alignItems: "center",
+    touchAction: "manipulation"
+  },
+  removeButton: {
+    color: "#dc3545",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: "500",
+    padding: "8px 16px",
+    border: "1px solid #dc3545",
+    borderRadius: "6px",
     backgroundColor: "transparent",
     transition: "all 0.3s ease"
   },
   input: {
     width: "100%",
-    padding: "16px 20px",
-    border: "2px solid #e9ecef",
-    borderRadius: "12px",
-    fontSize: "16px",
-    fontFamily: "'Poppins', sans-serif",
+    padding: "14px 18px",
+    borderWidth: "2px",
+    borderStyle: "solid",
+    borderColor: "#e9ecef",
+    borderRadius: "10px",
+    fontSize: "16px", // Prevents zoom on iOS
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     transition: "border-color 0.3s ease",
     outline: "none",
     boxSizing: "border-box",
-    marginBottom: "16px"
+    marginBottom: "16px",
+    // Mobile optimizations
+    WebkitAppearance: "none",
+    touchAction: "manipulation",
+    minHeight: "50px"
   },
   passwordContainer: {
     position: "relative",
     marginBottom: "16px"
   },
+  passwordToggle: {
+    position: "absolute",
+    right: "15px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "18px",
+    padding: "8px",
+    minWidth: "40px",
+    minHeight: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "5px",
+    touchAction: "manipulation"
+  },
   passwordStrength: {
-    marginTop: "8px",
+    marginTop: "-12px",
     marginBottom: "16px"
   },
-  strengthBar: {
+  strengthBarContainer: {
+    width: "100%",
     height: "4px",
+    backgroundColor: "#e9ecef",
     borderRadius: "2px",
-    transition: "all 0.3s ease",
-    marginBottom: "6px",
-    backgroundColor: "#e9ecef"
+    overflow: "hidden",
+    marginBottom: "6px"
+  },
+  strengthBar: {
+    height: "100%",
+    borderRadius: "2px",
+    transition: "all 0.3s ease"
   },
   strengthText: {
     fontSize: "12px",
@@ -782,8 +942,10 @@ const baseStyles = {
   checkbox: {
     marginTop: "3px",
     flexShrink: 0,
-    width: "16px",
-    height: "16px"
+    width: "18px",
+    height: "18px",
+    minWidth: "18px",
+    minHeight: "18px"
   },
   checkboxLabel: {
     fontSize: "14px",
@@ -793,12 +955,15 @@ const baseStyles = {
   link: {
     color: "#28a745",
     textDecoration: "none",
-    fontWeight: "500"
+    fontWeight: "500",
+    padding: "2px",
+    borderRadius: "3px"
   },
   buttonContainer: {
     display: "flex",
-    gap: "16px",
-    marginBottom: "20px"
+    gap: "12px",
+    marginBottom: "20px",
+    flexDirection: "row"
   },
   backButton: {
     flex: 1,
@@ -806,12 +971,15 @@ const baseStyles = {
     color: "#6c757d",
     border: "2px solid #e9ecef",
     padding: "16px",
-    borderRadius: "12px",
+    borderRadius: "10px",
     fontSize: "16px",
     fontWeight: "600",
     cursor: "pointer",
     transition: "all 0.3s ease",
-    fontFamily: "'Poppins', sans-serif"
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    minHeight: "50px",
+    touchAction: "manipulation",
+    WebkitAppearance: "none"
   },
   nextButton: {
     flex: 2,
@@ -819,12 +987,15 @@ const baseStyles = {
     color: "white",
     border: "none",
     padding: "16px",
-    borderRadius: "12px",
+    borderRadius: "10px",
     fontSize: "16px",
     fontWeight: "600",
     cursor: "pointer",
     transition: "transform 0.2s ease",
-    fontFamily: "'Poppins', sans-serif"
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    minHeight: "50px",
+    touchAction: "manipulation",
+    WebkitAppearance: "none"
   },
   submitButton: {
     flex: 2,
@@ -832,27 +1003,60 @@ const baseStyles = {
     color: "white",
     border: "none",
     padding: "16px",
-    borderRadius: "12px",
+    borderRadius: "10px",
     fontSize: "16px",
     fontWeight: "600",
     cursor: "pointer",
     transition: "transform 0.2s ease",
-    fontFamily: "'Poppins', sans-serif"
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    minHeight: "50px",
+    touchAction: "manipulation",
+    WebkitAppearance: "none"
+  },
+  loadingContent: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px"
+  },
+  spinner: {
+    width: "16px",
+    height: "16px",
+    border: "2px solid transparent",
+    borderTop: "2px solid white",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite"
+  },
+  errorContainer: {
+    marginBottom: "20px"
   },
   error: {
     fontSize: "14px",
-    textAlign: "center",
-    margin: "0 0 20px 0",
+    textAlign: "left",
+    margin: "0",
     fontWeight: "500",
-    padding: "12px",
+    padding: "12px 16px",
     borderRadius: "8px",
-    backgroundColor: "#ffe6e6"
+    backgroundColor: "#ffe6e6",
+    color: "#dc3545",
+    border: "1px solid #f5c6cb",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "8px",
+    lineHeight: "1.4",
+    wordBreak: "break-word"
+  },
+  errorIcon: {
+    fontSize: "16px",
+    marginTop: "1px",
+    flexShrink: 0
   },
   loginLink: {
     textAlign: "center",
     fontSize: "14px",
     margin: "0",
-    fontWeight: "400"
+    fontWeight: "400",
+    lineHeight: "1.5"
   }
 };
 
@@ -865,13 +1069,13 @@ const lightStyles = {
   },
   title: {
     color: "#2c5530",
-    fontSize: "clamp(24px, 4vw, 32px)",
+    fontSize: "clamp(24px, 6vw, 32px)",
     fontWeight: "700",
     margin: "0 0 8px 0"
   },
   subtitle: {
     color: "#6c757d",
-    fontSize: "clamp(14px, 2vw, 16px)",
+    fontSize: "clamp(14px, 3vw, 16px)",
     margin: 0,
     fontWeight: "400"
   },
@@ -895,16 +1099,9 @@ const lightStyles = {
     color: "#6c757d",
     borderColor: "#e9ecef"
   },
-  nextButton: {
-    ...baseStyles.nextButton
-  },
-  submitButton: {
-    ...baseStyles.submitButton
-  },
-  error: {
-    ...baseStyles.error,
-    color: "#dc3545",
-    backgroundColor: "#ffe6e6"
+  passwordToggle: {
+    ...baseStyles.passwordToggle,
+    color: "#6c757d"
   },
   loginLink: {
     ...baseStyles.loginLink,
@@ -921,13 +1118,13 @@ const darkStyles = {
   },
   title: {
     color: "#ffffff",
-    fontSize: "clamp(24px, 4vw, 32px)",
+    fontSize: "clamp(24px, 6vw, 32px)",
     fontWeight: "700",
     margin: "0 0 8px 0"
   },
   subtitle: {
     color: "#b0b0b0",
-    fontSize: "clamp(14px, 2vw, 16px)",
+    fontSize: "clamp(14px, 3vw, 16px)",
     margin: 0,
     fontWeight: "400"
   },
@@ -939,7 +1136,7 @@ const darkStyles = {
     ...baseStyles.input,
     backgroundColor: "#2d2d2d",
     color: "#ffffff",
-    border: "2px solid #404040"
+    borderColor: "#404040"
   },
   checkboxContainer: {
     ...baseStyles.checkboxContainer,
@@ -956,19 +1153,132 @@ const darkStyles = {
     color: "#b0b0b0",
     borderColor: "#404040"
   },
-  nextButton: {
-    ...baseStyles.nextButton
-  },
-  submitButton: {
-    ...baseStyles.submitButton
-  },
   error: {
     ...baseStyles.error,
     color: "#ff6b6b",
-    backgroundColor: "#2d1a1a"
+    backgroundColor: "#2d1a1a",
+    borderColor: "#5a2a2a"
+  },
+  passwordToggle: {
+    ...baseStyles.passwordToggle,
+    color: "#b0b0b0"
   },
   loginLink: {
     ...baseStyles.loginLink,
     color: "#b0b0b0"
   }
 };
+
+// Add CSS for animations and mobile-specific styles
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Mobile-specific improvements */
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden;
+      }
+      
+      /* Hide image section on mobile */
+      .left-section {
+        display: none !important;
+      }
+      
+      /* Full width form on mobile */
+      .right-section {
+        flex: 1 !important;
+        width: 100% !important;
+      }
+      
+      /* Prevent zoom on input focus for iOS */
+      input[type="email"],
+      input[type="password"],
+      input[type="text"],
+      select {
+        font-size: 16px !important;
+      }
+      
+      /* Stack buttons vertically on very small screens */
+      @media (max-width: 480px) {
+        .button-container {
+          flex-direction: column !important;
+        }
+        
+        .back-button,
+        .next-button,
+        .submit-button {
+          flex: 1 !important;
+        }
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 320px) {
+      .form-container {
+        padding: 15px !important;
+      }
+      
+      .profile-picture {
+        width: 80px !important;
+        height: 80px !important;
+      }
+    }
+    
+    /* Landscape phone orientation */
+    @media (max-width: 768px) and (orientation: landscape) {
+      .form-container {
+        padding: 10px;
+      }
+      
+      .header {
+        margin-bottom: 20px;
+      }
+    }
+    
+    /* Focus states for accessibility */
+    input:focus,
+    button:focus,
+    select:focus {
+      outline: 2px solid #28a745;
+      outline-offset: 2px;
+    }
+    
+    /* Hover states (only on devices that support hover) */
+    @media (hover: hover) {
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+      
+      .profile-label:hover {
+        background-color: #28a745;
+        color: white;
+      }
+      
+      .link:hover {
+        text-decoration: underline;
+      }
+    }
+    
+    /* Touch feedback */
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    /* Safe area insets for iOS devices with notches */
+    @supports (padding: max(0px)) {
+      .container {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}

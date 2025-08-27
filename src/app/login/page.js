@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { auth } from "@/firebase";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -21,8 +21,21 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   const router = useRouter();
+
+  // Check if mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Function to upload profile picture to Supabase
   const uploadProfilePicture = async (photoURL, userId) => {
@@ -290,8 +303,6 @@ export default function LoginPage() {
 
   return (
     <>
-
-      
       <div style={currentStyles.container}>
         {/* Dark/Light Mode Toggle */}
         <button 
@@ -336,7 +347,8 @@ export default function LoginPage() {
                     onChange={handlePasswordChange}
                     style={{
                       ...currentStyles.input,
-                      borderColor: error && !password ? "#dc3545" : currentStyles.input.borderColor
+                      borderColor: error && !password ? "#dc3545" : currentStyles.input.borderColor,
+                      paddingRight: "50px"
                     }}
                     required
                   />
@@ -404,6 +416,7 @@ export default function LoginPage() {
                 type="button"
                 style={{
                   ...currentStyles.socialButton,
+                  ...currentStyles.googleButton,
                   opacity: (isLoading || isGoogleLoading) ? 0.6 : 1,
                   cursor: (isLoading || isGoogleLoading) ? "not-allowed" : "pointer"
                 }}
@@ -413,79 +426,92 @@ export default function LoginPage() {
                 {isGoogleLoading ? (
                   <>
                     <span style={currentStyles.spinner}></span>
-                    Signing in...
+                    <span style={currentStyles.socialButtonText}>Signing in...</span>
                   </>
                 ) : (
                   <>
                     <span style={currentStyles.socialIcon}>🔵</span>
-                    Google
+                    <span style={currentStyles.socialButtonText}>Google</span>
                   </>
                 )}
               </button>
               <button 
                 type="button"
-                style={currentStyles.socialButton}
+                style={{...currentStyles.socialButton, ...currentStyles.facebookButton}}
                 onClick={() => setError("Facebook login is not available yet.")}
               >
                 <span style={currentStyles.socialIcon}>📘</span>
-                Facebook
+                <span style={currentStyles.socialButtonText}>Facebook</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Right Side - Image Section */}
-        <div style={currentStyles.rightSection}>
-          <div style={currentStyles.imageContainer}>
-            <div style={currentStyles.overlayContent}>
-              <h2 style={currentStyles.overlayTitle}>Welcome Back to MediChecker</h2>
-              <p style={currentStyles.overlayText}>
-                Continue your healthcare journey with our trusted medicine verification and health management platform.
-              </p>
-              <div style={currentStyles.features}>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>💊</span>
-                  <span style={currentStyles.featureText}>Verify Medicines</span>
-                </div>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>📊</span>
-                  <span style={currentStyles.featureText}>Track Health Data</span>
-                </div>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>🔒</span>
-                  <span style={currentStyles.featureText}>Secure & Private</span>
+        {/* Right Side - Image Section (Hidden on mobile) */}
+        {!isMobile && (
+          <div style={currentStyles.rightSection}>
+            <div style={currentStyles.imageContainer}>
+              <div style={currentStyles.overlayContent}>
+                <h2 style={currentStyles.overlayTitle}>Welcome Back to MediChecker</h2>
+                <p style={currentStyles.overlayText}>
+                  Continue your healthcare journey with our trusted medicine verification and health management platform.
+                </p>
+                <div style={currentStyles.features}>
+                  <div style={currentStyles.feature}>
+                    <span style={currentStyles.featureIcon}>💊</span>
+                    <span style={currentStyles.featureText}>Verify Medicines</span>
+                  </div>
+                  <div style={currentStyles.feature}>
+                    <span style={currentStyles.featureIcon}>📊</span>
+                    <span style={currentStyles.featureText}>Track Health Data</span>
+                  </div>
+                  <div style={currentStyles.feature}>
+                    <span style={currentStyles.featureIcon}>🔒</span>
+                    <span style={currentStyles.featureText}>Secure & Private</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
 }
 
-// Base styles with responsive design
+// Base styles with comprehensive mobile responsiveness
 const baseStyles = {
   container: {
     minHeight: "100vh",
     display: "flex",
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     position: "relative",
+    // Mobile: Stack vertically, Desktop: Side by side
+    flexDirection: window?.innerWidth < 768 ? "column" : "row",
   },
   themeToggle: {
-    position: "absolute",
-    top: "20px",
-    right: "20px",
+    position: "fixed",
+    top: "15px",
+    right: "15px",
     zIndex: 1000,
     background: "rgba(255, 255, 255, 0.2)",
     border: "none",
     borderRadius: "50%",
-    width: "50px",
-    height: "50px",
-    fontSize: "20px",
+    width: "45px",
+    height: "45px",
+    fontSize: "18px",
     cursor: "pointer",
     transition: "all 0.3s ease",
-    backdropFilter: "blur(10px)"
+    backdropFilter: "blur(10px)",
+    // Mobile adjustments
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    '@media (max-width: 768px)': {
+      width: "40px",
+      height: "40px",
+      fontSize: "16px",
+      top: "10px",
+      right: "10px"
+    }
   },
   leftSection: {
     flex: 1,
@@ -494,7 +520,10 @@ const baseStyles = {
     justifyContent: "center",
     padding: "20px",
     overflow: "auto",
-    minHeight: "100vh"
+    minHeight: "100vh",
+    // Mobile specific adjustments
+    width: "100%",
+    boxSizing: "border-box"
   },
   rightSection: {
     flex: 1,
@@ -502,7 +531,11 @@ const baseStyles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "300px"
+    minHeight: "300px",
+    // Hide on mobile
+    '@media (max-width: 768px)': {
+      display: "none"
+    }
   },
   imageContainer: {
     width: "100%",
@@ -524,7 +557,7 @@ const baseStyles = {
     maxWidth: "400px"
   },
   overlayTitle: {
-    fontSize: "clamp(28px, 5vw, 42px)",
+    fontSize: "clamp(24px, 4vw, 32px)",
     fontWeight: "700",
     marginBottom: "20px",
     textShadow: "0 2px 4px rgba(0,0,0,0.3)"
@@ -548,9 +581,9 @@ const baseStyles = {
     fontSize: "clamp(13px, 2vw, 15px)"
   },
   featureIcon: {
-    fontSize: "22px",
-    width: "40px",
-    height: "40px",
+    fontSize: "20px",
+    width: "35px",
+    height: "35px",
     background: "rgba(255,255,255,0.2)",
     borderRadius: "50%",
     display: "flex",
@@ -563,32 +596,41 @@ const baseStyles = {
   },
   formContainer: {
     width: "100%",
-    maxWidth: "450px",
+    maxWidth: "420px",
     padding: "20px",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    // Mobile adjustments
+    margin: "0 auto"
   },
   header: {
     textAlign: "center",
-    marginBottom: "40px"
+    marginBottom: "30px",
+    // Mobile padding adjustment
+    paddingTop: "20px"
   },
   form: {
-    marginBottom: "30px"
+    marginBottom: "25px"
   },
   inputContainer: {
-    marginBottom: "20px"
+    marginBottom: "18px"
   },
   input: {
     width: "100%",
-    padding: "16px 20px",
+    padding: "14px 18px",
     borderWidth: "2px",
     borderStyle: "solid",
     borderColor: "#e9ecef",
-    borderRadius: "12px",
-    fontSize: "16px",
+    borderRadius: "10px",
+    fontSize: "16px", // Prevents zoom on iOS
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     transition: "border-color 0.3s ease",
     outline: "none",
     boxSizing: "border-box",
+    // Mobile optimizations
+    WebkitAppearance: "none", // Remove iOS styling
+    touchAction: "manipulation", // Improve touch response
+    // Increase tap target size for mobile
+    minHeight: "50px"
   },
   passwordContainer: {
     position: "relative",
@@ -602,11 +644,19 @@ const baseStyles = {
     border: "none",
     cursor: "pointer",
     fontSize: "18px",
-    padding: "5px"
+    padding: "8px",
+    // Mobile: Larger touch target
+    minWidth: "40px",
+    minHeight: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "5px",
+    touchAction: "manipulation"
   },
   forgotPasswordContainer: {
     textAlign: "right",
-    marginBottom: "30px"
+    marginBottom: "25px"
   },
   submitButton: {
     width: "100%",
@@ -614,15 +664,18 @@ const baseStyles = {
     color: "white",
     border: "none",
     padding: "16px",
-    borderRadius: "12px",
+    borderRadius: "10px",
     fontSize: "16px",
     fontWeight: "600",
     cursor: "pointer",
     transition: "transform 0.2s ease",
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    marginBottom: "20px"
+    marginBottom: "20px",
+    // Mobile optimizations
+    minHeight: "50px",
+    touchAction: "manipulation",
+    WebkitAppearance: "none"
   },
-  
   loadingContent: {
     display: "flex",
     alignItems: "center",
@@ -653,7 +706,9 @@ const baseStyles = {
     display: "flex",
     alignItems: "flex-start",
     gap: "8px",
-    lineHeight: "1.4"
+    lineHeight: "1.4",
+    // Mobile: Wrap text better
+    wordBreak: "break-word"
   },
   errorIcon: {
     fontSize: "16px",
@@ -663,31 +718,41 @@ const baseStyles = {
   signupLink: {
     textAlign: "center",
     fontSize: "14px",
-    margin: "0 0 30px 0",
-    fontWeight: "400"
+    margin: "0 0 25px 0",
+    fontWeight: "400",
+    lineHeight: "1.5"
   },
   link: {
     color: "#28a745",
     textDecoration: "none",
-    fontWeight: "500"
+    fontWeight: "500",
+    // Mobile: Larger touch target
+    padding: "5px",
+    borderRadius: "3px",
+    display: "inline-block"
   },
   divider: {
     position: "relative",
     textAlign: "center",
-    margin: "30px 0",
+    margin: "25px 0",
     borderTop: "1px solid #e9ecef"
   },
   dividerText: {
     background: "white",
-    padding: "0 20px",
+    padding: "0 15px",
     color: "#6c757d",
-    fontSize: "14px",
+    fontSize: "13px",
     position: "relative",
     top: "-10px"
   },
   socialButtons: {
     display: "flex",
-    gap: "15px"
+    flexDirection: "column", // Stack vertically on mobile
+    gap: "12px",
+    // Desktop: side by side
+    '@media (min-width: 769px)': {
+      flexDirection: "row"
+    }
   },
   socialButton: {
     flex: 1,
@@ -695,7 +760,7 @@ const baseStyles = {
     alignItems: "center",
     justifyContent: "center",
     gap: "10px",
-    padding: "12px",
+    padding: "14px 16px",
     borderWidth: "2px",
     borderStyle: "solid",
     borderColor: "#e9ecef",
@@ -705,14 +770,31 @@ const baseStyles = {
     fontSize: "14px",
     fontWeight: "500",
     transition: "all 0.3s ease",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    // Mobile optimizations
+    minHeight: "50px",
+    touchAction: "manipulation",
+    WebkitAppearance: "none"
   },
   socialIcon: {
-    fontSize: "18px"
+    fontSize: "18px",
+    flexShrink: 0
+  },
+  socialButtonText: {
+    // Hide text on very small screens
+    '@media (max-width: 320px)': {
+      display: "none"
+    }
+  },
+  googleButton: {
+    // Specific Google button styling
+  },
+  facebookButton: {
+    // Specific Facebook button styling
   }
 };
 
-// Light mode styles
+// Light mode styles with mobile optimizations
 const lightStyles = {
   ...baseStyles,
   leftSection: {
@@ -721,13 +803,13 @@ const lightStyles = {
   },
   title: {
     color: "#2c5530",
-    fontSize: "clamp(28px, 4vw, 36px)",
+    fontSize: "clamp(24px, 6vw, 32px)", // More responsive scaling
     fontWeight: "700",
     margin: "0 0 8px 0"
   },
   subtitle: {
     color: "#6c757d",
-    fontSize: "clamp(14px, 2vw, 16px)",
+    fontSize: "clamp(14px, 3vw, 16px)",
     margin: 0,
     fontWeight: "400"
   },
@@ -750,10 +832,14 @@ const lightStyles = {
     backgroundColor: "white",
     color: "#333",
     borderColor: "#e9ecef"
+  },
+  passwordToggle: {
+    ...baseStyles.passwordToggle,
+    color: "#6c757d"
   }
 };
 
-// Dark mode styles
+// Dark mode styles with mobile optimizations
 const darkStyles = {
   ...baseStyles,
   leftSection: {
@@ -762,13 +848,13 @@ const darkStyles = {
   },
   title: {
     color: "#ffffff",
-    fontSize: "clamp(28px, 4vw, 36px)",
+    fontSize: "clamp(24px, 6vw, 32px)",
     fontWeight: "700",
     margin: "0 0 8px 0"
   },
   subtitle: {
     color: "#b0b0b0",
-    fontSize: "clamp(14px, 2vw, 16px)",
+    fontSize: "clamp(14px, 3vw, 16px)",
     margin: 0,
     fontWeight: "400"
   },
@@ -802,10 +888,14 @@ const darkStyles = {
     color: "#ff6b6b",
     backgroundColor: "#2d1a1a",
     borderColor: "#5a2a2a"
+  },
+  passwordToggle: {
+    ...baseStyles.passwordToggle,
+    color: "#b0b0b0"
   }
 };
 
-// Add CSS for spinner animation
+// Add CSS for spinner animation and mobile-specific styles
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
@@ -813,39 +903,89 @@ if (typeof document !== 'undefined') {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
+    /* Mobile-specific improvements */
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden;
+      }
+      
+      /* Prevent zoom on input focus for iOS */
+      input[type="email"],
+      input[type="password"],
+      input[type="text"] {
+        font-size: 16px !important;
+      }
+      
+      /* Improve button tap targets */
+      button {
+        min-height: 44px;
+      }
+      
+      /* Smooth scrolling for mobile */
+      html {
+        scroll-behavior: smooth;
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 320px) {
+      .social-button-text {
+        display: none;
+      }
+    }
+    
+    /* Landscape phone orientation */
+    @media (max-width: 768px) and (orientation: landscape) {
+      .form-container {
+        padding: 10px;
+      }
+      
+      .header {
+        margin-bottom: 20px;
+      }
+    }
+    
+    /* High DPI displays */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      .social-icon {
+        image-rendering: -webkit-optimize-contrast;
+      }
+    }
+    
+    /* Focus states for accessibility */
+    input:focus,
+    button:focus {
+      outline: 2px solid #28a745;
+      outline-offset: 2px;
+    }
+    
+    /* Hover states (only on devices that support hover) */
+    @media (hover: hover) {
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+      
+      .social-button:hover {
+        border-color: #28a745;
+      }
+    }
+    
+    /* Touch feedback */
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    /* Safe area insets for iOS devices with notches */
+    @supports (padding: max(0px)) {
+      .container {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+      }
+    }
   `;
   document.head.appendChild(style);
 }
-
-// In your login component or auth handler
-
-
-const handleGoogleLogin = async () => {
-  try {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-
-    // Check if user document exists in Firestore
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (!userDoc.exists()) {
-      // Create user document with Google profile data
-      await setDoc(userDocRef, {
-        firstName: user.displayName?.split(' ')[0] || '',
-        lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-        email: user.email,
-        createdAt: new Date().toISOString(),
-        userId: user.uid,
-        hasProfilePicture: !!user.photoURL,
-        profilePictureUrl: user.photoURL, // Google's photo URL
-        provider: 'google'
-      });
-    }
-
-    router.push("/dashboard");
-  } catch (error) {
-    console.error("Google login error:", error);
-  }
-};

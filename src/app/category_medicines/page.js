@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import { auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Image from 'next/image';
+import SearchSection from "@/components/SearchSection";
+import Image from "next/image";
 
 // Pre-defined medicine categories with sample medicines
 const medicineCategories = {
@@ -18,7 +19,7 @@ const medicineCategories = {
       dosage: "500mg",
       description: "Pain reliever and fever reducer",
       icon: "🟡",
-      category: "Pain Relief"
+      category: "Pain Relief",
     },
     {
       id: "pain_2",
@@ -28,7 +29,7 @@ const medicineCategories = {
       dosage: "200mg",
       description: "Anti-inflammatory pain reliever",
       icon: "🔴",
-      category: "Pain Relief"
+      category: "Pain Relief",
     },
     {
       id: "pain_3",
@@ -38,10 +39,10 @@ const medicineCategories = {
       dosage: "325mg",
       description: "Pain reliever and blood thinner",
       icon: "⚪",
-      category: "Pain Relief"
-    }
+      category: "Pain Relief",
+    },
   ],
-  "Cardiovascular": [
+  Cardiovascular: [
     {
       id: "cardio_1",
       name: "Lisinopril",
@@ -50,7 +51,7 @@ const medicineCategories = {
       dosage: "10mg",
       description: "ACE inhibitor for high blood pressure",
       icon: "❤️",
-      category: "Cardiovascular"
+      category: "Cardiovascular",
     },
     {
       id: "cardio_2",
@@ -60,7 +61,7 @@ const medicineCategories = {
       dosage: "20mg",
       description: "Cholesterol-lowering medication",
       icon: "💊",
-      category: "Cardiovascular"
+      category: "Cardiovascular",
     },
     {
       id: "cardio_3",
@@ -70,10 +71,10 @@ const medicineCategories = {
       dosage: "50mg",
       description: "Beta-blocker for heart conditions",
       icon: "💓",
-      category: "Cardiovascular"
-    }
+      category: "Cardiovascular",
+    },
   ],
-  "Diabetes": [
+  Diabetes: [
     {
       id: "diabetes_1",
       name: "Metformin",
@@ -82,7 +83,7 @@ const medicineCategories = {
       dosage: "500mg",
       description: "Type 2 diabetes medication",
       icon: "📊",
-      category: "Diabetes"
+      category: "Diabetes",
     },
     {
       id: "diabetes_2",
@@ -92,7 +93,7 @@ const medicineCategories = {
       dosage: "5mg",
       description: "Sulfonylurea diabetes medication",
       icon: "📊",
-      category: "Diabetes"
+      category: "Diabetes",
     },
     {
       id: "diabetes_3",
@@ -102,10 +103,10 @@ const medicineCategories = {
       dosage: "100 units/mL",
       description: "Hormone for diabetes management",
       icon: "💉",
-      category: "Diabetes"
-    }
+      category: "Diabetes",
+    },
   ],
-  "Antibiotics": [
+  Antibiotics: [
     {
       id: "antibiotic_1",
       name: "Amoxicillin",
@@ -114,7 +115,7 @@ const medicineCategories = {
       dosage: "250mg",
       description: "Penicillin antibiotic",
       icon: "💊",
-      category: "Antibiotics"
+      category: "Antibiotics",
     },
     {
       id: "antibiotic_2",
@@ -124,7 +125,7 @@ const medicineCategories = {
       dosage: "250mg",
       description: "Macrolide antibiotic",
       icon: "💊",
-      category: "Antibiotics"
+      category: "Antibiotics",
     },
     {
       id: "antibiotic_3",
@@ -134,10 +135,10 @@ const medicineCategories = {
       dosage: "100mg",
       description: "Tetracycline antibiotic",
       icon: "💊",
-      category: "Antibiotics"
-    }
+      category: "Antibiotics",
+    },
   ],
-  "Digestive": [
+  Digestive: [
     {
       id: "digestive_1",
       name: "Prilosec",
@@ -146,7 +147,7 @@ const medicineCategories = {
       dosage: "20mg",
       description: "Proton pump inhibitor",
       icon: "🟢",
-      category: "Digestive"
+      category: "Digestive",
     },
     {
       id: "digestive_2",
@@ -156,7 +157,7 @@ const medicineCategories = {
       dosage: "20mg",
       description: "H2 receptor antagonist",
       icon: "🟢",
-      category: "Digestive"
+      category: "Digestive",
     },
     {
       id: "digestive_3",
@@ -166,10 +167,10 @@ const medicineCategories = {
       dosage: "150mg",
       description: "Acid reducer",
       icon: "🟢",
-      category: "Digestive"
-    }
+      category: "Digestive",
+    },
   ],
-  "Allergy": [
+  Allergy: [
     {
       id: "allergy_1",
       name: "Zyrtec",
@@ -178,7 +179,7 @@ const medicineCategories = {
       dosage: "10mg",
       description: "Antihistamine for allergies",
       icon: "🌸",
-      category: "Allergy"
+      category: "Allergy",
     },
     {
       id: "allergy_2",
@@ -188,7 +189,7 @@ const medicineCategories = {
       dosage: "10mg",
       description: "Non-drowsy antihistamine",
       icon: "🌸",
-      category: "Allergy"
+      category: "Allergy",
     },
     {
       id: "allergy_3",
@@ -198,8 +199,8 @@ const medicineCategories = {
       dosage: "180mg",
       description: "24-hour allergy relief",
       icon: "🌸",
-      category: "Allergy"
-    }
+      category: "Allergy",
+    },
   ],
   "Mental Health": [
     {
@@ -210,7 +211,7 @@ const medicineCategories = {
       dosage: "50mg",
       description: "SSRI antidepressant",
       icon: "🧠",
-      category: "Mental Health"
+      category: "Mental Health",
     },
     {
       id: "mental_2",
@@ -220,7 +221,7 @@ const medicineCategories = {
       dosage: "20mg",
       description: "SSRI antidepressant",
       icon: "🧠",
-      category: "Mental Health"
+      category: "Mental Health",
     },
     {
       id: "mental_3",
@@ -230,9 +231,9 @@ const medicineCategories = {
       dosage: "0.5mg",
       description: "Anti-anxiety medication",
       icon: "🧠",
-      category: "Mental Health"
-    }
-  ]
+      category: "Mental Health",
+    },
+  ],
 };
 
 export default function MedicinesPage() {
@@ -245,7 +246,14 @@ export default function MedicinesPage() {
   const [apiLoading, setApiLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    searchType: "all", // all, brand, generic, active_ingredient
+    category: "all",
+    source: "all", // all, local, fda, rxnav
+    sortBy: "relevance", // relevance, name, category, manufacturer
+  });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -259,52 +267,52 @@ export default function MedicinesPage() {
   // Function to get medicine icon based on name or type
   const getMedicineIcon = (medicineName, category) => {
     const name = medicineName.toLowerCase();
-    
+
     // Medicine-specific icons
     const medicineIcons = {
       // Pain relievers
-      'tylenol': '🟡',
-      'acetaminophen': '🟡',
-      'ibuprofen': '🔴',
-      'advil': '🔴',
-      'motrin': '🔴',
-      'aspirin': '⚪',
-      'bayer': '⚪',
-      
+      tylenol: "🟡",
+      acetaminophen: "🟡",
+      ibuprofen: "🔴",
+      advil: "🔴",
+      motrin: "🔴",
+      aspirin: "⚪",
+      bayer: "⚪",
+
       // Antibiotics
-      'amoxicillin': '💊',
-      'penicillin': '💉',
-      'azithromycin': '💊',
-      'doxycycline': '💊',
-      
+      amoxicillin: "💊",
+      penicillin: "💉",
+      azithromycin: "💊",
+      doxycycline: "💊",
+
       // Heart medications
-      'lisinopril': '❤️',
-      'metoprolol': '💓',
-      'atorvastatin': '💊',
-      'lipitor': '💊',
-      'amlodipine': '❤️',
-      
+      lisinopril: "❤️",
+      metoprolol: "💓",
+      atorvastatin: "💊",
+      lipitor: "💊",
+      amlodipine: "❤️",
+
       // Diabetes
-      'metformin': '📊',
-      'insulin': '💉',
-      'glipizide': '📊',
-      
+      metformin: "📊",
+      insulin: "💉",
+      glipizide: "📊",
+
       // Digestive
-      'omeprazole': '🟢',
-      'prilosec': '🟢',
-      'lansoprazole': '🟢',
-      
+      omeprazole: "🟢",
+      prilosec: "🟢",
+      lansoprazole: "🟢",
+
       // Allergy
-      'cetirizine': '🌸',
-      'zyrtec': '🌸',
-      'loratadine': '🌸',
-      'claritin': '🌸',
-      
+      cetirizine: "🌸",
+      zyrtec: "🌸",
+      loratadine: "🌸",
+      claritin: "🌸",
+
       // Mental health
-      'sertraline': '🧠',
-      'zoloft': '🧠',
-      'fluoxetine': '🧠',
-      'prozac': '🧠',
+      sertraline: "🧠",
+      zoloft: "🧠",
+      fluoxetine: "🧠",
+      prozac: "🧠",
     };
 
     // Check for specific medicine name first
@@ -321,13 +329,13 @@ export default function MedicinesPage() {
 
     // Default by category
     const categoryIcons = {
-      'pain': '🟡',
-      'antibiotic': '💊',
-      'cardiovascular': '❤️',
-      'diabetes': '📊',
-      'allergy': '🌸',
-      'digestive': '🟢',
-      'mental': '🧠',
+      pain: "🟡",
+      antibiotic: "💊",
+      cardiovascular: "❤️",
+      diabetes: "📊",
+      allergy: "🌸",
+      digestive: "🟢",
+      mental: "🧠",
     };
 
     if (category) {
@@ -339,255 +347,344 @@ export default function MedicinesPage() {
       }
     }
 
-    return '💊'; // Default
+    return "💊"; // Default
+  };
+const getMedicineImage = (medicineName, source, category) => {
+  const colorMap = {
+    "Pain Relief": "ff6b6b",
+    Cardiovascular: "e74c3c",
+    Diabetes: "3498db", 
+    Antibiotics: "2ecc71",
+    Digestive: "95a5a6",
+    Allergy: "f39c12",
+    "Mental Health": "9b59b6",
+    tylenol: "ff6b6b",
+    ibuprofen: "4ecdc4",
+    aspirin: "45b7d1",
+    metformin: "96ceb4",
+    lisinopril: "feca57",
+    omeprazole: "6c5ce7",
+    atorvastatin: "fd79a8",
   };
 
-  // Function to get medicine image placeholder
-  const getMedicineImage = (medicineName, source, category) => {
-    const colorMap = {
-      'Pain Relief': 'ff6b6b',
-      'Cardiovascular': 'e74c3c',
-      'Diabetes': '3498db',
-      'Antibiotics': '2ecc71',
-      'Digestive': '95a5a6',
-      'Allergy': 'f39c12',
-      'Mental Health': '9b59b6',
-      'tylenol': 'ff6b6b',
-      'ibuprofen': '4ecdc4',
-      'aspirin': '45b7d1',
-      'metformin': '96ceb4',
-      'lisinopril': 'feca57',
-      'omeprazole': '6c5ce7',
-      'atorvastatin': 'fd79a8',
-    };
+  const name = medicineName.toLowerCase();
+  let color = "28a745"; // default green
 
-    const name = medicineName.toLowerCase();
-    let color = '28a745'; // default green
-
-    // Check for category colors first
-    if (category && colorMap[category]) {
-      color = colorMap[category];
-    } else {
-      // Check for specific medicine colors
-      for (const [med, medColor] of Object.entries(colorMap)) {
-        if (name.includes(med)) {
-          color = medColor;
-          break;
-        }
+  // Check for category colors first
+  if (category && colorMap[category]) {
+    color = colorMap[category];
+  } else {
+    // Check for specific medicine colors
+    for (const [med, medColor] of Object.entries(colorMap)) {
+      if (name.includes(med)) {
+        color = medColor;
+        break;
       }
     }
+  }
 
-    // Different color for different sources
-    if (source === 'rxnav') {
-      color = '007bff';
-    }
+  // Different color for different sources
+  if (source === "rxnav") {
+    color = "007bff";
+  }
 
-    const shortName = medicineName.length > 8 ? 
-      medicineName.substring(0, 8) + '...' : 
-      medicineName;
+  const shortName =
+    medicineName.length > 8
+      ? medicineName.substring(0, 8) + "..."
+      : medicineName;
 
-    return `https://via.placeholder.com/120x80/${color}/ffffff?text=${encodeURIComponent(shortName)}`;
-  };
+  // Create SVG data URL
+  const svg = `
+    <svg width="120" height="80" xmlns="http://www.w3.org/2000/svg">
+      <rect width="120" height="80" fill="#${color}" rx="8"/>
+      <text x="60" y="45" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">${shortName}</text>
+    </svg>
+  `;
+  
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+};
 
-  // Enhanced search function with categories
-  const searchMedicines = useCallback(async (query, category = 'all') => {
-    if (!query.trim()) {
-      setMedicines([]);
-      return;
-    }
+  const searchMedicines = useCallback(
+    async (query, appliedFilters = filters) => {
+      if (!query.trim()) {
+        setMedicines([]);
+        return;
+      }
 
-    setApiLoading(true);
-    setError(null);
+      setApiLoading(true);
+      setError(null);
 
-    try {
-      let allResults = [];
+      try {
+        let allResults = [];
 
-      // Strategy 1: Search in local categories first
-      let localResults = [];
-      Object.entries(medicineCategories).forEach(([categoryName, categoryMedicines]) => {
-        // If a specific category is selected, only search in that category
-        if (category !== 'all' && category !== categoryName) {
-          return;
+        // Strategy 1: Search in local categories (if not filtered out)
+        if (
+          appliedFilters.source === "all" ||
+          appliedFilters.source === "local"
+        ) {
+          let localResults = [];
+          Object.entries(medicineCategories).forEach(
+            ([categoryName, categoryMedicines]) => {
+              // Category filter
+              if (
+                appliedFilters.category !== "all" &&
+                appliedFilters.category !== categoryName
+              ) {
+                return;
+              }
+
+              categoryMedicines.forEach((medicine) => {
+                const matchesSearchType = () => {
+                  switch (appliedFilters.searchType) {
+                    case "brand":
+                      return medicine.name
+                        .toLowerCase()
+                        .includes(query.toLowerCase());
+                    case "generic":
+                      return medicine.genericName
+                        .toLowerCase()
+                        .includes(query.toLowerCase());
+                    case "active_ingredient":
+                      return medicine.activeIngredient
+                        ?.toLowerCase()
+                        .includes(query.toLowerCase());
+                    default:
+                      return (
+                        medicine.name
+                          .toLowerCase()
+                          .includes(query.toLowerCase()) ||
+                        medicine.genericName
+                          .toLowerCase()
+                          .includes(query.toLowerCase()) ||
+                        medicine.category
+                          .toLowerCase()
+                          .includes(query.toLowerCase()) ||
+                        medicine.activeIngredient
+                          ?.toLowerCase()
+                          .includes(query.toLowerCase())
+                      );
+                  }
+                };
+
+                if (matchesSearchType()) {
+                  localResults.push({
+                    ...medicine,
+                    source: "local",
+                    imageUrl: getMedicineImage(
+                      medicine.name,
+                      "local",
+                      medicine.category
+                    ),
+                  });
+                }
+              });
+            }
+          );
+          allResults = [...localResults];
         }
 
-        categoryMedicines.forEach(medicine => {
-          if (
-            medicine.name.toLowerCase().includes(query.toLowerCase()) ||
-            medicine.genericName.toLowerCase().includes(query.toLowerCase()) ||
-            medicine.category.toLowerCase().includes(query.toLowerCase())
-          ) {
-            localResults.push({
-              ...medicine,
-              source: 'local',
-              imageUrl: getMedicineImage(medicine.name, 'local', medicine.category)
-            });
+        // Strategy 2: FDA API with multiple search fields
+        const fdaSearches = [
+          `openfda.brand_name:"${query}"`,
+          `openfda.generic_name:"${query}"`,
+          `active_ingredient:"${query}"`,
+          `openfda.brand_name:${query}*`, // Wildcard search
+          `openfda.generic_name:${query}*`,
+          `active_ingredient:${query}*`,
+        ];
+
+        for (const searchQuery of fdaSearches) {
+          try {
+            console.log(`Searching FDA with: ${searchQuery}`);
+            const response = await fetch(
+              `https://api.fda.gov/drug/label.json?search=${encodeURIComponent(
+                searchQuery
+              )}&limit=10`
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.results) {
+                console.log(`Found ${data.results.length} results from FDA`);
+                allResults = [...allResults, ...data.results];
+              }
+            }
+          } catch (err) {
+            console.log(`FDA search failed for: ${searchQuery}`, err.message);
           }
-        });
-      });
+        }
 
-      allResults = [...localResults];
-
-      // Strategy 2: FDA API with multiple search fields
-      const fdaSearches = [
-        `openfda.brand_name:"${query}"`,
-        `openfda.generic_name:"${query}"`,
-        `active_ingredient:"${query}"`,
-        `openfda.brand_name:${query}*`, // Wildcard search
-        `openfda.generic_name:${query}*`,
-        `active_ingredient:${query}*`
-      ];
-
-      for (const searchQuery of fdaSearches) {
+        // Strategy 3: RxNav API as backup
         try {
-          console.log(`Searching FDA with: ${searchQuery}`);
-          const response = await fetch(
-            `https://api.fda.gov/drug/label.json?search=${encodeURIComponent(searchQuery)}&limit=10`
+          console.log(`Searching RxNav for: ${query}`);
+          const rxNavResponse = await fetch(
+            `https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(
+              query
+            )}`
           );
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data.results) {
-              console.log(`Found ${data.results.length} results from FDA`);
-              allResults = [...allResults, ...data.results];
+          if (rxNavResponse.ok) {
+            const rxNavData = await rxNavResponse.json();
+            if (rxNavData.drugGroup?.conceptGroup) {
+              console.log(`Found results from RxNav`);
+              // Convert RxNav results to FDA-like format
+              rxNavData.drugGroup.conceptGroup.forEach((group) => {
+                if (group.conceptProperties) {
+                  group.conceptProperties.forEach((drug) => {
+                    allResults.push({
+                      openfda: {
+                        brand_name: [drug.name],
+                        generic_name: [drug.name],
+                        rxcui: [drug.rxcui],
+                      },
+                      description: [`RxNav drug: ${drug.name}`],
+                      _source: "rxnav",
+                      _rxcui: drug.rxcui,
+                      _tty: group.tty,
+                    });
+                  });
+                }
+              });
             }
           }
         } catch (err) {
-          console.log(`FDA search failed for: ${searchQuery}`, err.message);
+          console.log("RxNav search failed:", err.message);
         }
-      }
 
-      // Strategy 3: RxNav API as backup
-      try {
-        console.log(`Searching RxNav for: ${query}`);
-        const rxNavResponse = await fetch(
-          `https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(query)}`
-        );
+        // Remove duplicates and format results
+        const uniqueResults = [];
+        const seen = new Set();
 
-        if (rxNavResponse.ok) {
-          const rxNavData = await rxNavResponse.json();
-          if (rxNavData.drugGroup?.conceptGroup) {
-            console.log(`Found results from RxNav`);
-            // Convert RxNav results to FDA-like format
-            rxNavData.drugGroup.conceptGroup.forEach(group => {
-              if (group.conceptProperties) {
-                group.conceptProperties.forEach(drug => {
-                  allResults.push({
-                    openfda: {
-                      brand_name: [drug.name],
-                      generic_name: [drug.name],
-                      rxcui: [drug.rxcui]
-                    },
-                    description: [`RxNav drug: ${drug.name}`],
-                    _source: 'rxnav',
-                    _rxcui: drug.rxcui,
-                    _tty: group.tty
-                  });
-                });
-              }
-            });
+        allResults.forEach((drug) => {
+          let name, source, isLocal;
+
+          if (drug.source === "local") {
+            name = drug.name;
+            source = "local";
+            isLocal = true;
+          } else {
+            name =
+              drug.openfda?.brand_name?.[0] ||
+              drug.openfda?.generic_name?.[0] ||
+              "Unknown";
+            source = drug._source || "fda";
+            isLocal = false;
           }
+
+          const key = name.toLowerCase();
+
+          if (!seen.has(key)) {
+            seen.add(key);
+            if (isLocal) {
+              uniqueResults.push(drug);
+            } else {
+              uniqueResults.push(drug);
+            }
+          }
+        });
+
+        const formattedMedicines = uniqueResults
+          .slice(0, 20)
+          .map((drug, index) => {
+            if (drug.source === "local") {
+              return drug; // Local medicines are already formatted
+            }
+
+            const name =
+              drug.openfda?.brand_name?.[0] ||
+              drug.openfda?.generic_name?.[0] ||
+              "Unknown";
+            const source = drug._source || "fda";
+
+            return {
+              id: drug._rxcui || `${source}_${index}`,
+              name,
+              genericName:
+                drug.openfda?.generic_name?.[0] ||
+                drug.openfda?.brand_name?.[0] ||
+                "Unknown",
+              manufacturer: drug.openfda?.manufacturer_name?.[0] || "Unknown",
+              dosage:
+                drug.dosage_and_administration?.[0]?.substring(0, 100) +
+                  "..." || "Not specified",
+              indications:
+                drug.indications_and_usage?.[0]?.substring(0, 200) + "..." ||
+                "Not specified",
+              warnings:
+                drug.warnings?.[0]?.substring(0, 200) + "..." ||
+                "Not specified",
+              adverseReactions:
+                drug.adverse_reactions?.[0]?.substring(0, 200) + "..." ||
+                "Not specified",
+              description:
+                drug.description?.[0]?.substring(0, 300) + "..." ||
+                "No description available",
+              activeIngredient: drug.active_ingredient?.[0] || "Not specified",
+              purpose: drug.purpose?.[0] || "Not specified",
+              routeOfAdministration:
+                drug.openfda?.route?.[0] || "Not specified",
+              substanceCategory:
+                drug.openfda?.substance_name?.[0] || "Not specified",
+              rxcui: drug.openfda?.rxcui?.[0] || drug._rxcui || null,
+              source,
+              tty: drug._tty || null,
+              category: "API Result",
+              icon: getMedicineIcon(name),
+              imageUrl: getMedicineImage(name, source, "API Result"),
+            };
+          });
+
+        console.log(`Total formatted results: ${formattedMedicines.length}`);
+        setMedicines(formattedMedicines);
+
+        // Add to search history
+        if (formattedMedicines.length > 0) {
+          setSearchHistory((prev) => {
+            const newHistory = [
+              query,
+              ...prev.filter((item) => item !== query),
+            ].slice(0, 5);
+            return newHistory;
+          });
         }
       } catch (err) {
-        console.log('RxNav search failed:', err.message);
+        console.error("Search Error:", err);
+        setError(
+          `Failed to fetch medicine data: ${err.message}. Try a different search term.`
+        );
+        setMedicines([]);
+      } finally {
+        setApiLoading(false);
       }
-
-      // Remove duplicates and format results
-      const uniqueResults = [];
-      const seen = new Set();
-
-      allResults.forEach(drug => {
-        let name, source, isLocal;
-        
-        if (drug.source === 'local') {
-          name = drug.name;
-          source = 'local';
-          isLocal = true;
-        } else {
-          name = drug.openfda?.brand_name?.[0] || drug.openfda?.generic_name?.[0] || 'Unknown';
-          source = drug._source || 'fda';
-          isLocal = false;
-        }
-        
-        const key = name.toLowerCase();
-        
-        if (!seen.has(key)) {
-          seen.add(key);
-          if (isLocal) {
-            uniqueResults.push(drug);
-          } else {
-            uniqueResults.push(drug);
-          }
-        }
-      });
-
-      const formattedMedicines = uniqueResults.slice(0, 20).map((drug, index) => {
-        if (drug.source === 'local') {
-          return drug; // Local medicines are already formatted
-        }
-
-        const name = drug.openfda?.brand_name?.[0] || drug.openfda?.generic_name?.[0] || 'Unknown';
-        const source = drug._source || 'fda';
-        
-        return {
-          id: drug._rxcui || `${source}_${index}`,
-          name,
-          genericName: drug.openfda?.generic_name?.[0] || drug.openfda?.brand_name?.[0] || 'Unknown',
-          manufacturer: drug.openfda?.manufacturer_name?.[0] || 'Unknown',
-          dosage: drug.dosage_and_administration?.[0]?.substring(0, 100) + '...' || 'Not specified',
-          indications: drug.indications_and_usage?.[0]?.substring(0, 200) + '...' || 'Not specified',
-          warnings: drug.warnings?.[0]?.substring(0, 200) + '...' || 'Not specified',
-          adverseReactions: drug.adverse_reactions?.[0]?.substring(0, 200) + '...' || 'Not specified',
-          description: drug.description?.[0]?.substring(0, 300) + '...' || 'No description available',
-          activeIngredient: drug.active_ingredient?.[0] || 'Not specified',
-          purpose: drug.purpose?.[0] || 'Not specified',
-          routeOfAdministration: drug.openfda?.route?.[0] || 'Not specified',
-          substanceCategory: drug.openfda?.substance_name?.[0] || 'Not specified',
-          rxcui: drug.openfda?.rxcui?.[0] || drug._rxcui || null,
-          source,
-          tty: drug._tty || null,
-          category: 'API Result',
-          icon: getMedicineIcon(name),
-          imageUrl: getMedicineImage(name, source, 'API Result')
-        };
-      });
-
-      console.log(`Total formatted results: ${formattedMedicines.length}`);
-      setMedicines(formattedMedicines);
-
-      // Add to search history
-      if (formattedMedicines.length > 0) {
-        setSearchHistory(prev => {
-          const newHistory = [query, ...prev.filter(item => item !== query)].slice(0, 5);
-          return newHistory;
-        });
-      }
-
-    } catch (err) {
-      console.error('Search Error:', err);
-      setError(`Failed to fetch medicine data: ${err.message}. Try a different search term.`);
-      setMedicines([]);
-    } finally {
-      setApiLoading(false);
-    }
-  }, []);
-
-  // Fixed debounced search
+    },
+    [filters]
+  );
+  // Fixed debounced search with filters
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchTerm.trim()) {
-        searchMedicines(searchTerm, selectedCategory);
+        searchMedicines(searchTerm, filters); // 👈 Pass filters here
       } else {
         setMedicines([]);
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, selectedCategory, searchMedicines]);
+  }, [searchTerm, filters, searchMedicines]); // 👈 Add filters dependency
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
+  // 👇 ADD THESE NEW FUNCTIONS (after your existing functions)
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+    // Update selectedCategory to sync with filters
+    setSelectedCategory(newFilters.category);
+  };
 
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
   // Quick search for common medicines
   const quickSearch = (term) => {
     setSearchTerm(term);
@@ -613,8 +710,12 @@ export default function MedicinesPage() {
 
   return (
     <div style={currentStyles.container}>
-      <Navbar user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-      
+      <Navbar
+        user={user}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+      />
+
       <div style={currentStyles.content}>
         {/* Header */}
         <div style={currentStyles.header}>
@@ -624,80 +725,19 @@ export default function MedicinesPage() {
           </p>
         </div>
 
-        {/* Category Filter */}
-        <div style={currentStyles.categoryFilter}>
-          <button
-            onClick={() => handleCategoryChange('all')}
-            style={selectedCategory === 'all' ? 
-              {...currentStyles.categoryButton, ...currentStyles.categoryButtonActive} : 
-              currentStyles.categoryButton
-            }
-          >
-            All Categories
-          </button>
-          {Object.keys(medicineCategories).map(category => (
-            <button
-              key={category}
-              onClick={() => handleCategoryChange(category)}
-              style={selectedCategory === category ? 
-                {...currentStyles.categoryButton, ...currentStyles.categoryButtonActive} : 
-                currentStyles.categoryButton
-              }
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        {/* Search Section */}
-        <div style={currentStyles.searchSection}>
-          <div style={currentStyles.searchContainer}>
-            <input
-              type="text"
-              placeholder={`Search for medicines${selectedCategory !== 'all' ? ` in ${selectedCategory}` : ''} (e.g., Tylenol, Ibuprofen, Metformin)...`}
-              value={searchTerm}
-              onChange={handleSearch}
-              style={currentStyles.searchInput}
-            />
-            <span style={currentStyles.searchIcon}>🔍</span>
-          </div>
-          
-          {apiLoading && (
-            <div style={currentStyles.loadingIndicator}>
-              Searching {selectedCategory !== 'all' ? `${selectedCategory} category and ` : ''}FDA and RxNav databases for {searchTerm}...
-            </div>
-          )}
-
-          {/* Quick Search Buttons */}
-          <div style={currentStyles.quickSearch}>
-            <span style={currentStyles.quickSearchLabel}>Quick search: </span>
-            {['Tylenol', 'Ibuprofen', 'Aspirin', 'Metformin', 'Lisinopril', 'Omeprazole'].map(term => (
-              <button
-                key={term}
-                onClick={() => quickSearch(term)}
-                style={currentStyles.quickSearchButton}
-              >
-                {term}
-              </button>
-            ))}
-          </div>
-
-          {/* Search History */}
-          {searchHistory.length > 0 && (
-            <div style={currentStyles.searchHistory}>
-              <span style={currentStyles.historyLabel}>Recent searches: </span>
-              {searchHistory.map(term => (
-                <button
-                  key={term}
-                  onClick={() => quickSearch(term)}
-                  style={currentStyles.historyButton}
-                >
-                  {term}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* 👇 NEW ADVANCED SEARCH SECTION */}
+        <SearchSection
+          searchTerm={searchTerm}
+          onSearchChange={handleSearch}
+          apiLoading={apiLoading}
+          searchHistory={searchHistory}
+          onQuickSearch={quickSearch}
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          isDarkMode={isDarkMode}
+          showFilters={showFilters}
+          onToggleFilters={toggleFilters}
+        />
 
         {/* Error Message */}
         {error && (
@@ -705,7 +745,8 @@ export default function MedicinesPage() {
             <span style={currentStyles.errorIcon}>⚠️</span>
             {error}
             <div style={currentStyles.errorSuggestions}>
-              Try searching for: &quot;Tylenol&quot;, &quot;Aspirin&quot;, &quot;Ibuprofen&quot;, or &quot;Metformin&quot;
+              Try searching for: &quot;Tylenol&quot;, &quot;Aspirin&quot;,
+              &quot;Ibuprofen&quot;, or &quot;Metformin&quot;
             </div>
           </div>
         )}
@@ -714,35 +755,35 @@ export default function MedicinesPage() {
         {medicines.length > 0 && (
           <div style={currentStyles.resultsCount}>
             Found {medicines.length} medicine(s) for &quot;{searchTerm}&quot;
-            {selectedCategory !== 'all' && ` in ${selectedCategory} category`}
+            {selectedCategory !== "all" && ` in ${selectedCategory} category`}
           </div>
         )}
 
         {/* Medicine Grid */}
         {medicines.length > 0 && (
           <div style={currentStyles.medicineGrid}>
-            {medicines.map(medicine => (
+            {medicines.map((medicine) => (
               <div
                 key={medicine.id}
                 style={currentStyles.medicineCard}
                 onClick={() => setSelectedMedicine(medicine)}
               >
                 <div style={currentStyles.medicineImageContainer}>
-                  <Image 
+                  <Image
                     src={medicine.imageUrl}
                     alt={medicine.name}
                     width={120}
                     height={80}
                     style={currentStyles.medicineImage}
                     onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'block';
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "block";
                     }}
                   />
-                  <div 
+                  <div
                     style={{
                       ...currentStyles.medicineIcon,
-                      display: 'none'
+                      display: "none",
                     }}
                   >
                     {medicine.icon}
@@ -757,9 +798,7 @@ export default function MedicinesPage() {
                 <p style={currentStyles.medicineManufacturer}>
                   Manufacturer: {medicine.manufacturer}
                 </p>
-                <div style={currentStyles.categoryTag}>
-                  {medicine.category}
-                </div>
+                <div style={currentStyles.categoryTag}>{medicine.category}</div>
                 <div style={currentStyles.sourceTag}>
                   {medicine.source.toUpperCase()}
                 </div>
@@ -769,9 +808,7 @@ export default function MedicinesPage() {
                   </div>
                 )}
                 {medicine.rxcui && (
-                  <div style={currentStyles.rxcui}>
-                    RxCUI: {medicine.rxcui}
-                  </div>
+                  <div style={currentStyles.rxcui}>RxCUI: {medicine.rxcui}</div>
                 )}
               </div>
             ))}
@@ -781,21 +818,40 @@ export default function MedicinesPage() {
         {/* No Results */}
         {searchTerm && !apiLoading && medicines.length === 0 && !error && (
           <div style={currentStyles.noResults}>
-            <h3>No medicines found for &quot;{searchTerm}&quot;
-              {selectedCategory !== 'all' && ` in ${selectedCategory} category`}
+            <h3>
+              No medicines found for &quot;{searchTerm}&quot;
+              {selectedCategory !== "all" && ` in ${selectedCategory} category`}
             </h3>
             <p>This could happen because:</p>
             <ul style={currentStyles.reasonsList}>
               <li>The medicine name might be spelled differently</li>
-              <li>It might not be in the {selectedCategory !== 'all' ? `${selectedCategory} category or ` : ''}FDA or RxNav databases</li>
+              <li>
+                It might not be in the{" "}
+                {selectedCategory !== "all"
+                  ? `${selectedCategory} category or `
+                  : ""}
+                FDA or RxNav databases
+              </li>
               <li>Try searching with brand name or generic name</li>
-              <li>Try partial names (e.g., &quot;Tylen&quot; instead of &quot;Tylenol&quot;)</li>
-              <li>Try selecting &quot;All Categories&quot; to search in all categories</li>
+              <li>
+                Try partial names (e.g., &quot;Tylen&quot; instead of
+                &quot;Tylenol&quot;)
+              </li>
+              <li>
+                Try selecting &quot;All Categories&quot; to search in all
+                categories
+              </li>
             </ul>
             <div style={currentStyles.suggestions}>
               <strong>Try these common medicines:</strong>
               <div style={currentStyles.suggestionButtons}>
-                {['Acetaminophen', 'Ibuprofen', 'Aspirin', 'Metformin', 'Atorvastatin'].map(suggestion => (
+                {[
+                  "Acetaminophen",
+                  "Ibuprofen",
+                  "Aspirin",
+                  "Metformin",
+                  "Atorvastatin",
+                ].map((suggestion) => (
                   <button
                     key={suggestion}
                     onClick={() => quickSearch(suggestion)}
@@ -814,19 +870,36 @@ export default function MedicinesPage() {
           <div style={currentStyles.instructions}>
             <h3>Search Tips:</h3>
             <ul>
-              <li><strong>Categories:</strong> Filter by medicine category for focused search</li>
-              <li><strong>Brand names:</strong> Tylenol, Advil, Motrin, Lipitor</li>
-              <li><strong>Generic names:</strong> Acetaminophen, Ibuprofen, Atorvastatin</li>
-              <li><strong>Active ingredients:</strong> Search by what&apos;s in the medicine</li>
-              <li><strong>Partial matches:</strong> Try &quot;Ibup&quot; if &quot;Ibuprofen&quot; doesn&apos;t work</li>
+              <li>
+                <strong>Categories:</strong> Filter by medicine category for
+                focused search
+              </li>
+              <li>
+                <strong>Brand names:</strong> Tylenol, Advil, Motrin, Lipitor
+              </li>
+              <li>
+                <strong>Generic names:</strong> Acetaminophen, Ibuprofen,
+                Atorvastatin
+              </li>
+              <li>
+                <strong>Active ingredients:</strong> Search by what&apos;s in
+                the medicine
+              </li>
+              <li>
+                <strong>Partial matches:</strong> Try &quot;Ibup&quot; if
+                &quot;Ibuprofen&quot; doesn&apos;t work
+              </li>
             </ul>
-            
+
             <h4>Database Coverage:</h4>
-            <p>We search local medicine categories, FDA OpenFDA and RxNav databases to give you the most comprehensive results.</p>
-            
+            <p>
+              We search local medicine categories, FDA OpenFDA and RxNav
+              databases to give you the most comprehensive results.
+            </p>
+
             <h4>Categories Available:</h4>
             <div style={currentStyles.categoryList}>
-              {Object.keys(medicineCategories).map(category => (
+              {Object.keys(medicineCategories).map((category) => (
                 <span key={category} style={currentStyles.categoryItem}>
                   {category}
                 </span>
@@ -838,7 +911,10 @@ export default function MedicinesPage() {
 
       {/* Medicine Detail Modal */}
       {selectedMedicine && (
-        <div style={currentStyles.modalOverlay} onClick={() => setSelectedMedicine(null)}>
+        <div
+          style={currentStyles.modalOverlay}
+          onClick={() => setSelectedMedicine(null)}
+        >
           <div style={currentStyles.modal} onClick={(e) => e.stopPropagation()}>
             <button
               style={currentStyles.closeButton}
@@ -846,31 +922,33 @@ export default function MedicinesPage() {
             >
               ✕
             </button>
-            
+
             <div style={currentStyles.modalHeader}>
               <div style={currentStyles.modalImageContainer}>
-                <Image 
+                <img
                   src={selectedMedicine.imageUrl}
                   alt={selectedMedicine.name}
                   width={80}
                   height={60}
                   style={currentStyles.modalImage}
                   onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'block';
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "block";
                   }}
                 />
-                <div 
+                <div
                   style={{
                     ...currentStyles.modalIcon,
-                    display: 'none'
+                    display: "none",
                   }}
                 >
                   {selectedMedicine.icon}
                 </div>
               </div>
               <div>
-                <h2 style={currentStyles.modalTitle}>{selectedMedicine.name}</h2>
+                <h2 style={currentStyles.modalTitle}>
+                  {selectedMedicine.name}
+                </h2>
                 {selectedMedicine.genericName !== selectedMedicine.name && (
                   <p style={currentStyles.modalGeneric}>
                     Generic: {selectedMedicine.genericName}
@@ -885,20 +963,36 @@ export default function MedicinesPage() {
             <div style={currentStyles.modalContent}>
               <div style={currentStyles.modalSection}>
                 <h3>Basic Information</h3>
-                <p><strong>Manufacturer:</strong> {selectedMedicine.manufacturer}</p>
-                <p><strong>Dosage:</strong> {selectedMedicine.dosage}</p>
-                <p><strong>Category:</strong> {selectedMedicine.category}</p>
+                <p>
+                  <strong>Manufacturer:</strong> {selectedMedicine.manufacturer}
+                </p>
+                <p>
+                  <strong>Dosage:</strong> {selectedMedicine.dosage}
+                </p>
+                <p>
+                  <strong>Category:</strong> {selectedMedicine.category}
+                </p>
                 {selectedMedicine.activeIngredient && (
-                  <p><strong>Active Ingredient:</strong> {selectedMedicine.activeIngredient}</p>
+                  <p>
+                    <strong>Active Ingredient:</strong>{" "}
+                    {selectedMedicine.activeIngredient}
+                  </p>
                 )}
                 {selectedMedicine.purpose && (
-                  <p><strong>Purpose:</strong> {selectedMedicine.purpose}</p>
+                  <p>
+                    <strong>Purpose:</strong> {selectedMedicine.purpose}
+                  </p>
                 )}
                 {selectedMedicine.routeOfAdministration && (
-                  <p><strong>Route:</strong> {selectedMedicine.routeOfAdministration}</p>
+                  <p>
+                    <strong>Route:</strong>{" "}
+                    {selectedMedicine.routeOfAdministration}
+                  </p>
                 )}
                 {selectedMedicine.rxcui && (
-                  <p><strong>RxCUI:</strong> {selectedMedicine.rxcui}</p>
+                  <p>
+                    <strong>RxCUI:</strong> {selectedMedicine.rxcui}
+                  </p>
                 )}
               </div>
 
@@ -916,12 +1010,13 @@ export default function MedicinesPage() {
                 </div>
               )}
 
-              {selectedMedicine.dosage && selectedMedicine.source !== 'local' && (
-                <div style={currentStyles.modalSection}>
-                  <h3>Dosage and Administration</h3>
-                  <p>{selectedMedicine.dosage}</p>
-                </div>
-              )}
+              {selectedMedicine.dosage &&
+                selectedMedicine.source !== "local" && (
+                  <div style={currentStyles.modalSection}>
+                    <h3>Dosage and Administration</h3>
+                    <p>{selectedMedicine.dosage}</p>
+                  </div>
+                )}
 
               {selectedMedicine.warnings && (
                 <div style={currentStyles.modalSection}>
@@ -940,8 +1035,10 @@ export default function MedicinesPage() {
               )}
 
               <div style={currentStyles.disclaimer}>
-                <strong>Disclaimer:</strong> This information is for educational purposes only. 
-                Always consult with a healthcare professional before taking any medication. Don&apos;t rely solely on this information for medical decisions.
+                <strong>Disclaimer:</strong> This information is for educational
+                purposes only. Always consult with a healthcare professional
+                before taking any medication. Don&apos;t rely solely on this
+                information for medical decisions.
               </div>
             </div>
           </div>
@@ -957,7 +1054,8 @@ export default function MedicinesPage() {
 const baseStyles = {
   container: {
     minHeight: "100vh",
-    fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    fontFamily:
+      "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   },
   loadingContainer: {
     display: "flex",
@@ -1547,15 +1645,16 @@ const darkStyles = {
 };
 
 // Add CSS animations and Google Fonts
-if (typeof document !== 'undefined') {
+if (typeof document !== "undefined") {
   // Add Google Fonts
-  const link = document.createElement('link');
-  link.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap';
-  link.rel = 'stylesheet';
+  const link = document.createElement("link");
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap";
+  link.rel = "stylesheet";
   document.head.appendChild(link);
 
   // Add CSS animations
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.textContent = `
     @keyframes spin {
       0% { transform: rotate(0deg); }
