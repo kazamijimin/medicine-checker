@@ -11,7 +11,15 @@ import { createClient } from '@supabase/supabase-js';
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Only create client if both values exist
+let supabase = null;
+if (supabaseUrl && supabaseKey) {
+  console.log('Supabase config:', { url: supabaseUrl, hasKey: !!supabaseKey });
+  supabase = createClient(supabaseUrl, supabaseKey);
+} else {
+  console.warn('Supabase configuration missing');
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -22,11 +30,19 @@ export default function LoginPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false); // 👈 ADD THIS
   
   const router = useRouter();
 
-  // Check if mobile device
+  // 👇 FIX: Initialize client state
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // 👇 FIX: Only run window code when client-side
+  useEffect(() => {
+    if (!isClient) return;
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -35,12 +51,12 @@ export default function LoginPage() {
     window.addEventListener('resize', checkMobile);
     
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [isClient]); // 👈 Add isClient dependency
 
   // Function to upload profile picture to Supabase
   const uploadProfilePicture = async (photoURL, userId) => {
     try {
-      if (!photoURL) return null;
+      if (!photoURL || !supabase) return null;
 
       // Fetch the image from Google
       const response = await fetch(photoURL);
@@ -299,7 +315,46 @@ export default function LoginPage() {
     if (error) setError("");
   };
 
-  const currentStyles = isDarkMode ? darkStyles : lightStyles;
+  // 👇 FIX: Get current styles safely
+  const getCurrentStyles = () => {
+    // Return a safe default object during SSR
+    if (!isClient) {
+      return {
+        container: { minHeight: "100vh", display: "flex", flexDirection: "column" },
+        leftSection: { flex: 1, padding: "20px" },
+        // Add other essential styles with safe defaults
+      };
+    }
+    return isDarkMode ? darkStyles : lightStyles;
+  };
+
+  // 👇 Show loading during hydration
+  if (!isClient) {
+    return (
+      <div style={{ 
+        minHeight: "100vh", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        fontFamily: "system-ui, sans-serif"
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{
+            width: "40px",
+            height: "40px",
+            border: "3px solid #e9ecef",
+            borderTop: "3px solid #28a745",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+            margin: "0 auto 20px"
+          }}></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentStyles = getCurrentStyles(); // 👈 Use the safe function
 
   return (
     <>
@@ -479,15 +534,14 @@ export default function LoginPage() {
   );
 }
 
-// Base styles with comprehensive mobile responsiveness
-const baseStyles = {
+// 👇 FIX: Move styles outside component and make them safe
+const createBaseStyles = () => ({
   container: {
     minHeight: "100vh",
     display: "flex",
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     position: "relative",
-    // Mobile: Stack vertically, Desktop: Side by side
-    flexDirection: window?.innerWidth < 768 ? "column" : "row",
+    flexDirection: "column", // Safe default
   },
   themeToggle: {
     position: "fixed",
@@ -792,9 +846,12 @@ const baseStyles = {
   facebookButton: {
     // Specific Facebook button styling
   }
-};
+});
 
-// Light mode styles with mobile optimizations
+// Create styles without window references
+const baseStyles = createBaseStyles();
+
+// Light and dark styles remain the same but reference baseStyles
 const lightStyles = {
   ...baseStyles,
   leftSection: {
@@ -839,7 +896,6 @@ const lightStyles = {
   }
 };
 
-// Dark mode styles with mobile optimizations
 const darkStyles = {
   ...baseStyles,
   leftSection: {
@@ -895,7 +951,7 @@ const darkStyles = {
   }
 };
 
-// Add CSS for spinner animation and mobile-specific styles
+// 👇 FIX: Move CSS injection to useEffect
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `

@@ -925,7 +925,7 @@ const getMedicineImage = (medicineName, source, category) => {
 
             <div style={currentStyles.modalHeader}>
               <div style={currentStyles.modalImageContainer}>
-                <img
+                <Image
                   src={selectedMedicine.imageUrl}
                   alt={selectedMedicine.name}
                   width={80}
