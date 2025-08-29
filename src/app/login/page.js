@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { auth } from "@/firebase";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -11,15 +11,7 @@ import { createClient } from '@supabase/supabase-js';
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-// Only create client if both values exist
-let supabase = null;
-if (supabaseUrl && supabaseKey) {
-  console.log('Supabase config:', { url: supabaseUrl, hasKey: !!supabaseKey });
-  supabase = createClient(supabaseUrl, supabaseKey);
-} else {
-  console.warn('Supabase configuration missing');
-}
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,34 +21,13 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isClient, setIsClient] = useState(false); // 👈 ADD THIS
   
   const router = useRouter();
-
-  // 👇 FIX: Initialize client state
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // 👇 FIX: Only run window code when client-side
-  useEffect(() => {
-    if (!isClient) return;
-    
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, [isClient]); // 👈 Add isClient dependency
 
   // Function to upload profile picture to Supabase
   const uploadProfilePicture = async (photoURL, userId) => {
     try {
-      if (!photoURL || !supabase) return null;
+      if (!photoURL) return null;
 
       // Fetch the image from Google
       const response = await fetch(photoURL);
@@ -315,49 +286,16 @@ export default function LoginPage() {
     if (error) setError("");
   };
 
-  // 👇 FIX: Get current styles safely
-  const getCurrentStyles = () => {
-    // Return a safe default object during SSR
-    if (!isClient) {
-      return {
-        container: { minHeight: "100vh", display: "flex", flexDirection: "column" },
-        leftSection: { flex: 1, padding: "20px" },
-        // Add other essential styles with safe defaults
-      };
-    }
-    return isDarkMode ? darkStyles : lightStyles;
-  };
-
-  // 👇 Show loading during hydration
-  if (!isClient) {
-    return (
-      <div style={{ 
-        minHeight: "100vh", 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center",
-        fontFamily: "system-ui, sans-serif"
-      }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{
-            width: "40px",
-            height: "40px",
-            border: "3px solid #e9ecef",
-            borderTop: "3px solid #28a745",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-            margin: "0 auto 20px"
-          }}></div>
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const currentStyles = getCurrentStyles(); // 👈 Use the safe function
+  const currentStyles = isDarkMode ? darkStyles : lightStyles;
 
   return (
     <>
+      {/* Import Poppins Font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+      
       <div style={currentStyles.container}>
         {/* Dark/Light Mode Toggle */}
         <button 
@@ -402,8 +340,7 @@ export default function LoginPage() {
                     onChange={handlePasswordChange}
                     style={{
                       ...currentStyles.input,
-                      borderColor: error && !password ? "#dc3545" : currentStyles.input.borderColor,
-                      paddingRight: "50px"
+                      borderColor: error && !password ? "#dc3545" : currentStyles.input.borderColor
                     }}
                     required
                   />
@@ -419,7 +356,7 @@ export default function LoginPage() {
 
               {/* Forgot Password Link */}
               <div style={currentStyles.forgotPasswordContainer}>
-                <a href="/forgot-password" style={currentStyles.link}>
+                <a href="/forgot_password" style={currentStyles.link}>
                   Forgot your password?
                 </a>
               </div>
@@ -457,7 +394,7 @@ export default function LoginPage() {
 
             {/* Signup Link */}
             <p style={currentStyles.signupLink}>
-              Don&apos;t have an account? <a href="/signup" style={currentStyles.link}>Sign up here</a>
+              Don't have an account? <a href="/signup" style={currentStyles.link}>Sign up here</a>
             </p>
 
             {/* Divider */}
@@ -471,7 +408,6 @@ export default function LoginPage() {
                 type="button"
                 style={{
                   ...currentStyles.socialButton,
-                  ...currentStyles.googleButton,
                   opacity: (isLoading || isGoogleLoading) ? 0.6 : 1,
                   cursor: (isLoading || isGoogleLoading) ? "not-allowed" : "pointer"
                 }}
@@ -481,91 +417,79 @@ export default function LoginPage() {
                 {isGoogleLoading ? (
                   <>
                     <span style={currentStyles.spinner}></span>
-                    <span style={currentStyles.socialButtonText}>Signing in...</span>
+                    Signing in...
                   </>
                 ) : (
                   <>
                     <span style={currentStyles.socialIcon}>🔵</span>
-                    <span style={currentStyles.socialButtonText}>Google</span>
+                    Google
                   </>
                 )}
               </button>
               <button 
                 type="button"
-                style={{...currentStyles.socialButton, ...currentStyles.facebookButton}}
+                style={currentStyles.socialButton}
                 onClick={() => setError("Facebook login is not available yet.")}
               >
                 <span style={currentStyles.socialIcon}>📘</span>
-                <span style={currentStyles.socialButtonText}>Facebook</span>
+                Facebook
               </button>
             </div>
           </div>
         </div>
 
-        {/* Right Side - Image Section (Hidden on mobile) */}
-        {!isMobile && (
-          <div style={currentStyles.rightSection}>
-            <div style={currentStyles.imageContainer}>
-              <div style={currentStyles.overlayContent}>
-                <h2 style={currentStyles.overlayTitle}>Welcome Back to MediChecker</h2>
-                <p style={currentStyles.overlayText}>
-                  Continue your healthcare journey with our trusted medicine verification and health management platform.
-                </p>
-                <div style={currentStyles.features}>
-                  <div style={currentStyles.feature}>
-                    <span style={currentStyles.featureIcon}>💊</span>
-                    <span style={currentStyles.featureText}>Verify Medicines</span>
-                  </div>
-                  <div style={currentStyles.feature}>
-                    <span style={currentStyles.featureIcon}>📊</span>
-                    <span style={currentStyles.featureText}>Track Health Data</span>
-                  </div>
-                  <div style={currentStyles.feature}>
-                    <span style={currentStyles.featureIcon}>🔒</span>
-                    <span style={currentStyles.featureText}>Secure & Private</span>
-                  </div>
+        {/* Right Side - Image Section */}
+        <div style={currentStyles.rightSection}>
+          <div style={currentStyles.imageContainer}>
+            <div style={currentStyles.overlayContent}>
+              <h2 style={currentStyles.overlayTitle}>Welcome Back to MediChecker</h2>
+              <p style={currentStyles.overlayText}>
+                Continue your healthcare journey with our trusted medicine verification and health management platform.
+              </p>
+              <div style={currentStyles.features}>
+                <div style={currentStyles.feature}>
+                  <span style={currentStyles.featureIcon}>💊</span>
+                  <span style={currentStyles.featureText}>Verify Medicines</span>
+                </div>
+                <div style={currentStyles.feature}>
+                  <span style={currentStyles.featureIcon}>📊</span>
+                  <span style={currentStyles.featureText}>Track Health Data</span>
+                </div>
+                <div style={currentStyles.feature}>
+                  <span style={currentStyles.featureIcon}>🔒</span>
+                  <span style={currentStyles.featureText}>Secure & Private</span>
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </>
   );
 }
 
-// 👇 FIX: Move styles outside component and make them safe
-const createBaseStyles = () => ({
+// Base styles with responsive design
+const baseStyles = {
   container: {
     minHeight: "100vh",
     display: "flex",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    fontFamily: "'Poppins', sans-serif",
     position: "relative",
-    flexDirection: "column", // Safe default
   },
   themeToggle: {
-    position: "fixed",
-    top: "15px",
-    right: "15px",
+    position: "absolute",
+    top: "20px",
+    right: "20px",
     zIndex: 1000,
     background: "rgba(255, 255, 255, 0.2)",
     border: "none",
     borderRadius: "50%",
-    width: "45px",
-    height: "45px",
-    fontSize: "18px",
+    width: "50px",
+    height: "50px",
+    fontSize: "20px",
     cursor: "pointer",
     transition: "all 0.3s ease",
-    backdropFilter: "blur(10px)",
-    // Mobile adjustments
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-    '@media (max-width: 768px)': {
-      width: "40px",
-      height: "40px",
-      fontSize: "16px",
-      top: "10px",
-      right: "10px"
-    }
+    backdropFilter: "blur(10px)"
   },
   leftSection: {
     flex: 1,
@@ -574,10 +498,7 @@ const createBaseStyles = () => ({
     justifyContent: "center",
     padding: "20px",
     overflow: "auto",
-    minHeight: "100vh",
-    // Mobile specific adjustments
-    width: "100%",
-    boxSizing: "border-box"
+    minHeight: "100vh"
   },
   rightSection: {
     flex: 1,
@@ -585,11 +506,7 @@ const createBaseStyles = () => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "300px",
-    // Hide on mobile
-    '@media (max-width: 768px)': {
-      display: "none"
-    }
+    minHeight: "300px"
   },
   imageContainer: {
     width: "100%",
@@ -611,7 +528,7 @@ const createBaseStyles = () => ({
     maxWidth: "400px"
   },
   overlayTitle: {
-    fontSize: "clamp(24px, 4vw, 32px)",
+    fontSize: "clamp(28px, 5vw, 42px)",
     fontWeight: "700",
     marginBottom: "20px",
     textShadow: "0 2px 4px rgba(0,0,0,0.3)"
@@ -635,9 +552,9 @@ const createBaseStyles = () => ({
     fontSize: "clamp(13px, 2vw, 15px)"
   },
   featureIcon: {
-    fontSize: "20px",
-    width: "35px",
-    height: "35px",
+    fontSize: "22px",
+    width: "40px",
+    height: "40px",
     background: "rgba(255,255,255,0.2)",
     borderRadius: "50%",
     display: "flex",
@@ -650,41 +567,32 @@ const createBaseStyles = () => ({
   },
   formContainer: {
     width: "100%",
-    maxWidth: "420px",
+    maxWidth: "450px",
     padding: "20px",
-    boxSizing: "border-box",
-    // Mobile adjustments
-    margin: "0 auto"
+    boxSizing: "border-box"
   },
   header: {
     textAlign: "center",
-    marginBottom: "30px",
-    // Mobile padding adjustment
-    paddingTop: "20px"
+    marginBottom: "40px"
   },
   form: {
-    marginBottom: "25px"
+    marginBottom: "30px"
   },
   inputContainer: {
-    marginBottom: "18px"
+    marginBottom: "20px"
   },
   input: {
     width: "100%",
-    padding: "14px 18px",
+    padding: "16px 20px",
     borderWidth: "2px",
     borderStyle: "solid",
     borderColor: "#e9ecef",
-    borderRadius: "10px",
-    fontSize: "16px", // Prevents zoom on iOS
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    borderRadius: "12px",
+    fontSize: "16px",
+    fontFamily: "'Poppins', sans-serif",
     transition: "border-color 0.3s ease",
     outline: "none",
     boxSizing: "border-box",
-    // Mobile optimizations
-    WebkitAppearance: "none", // Remove iOS styling
-    touchAction: "manipulation", // Improve touch response
-    // Increase tap target size for mobile
-    minHeight: "50px"
   },
   passwordContainer: {
     position: "relative",
@@ -698,19 +606,11 @@ const createBaseStyles = () => ({
     border: "none",
     cursor: "pointer",
     fontSize: "18px",
-    padding: "8px",
-    // Mobile: Larger touch target
-    minWidth: "40px",
-    minHeight: "40px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "5px",
-    touchAction: "manipulation"
+    padding: "5px"
   },
   forgotPasswordContainer: {
     textAlign: "right",
-    marginBottom: "25px"
+    marginBottom: "30px"
   },
   submitButton: {
     width: "100%",
@@ -718,17 +618,13 @@ const createBaseStyles = () => ({
     color: "white",
     border: "none",
     padding: "16px",
-    borderRadius: "10px",
+    borderRadius: "12px",
     fontSize: "16px",
     fontWeight: "600",
     cursor: "pointer",
     transition: "transform 0.2s ease",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    marginBottom: "20px",
-    // Mobile optimizations
-    minHeight: "50px",
-    touchAction: "manipulation",
-    WebkitAppearance: "none"
+    fontFamily: "'Poppins', sans-serif",
+    marginBottom: "20px"
   },
   loadingContent: {
     display: "flex",
@@ -760,9 +656,7 @@ const createBaseStyles = () => ({
     display: "flex",
     alignItems: "flex-start",
     gap: "8px",
-    lineHeight: "1.4",
-    // Mobile: Wrap text better
-    wordBreak: "break-word"
+    lineHeight: "1.4"
   },
   errorIcon: {
     fontSize: "16px",
@@ -772,41 +666,31 @@ const createBaseStyles = () => ({
   signupLink: {
     textAlign: "center",
     fontSize: "14px",
-    margin: "0 0 25px 0",
-    fontWeight: "400",
-    lineHeight: "1.5"
+    margin: "0 0 30px 0",
+    fontWeight: "400"
   },
   link: {
     color: "#28a745",
     textDecoration: "none",
-    fontWeight: "500",
-    // Mobile: Larger touch target
-    padding: "5px",
-    borderRadius: "3px",
-    display: "inline-block"
+    fontWeight: "500"
   },
   divider: {
     position: "relative",
     textAlign: "center",
-    margin: "25px 0",
+    margin: "30px 0",
     borderTop: "1px solid #e9ecef"
   },
   dividerText: {
     background: "white",
-    padding: "0 15px",
+    padding: "0 20px",
     color: "#6c757d",
-    fontSize: "13px",
+    fontSize: "14px",
     position: "relative",
     top: "-10px"
   },
   socialButtons: {
     display: "flex",
-    flexDirection: "column", // Stack vertically on mobile
-    gap: "12px",
-    // Desktop: side by side
-    '@media (min-width: 769px)': {
-      flexDirection: "row"
-    }
+    gap: "15px"
   },
   socialButton: {
     flex: 1,
@@ -814,7 +698,7 @@ const createBaseStyles = () => ({
     alignItems: "center",
     justifyContent: "center",
     gap: "10px",
-    padding: "14px 16px",
+    padding: "12px",
     borderWidth: "2px",
     borderStyle: "solid",
     borderColor: "#e9ecef",
@@ -824,34 +708,14 @@ const createBaseStyles = () => ({
     fontSize: "14px",
     fontWeight: "500",
     transition: "all 0.3s ease",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    // Mobile optimizations
-    minHeight: "50px",
-    touchAction: "manipulation",
-    WebkitAppearance: "none"
+    fontFamily: "'Poppins', sans-serif"
   },
   socialIcon: {
-    fontSize: "18px",
-    flexShrink: 0
-  },
-  socialButtonText: {
-    // Hide text on very small screens
-    '@media (max-width: 320px)': {
-      display: "none"
-    }
-  },
-  googleButton: {
-    // Specific Google button styling
-  },
-  facebookButton: {
-    // Specific Facebook button styling
+    fontSize: "18px"
   }
-});
+};
 
-// Create styles without window references
-const baseStyles = createBaseStyles();
-
-// Light and dark styles remain the same but reference baseStyles
+// Light mode styles
 const lightStyles = {
   ...baseStyles,
   leftSection: {
@@ -860,13 +724,13 @@ const lightStyles = {
   },
   title: {
     color: "#2c5530",
-    fontSize: "clamp(24px, 6vw, 32px)", // More responsive scaling
+    fontSize: "clamp(28px, 4vw, 36px)",
     fontWeight: "700",
     margin: "0 0 8px 0"
   },
   subtitle: {
     color: "#6c757d",
-    fontSize: "clamp(14px, 3vw, 16px)",
+    fontSize: "clamp(14px, 2vw, 16px)",
     margin: 0,
     fontWeight: "400"
   },
@@ -889,13 +753,10 @@ const lightStyles = {
     backgroundColor: "white",
     color: "#333",
     borderColor: "#e9ecef"
-  },
-  passwordToggle: {
-    ...baseStyles.passwordToggle,
-    color: "#6c757d"
   }
 };
 
+// Dark mode styles
 const darkStyles = {
   ...baseStyles,
   leftSection: {
@@ -904,13 +765,13 @@ const darkStyles = {
   },
   title: {
     color: "#ffffff",
-    fontSize: "clamp(24px, 6vw, 32px)",
+    fontSize: "clamp(28px, 4vw, 36px)",
     fontWeight: "700",
     margin: "0 0 8px 0"
   },
   subtitle: {
     color: "#b0b0b0",
-    fontSize: "clamp(14px, 3vw, 16px)",
+    fontSize: "clamp(14px, 2vw, 16px)",
     margin: 0,
     fontWeight: "400"
   },
@@ -944,14 +805,10 @@ const darkStyles = {
     color: "#ff6b6b",
     backgroundColor: "#2d1a1a",
     borderColor: "#5a2a2a"
-  },
-  passwordToggle: {
-    ...baseStyles.passwordToggle,
-    color: "#b0b0b0"
   }
 };
 
-// 👇 FIX: Move CSS injection to useEffect
+// Add CSS for spinner animation
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
@@ -959,89 +816,39 @@ if (typeof document !== 'undefined') {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    
-    /* Mobile-specific improvements */
-    @media (max-width: 768px) {
-      body {
-        overflow-x: hidden;
-      }
-      
-      /* Prevent zoom on input focus for iOS */
-      input[type="email"],
-      input[type="password"],
-      input[type="text"] {
-        font-size: 16px !important;
-      }
-      
-      /* Improve button tap targets */
-      button {
-        min-height: 44px;
-      }
-      
-      /* Smooth scrolling for mobile */
-      html {
-        scroll-behavior: smooth;
-      }
-    }
-    
-    /* Very small screens */
-    @media (max-width: 320px) {
-      .social-button-text {
-        display: none;
-      }
-    }
-    
-    /* Landscape phone orientation */
-    @media (max-width: 768px) and (orientation: landscape) {
-      .form-container {
-        padding: 10px;
-      }
-      
-      .header {
-        margin-bottom: 20px;
-      }
-    }
-    
-    /* High DPI displays */
-    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-      .social-icon {
-        image-rendering: -webkit-optimize-contrast;
-      }
-    }
-    
-    /* Focus states for accessibility */
-    input:focus,
-    button:focus {
-      outline: 2px solid #28a745;
-      outline-offset: 2px;
-    }
-    
-    /* Hover states (only on devices that support hover) */
-    @media (hover: hover) {
-      button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      }
-      
-      .social-button:hover {
-        border-color: #28a745;
-      }
-    }
-    
-    /* Touch feedback */
-    button:active {
-      transform: scale(0.98);
-    }
-    
-    /* Safe area insets for iOS devices with notches */
-    @supports (padding: max(0px)) {
-      .container {
-        padding-left: max(20px, env(safe-area-inset-left));
-        padding-right: max(20px, env(safe-area-inset-right));
-        padding-top: max(20px, env(safe-area-inset-top));
-        padding-bottom: max(20px, env(safe-area-inset-bottom));
-      }
-    }
   `;
   document.head.appendChild(style);
 }
+
+// In your login component or auth handler
+
+
+const handleGoogleLogin = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Check if user document exists in Firestore
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      // Create user document with Google profile data
+      await setDoc(userDocRef, {
+        firstName: user.displayName?.split(' ')[0] || '',
+        lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+        email: user.email,
+        createdAt: new Date().toISOString(),
+        userId: user.uid,
+        hasProfilePicture: !!user.photoURL,
+        profilePictureUrl: user.photoURL, // Google's photo URL
+        provider: 'google'
+      });
+    }
+
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("Google login error:", error);
+  }
+};

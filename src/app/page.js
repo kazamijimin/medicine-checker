@@ -5,11 +5,14 @@ import { auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import Footer from "@/components/Footer";
+import Stats from "@/components/Stats";
 import Features from "@/components/Features";
+import HowItWorks from "@/components/HowItWorks";
 import About from "@/components/About";
+import Testimonials from "@/components/Testimonials";
+import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
-import Home from "@/components/ui/Home";
+import Footer from "@/components/Footer";
 
 export default function HomePage() {
   const [user, setUser] = useState(null);
@@ -35,11 +38,11 @@ export default function HomePage() {
         fontFamily: "'Poppins', sans-serif",
         backgroundColor: isDarkMode ? "#1a1a1a" : "#ffffff",
         color: isDarkMode ? "#ffffff" : "#333333",
-        padding: "20px" // Added mobile padding
+        padding: "20px"
       }}>
         <div style={{ 
           textAlign: "center",
-          maxWidth: "300px", // Constrain width on mobile
+          maxWidth: "300px",
           width: "100%"
         }}>
           <div style={{
@@ -54,7 +57,7 @@ export default function HomePage() {
           <p style={{
             fontSize: "16px",
             margin: "0",
-            padding: "0 10px" // Mobile text padding
+            padding: "0 10px"
           }}>Loading MediChecker...</p>
         </div>
       </div>
@@ -66,13 +69,15 @@ export default function HomePage() {
   return (
     <>
       <div style={currentStyles.container}>
-        {/* Navbar Component */}
         <Navbar user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         <Hero user={user} isDarkMode={isDarkMode} currentStyles={currentStyles} />
+        <Stats isDarkMode={isDarkMode} />
         <Features isDarkMode={isDarkMode} />
+        <HowItWorks isDarkMode={isDarkMode} />
         <About isDarkMode={isDarkMode} />
+        <Testimonials isDarkMode={isDarkMode} />
+        <FAQ isDarkMode={isDarkMode} />
         <Contact isDarkMode={isDarkMode} />
-        <Home isDarkMode={isDarkMode} />
         <Footer isDarkTheme={isDarkMode} />
       </div>
     </>

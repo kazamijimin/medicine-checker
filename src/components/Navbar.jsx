@@ -13,7 +13,96 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [userProfilePicture, setUserProfilePicture] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const router = useRouter();
+
+  // 👇 DIFFERENT APPROACH: Using onMouseDown instead of onClick
+  const handleProfileMouseDown = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("🏠 PROFILE MOUSE DOWN - Starting navigation...");
+    setProfileDropdownOpen(false);
+    setMobileMenuOpen(false);
+    
+    setTimeout(() => {
+      window.location.href = '/profile';
+      console.log("✅ Profile navigation initiated");
+    }, 100);
+  };
+
+  const handleDashboardMouseDown = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("📊 DASHBOARD MOUSE DOWN - Starting navigation...");
+    setProfileDropdownOpen(false);
+    setMobileMenuOpen(false);
+    
+    setTimeout(() => {
+      window.location.href = '/dashboard';
+      console.log("✅ Dashboard navigation initiated");
+    }, 100);
+  };
+
+  const handleSignOutMouseDown = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("🚪 SIGN OUT MOUSE DOWN - Starting sign out...");
+    
+    if (isSigningOut) {
+      console.log("⚠️ Already signing out, ignoring click");
+      return;
+    }
+    
+    setIsSigningOut(true);
+    setProfileDropdownOpen(false);
+    setMobileMenuOpen(false);
+    
+    try {
+      console.log("🔥 Calling Firebase signOut...");
+      await signOut(auth);
+      console.log("✅ Firebase sign out successful");
+      
+      setTimeout(() => {
+        window.location.href = '/';
+        console.log("✅ Redirecting to home page");
+      }, 100);
+      
+    } catch (error) {
+      console.error("❌ Sign out error:", error);
+      alert(`Sign out failed: ${error.message}`);
+      setIsSigningOut(false);
+    }
+  };
+
+  // 👇 ALTERNATIVE: Create clickable divs instead of buttons
+  const ProfileDiv = ({ children, onClick, className = "", style = {} }) => (
+    <div
+      onClick={onClick}
+      onMouseDown={onClick}
+      onTouchStart={onClick}
+      className={`clickable-div ${className}`}
+      style={{
+        ...style,
+        cursor: 'pointer',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
+        WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
+        touchAction: 'manipulation',
+      }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(e);
+        }
+      }}
+    >
+      {children}
+    </div>
+  );
 
   // Smooth scroll function
   const smoothScrollTo = (elementId) => {
@@ -31,7 +120,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
   const handleNavClick = (e, sectionId) => {
     e.preventDefault();
     smoothScrollTo(sectionId);
-    setMobileMenuOpen(false); // Close mobile menu if open
+    setMobileMenuOpen(false);
   };
 
   // Close mobile menu when clicking outside
@@ -56,7 +145,6 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
         try {
           console.log("Fetching profile picture for user:", user.uid);
           
-          // Method 1: Get from Firestore first (most reliable)
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
@@ -70,7 +158,6 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
             }
           }
 
-          // Method 2: Use Google's photoURL if available
           if (user.photoURL) {
             console.log("Using Google photoURL:", user.photoURL);
             setUserProfilePicture(user.photoURL);
@@ -78,7 +165,6 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
             return;
           }
 
-          // Method 3: Try Supabase storage (only if previous methods fail)
           console.log("Checking Supabase storage...");
           
           const { data: files, error: listError } = await supabase.storage
@@ -119,49 +205,23 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
     fetchUserProfilePicture();
   }, [user]);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      setProfileDropdownOpen(false);
-      setMobileMenuOpen(false);
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
-
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
 
   // Function to get profile image source with better fallback
   const getProfileImageSrc = () => {
-    console.log("=== DEBUG getProfileImageSrc ===");
-    console.log("loading:", loading);
-    console.log("userProfilePicture:", userProfilePicture);
-    console.log("user?.photoURL:", user?.photoURL);
-    console.log("user?.displayName:", user?.displayName);
-    console.log("user?.email:", user?.email);
-    
-    // While loading, show letter avatar
     if (loading) {
-      const loadingAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}&background=10b981&color=fff&size=35`;
-      console.log("Returning loading avatar:", loadingAvatar);
-      return loadingAvatar;
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}&background=10b981&color=fff&size=35`;
     }
     
-    // Priority: Supabase URL > Google photoURL > Letter avatar
     if (userProfilePicture) {
-      console.log("Returning userProfilePicture:", userProfilePicture);
       return userProfilePicture;
     }
     
     if (user?.photoURL) {
-      console.log("Returning user.photoURL:", user.photoURL);
       return user.photoURL;
     }
     
-    // Final fallback to letter avatar
-    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}&background=10b981&color=fff&size=35`;
-    console.log("Returning fallback avatar:", fallbackAvatar);
-    return fallbackAvatar;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}&background=10b981&color=fff&size=35`;
   };
 
   const getMobileProfileImageSrc = () => {
@@ -184,15 +244,13 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
   const getDisplayName = (fullName = false) => {
     if (user?.displayName) {
       if (fullName) {
-        return user.displayName; // Return full name when needed
+        return user.displayName;
       } else {
-        // Return only first name for navbar display
         return user.displayName.split(' ')[0];
       }
     }
     
     if (user?.email) {
-      // Return email username without @domain
       return user.email.split('@')[0];
     }
     
@@ -244,7 +302,10 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
             <div style={currentStyles.userMenu}>
               <div 
                 style={currentStyles.profileContainer}
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                onClick={() => {
+                  console.log("🎯 Profile container clicked!");
+                  setProfileDropdownOpen(!profileDropdownOpen);
+                }}
                 className="profile-container"
               >
                 <img 
@@ -252,19 +313,26 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                   alt="Profile"
                   style={currentStyles.avatar}
                   onError={(e) => {
-                    console.log("Image failed to load, falling back to letter avatar");
                     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getDisplayName())}&background=10b981&color=fff&size=35`;
                   }}
                 />
                 <span style={currentStyles.userName} className="user-name-desktop">
-                  {getDisplayName()} {/* This will show only first name or email username */}
+                  {getDisplayName()}
                 </span>
-                <span style={currentStyles.dropdownArrow}>▼</span>
+                <span style={{
+                  ...currentStyles.dropdownArrow,
+                  transform: profileDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+                }}>
+                  ▼
+                </span>
               </div>
               
-              {/* Profile Dropdown */}
+              {/* 👇 NEW APPROACH: Using clickable divs instead of buttons */}
               {profileDropdownOpen && (
-                <div style={currentStyles.dropdown} className="dropdown">
+                <div 
+                  style={currentStyles.dropdown}
+                  className="dropdown"
+                >
                   <div style={{
                     padding: "12px 16px",
                     borderBottom: "1px solid rgba(255,255,255,0.1)",
@@ -272,32 +340,40 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                     color: "#10b981",
                     fontWeight: "600"
                   }}>
-                    {getDisplayName(true)} {/* Show full name in dropdown */}
+                    {getDisplayName(true)}
                   </div>
-                  <button 
-                    onClick={() => {
-                      router.push('/profile');
-                      setProfileDropdownOpen(false);
-                    }}
+                  
+
+                  
+                  {/* 👇 Profile div */}
+                  <ProfileDiv
+                    onClick={handleProfileMouseDown}
                     style={currentStyles.dropdownItem}
+                    className="dropdown-profile-btn"
                   >
-                    Profile
-                  </button>
-                  <button 
-                    onClick={() => {
-                      router.push('/dashboard');
-                      setProfileDropdownOpen(false);
-                    }}
+                    👤 Profile
+                  </ProfileDiv>
+                  
+                  {/* 👇 Dashboard div */}
+                  <ProfileDiv
+                    onClick={handleDashboardMouseDown}
                     style={currentStyles.dropdownItem}
+                    className="dropdown-dashboard-btn"
                   >
-                    Dashboard
-                  </button>
-                  <button 
-                    onClick={handleSignOut}
-                    style={currentStyles.dropdownItemDanger}
+                    📊 Dashboard
+                  </ProfileDiv>
+                  
+                  {/* 👇 Sign out div */}
+                  <ProfileDiv
+                    onClick={handleSignOutMouseDown}
+                    style={{
+                      ...currentStyles.dropdownItemDanger,
+                      opacity: isSigningOut ? 0.6 : 1,
+                      cursor: isSigningOut ? 'not-allowed' : 'pointer'
+                    }}
                   >
-                    Sign Out
-                  </button>
+                    {isSigningOut ? '⏳ Signing Out...' : '🚪 Sign Out'}
+                  </ProfileDiv>
                 </div>
               )}
             </div>
@@ -307,14 +383,6 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                 onClick={() => router.push('/login')}
                 style={currentStyles.loginBtn}
                 className="login-btn"
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)';
-                  e.target.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'transparent';
-                  e.target.style.color = '#10b981';
-                }}
               >
                 Login
               </button>
@@ -322,14 +390,6 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                 onClick={() => router.push('/signup')}
                 style={currentStyles.signUpBtn}
                 className="signup-btn"
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
               >
                 Sign Up
               </button>
@@ -412,43 +472,42 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
                   />
                   <div style={currentStyles.mobileUserDetails}>
                     <span style={currentStyles.mobileUserName}>
-                      {getDisplayName(true)} {/* Full name in mobile */}
+                      {getDisplayName(true)}
                     </span>
                     <div style={currentStyles.mobileUserEmail}>
                       {user?.email}
                     </div>
                   </div>
                 </div>
-                <button 
-                  onClick={() => {
-                    router.push('/profile');
-                    setMobileMenuOpen(false);
-                  }}
+                
+                {/* 👇 Mobile clickable divs */}
+                <ProfileDiv
+                  onClick={handleProfileMouseDown}
                   style={currentStyles.mobileDashboardBtn}
-                  className="mobile-btn"
+                  className="mobile-btn mobile-profile-btn"
                 >
                   👤 Profile
-                </button>
-                <button 
-                  onClick={() => {
-                    router.push('/dashboard');
-                    setMobileMenuOpen(false);
-                  }}
+                </ProfileDiv>
+                
+                <ProfileDiv
+                  onClick={handleDashboardMouseDown}
                   style={currentStyles.mobileDashboardBtn}
-                  className="mobile-btn"
+                  className="mobile-btn mobile-dashboard-btn"
                 >
                   📊 Dashboard
-                </button>
-                <button 
-                  onClick={() => {
-                    handleSignOut();
-                    setMobileMenuOpen(false);
+                </ProfileDiv>
+                
+                <ProfileDiv
+                  onClick={handleSignOutMouseDown}
+                  style={{
+                    ...currentStyles.mobileSignOutBtn,
+                    opacity: isSigningOut ? 0.6 : 1,
+                    cursor: isSigningOut ? 'not-allowed' : 'pointer'
                   }}
-                  style={currentStyles.mobileSignOutBtn}
                   className="mobile-btn"
                 >
-                  🚪 Sign Out
-                </button>
+                  {isSigningOut ? '⏳ Signing Out...' : '🚪 Sign Out'}
+                </ProfileDiv>
               </div>
             ) : (
               <div style={currentStyles.mobileAuthButtons}>
@@ -481,7 +540,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
   );
 }
 
-// Base Styles with Enhanced Mobile Responsiveness
+// 👇 KEEP: All your existing styles
 const baseStyles = {
   nav: {
     position: "fixed",
@@ -497,33 +556,33 @@ const baseStyles = {
   navContainer: {
     maxWidth: "1200px",
     margin: "0 auto",
-    padding: "0 16px", // Reduced for mobile
+    padding: "0 16px",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    height: "60px", // Reduced height for mobile
+    height: "60px",
   },
   logo: {
     display: "flex",
     alignItems: "center",
-    gap: "8px", // Reduced gap for mobile
-    fontSize: "20px", // Smaller on mobile
+    gap: "8px",
+    fontSize: "20px",
     fontWeight: "700",
     cursor: "pointer",
     transition: "transform 0.2s ease",
   },
   logoIcon: {
-    fontSize: "24px", // Smaller on mobile
+    fontSize: "24px",
   },
   navLinks: {
     display: "flex",
     alignItems: "center",
-    gap: "24px", // Reduced gap
+    gap: "24px",
   },
   navLink: {
     textDecoration: "none",
     fontWeight: "500",
-    fontSize: "14px", // Smaller font
+    fontSize: "14px",
     transition: "color 0.3s ease",
     position: "relative",
     padding: "8px 0",
@@ -537,25 +596,29 @@ const baseStyles = {
   profileContainer: {
     display: "flex",
     alignItems: "center",
-    gap: "8px", // Reduced gap
+    gap: "8px",
     cursor: "pointer",
-    padding: "6px 10px", // Smaller padding
+    padding: "6px 10px",
     borderRadius: "8px",
     transition: "background-color 0.3s ease",
+    pointerEvents: "auto",
+    userSelect: "none",
+    position: "relative",
+    zIndex: 50,
   },
   avatar: {
-    width: "32px", // Smaller avatar
+    width: "32px",
     height: "32px",
     borderRadius: "50%",
     objectFit: "cover",
     border: "2px solid #10b981",
   },
   userName: {
-    fontSize: "13px", // Smaller text
+    fontSize: "13px",
     fontWeight: "500",
   },
   dropdownArrow: {
-    fontSize: "10px", // Smaller arrow
+    fontSize: "10px",
     transition: "transform 0.3s ease",
   },
   dropdown: {
@@ -563,61 +626,62 @@ const baseStyles = {
     top: "100%",
     right: 0,
     marginTop: "8px",
-    minWidth: "160px",
+    minWidth: "180px",
     borderRadius: "12px",
     boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
     overflow: "hidden",
-    zIndex: 1001,
+    zIndex: 9999,
+    pointerEvents: "auto",
   },
   dropdownItem: {
     width: "100%",
     padding: "12px 16px",
-    border: "none",
-    background: "transparent",
     textAlign: "left",
-    cursor: "pointer",
     fontFamily: "'Poppins', sans-serif",
     fontWeight: "500",
     fontSize: "14px",
     transition: "background-color 0.3s ease",
+    pointerEvents: "auto",
+    userSelect: "none",
+    display: "block",
   },
   dropdownItemDanger: {
     width: "100%",
     padding: "12px 16px",
-    border: "none",
-    background: "transparent",
     color: "#dc3545",
     textAlign: "left",
-    cursor: "pointer",
     fontFamily: "'Poppins', sans-serif",
     fontWeight: "500",
     fontSize: "14px",
     transition: "background-color 0.3s ease",
+    pointerEvents: "auto",
+    userSelect: "none",
+    display: "block",
   },
   authButtons: {
     display: "flex",
-    gap: "12px", // Reduced gap
+    gap: "12px",
   },
   loginBtn: {
-    padding: "8px 16px", // Smaller padding
+    padding: "8px 16px",
     background: "transparent",
     border: "2px solid #10b981",
     borderRadius: "8px",
     color: "#10b981",
     fontWeight: "600",
-    fontSize: "13px", // Smaller font
+    fontSize: "13px",
     cursor: "pointer",
     transition: "all 0.3s ease",
     fontFamily: "'Poppins', sans-serif",
   },
   signUpBtn: {
-    padding: "8px 16px", // Smaller padding
+    padding: "8px 16px",
     background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
     border: "none",
     borderRadius: "8px",
     color: "white",
     fontWeight: "600",
-    fontSize: "13px", // Smaller font
+    fontSize: "13px",
     cursor: "pointer",
     transition: "all 0.3s ease",
     fontFamily: "'Poppins', sans-serif",
@@ -634,7 +698,7 @@ const baseStyles = {
   hamburger: {
     display: "flex",
     flexDirection: "column",
-    width: "22px", // Slightly smaller
+    width: "22px",
     height: "16px",
     justifyContent: "space-between",
   },
@@ -658,10 +722,10 @@ const baseStyles = {
     animation: "slideDown 0.3s ease",
   },
   mobileMenuContent: {
-    padding: "16px", // Reduced padding
+    padding: "16px",
     display: "flex",
     flexDirection: "column",
-    gap: "12px", // Reduced gap
+    gap: "12px",
   },
   mobileThemeToggle: {
     display: "flex",
@@ -710,7 +774,7 @@ const baseStyles = {
     border: "1px solid rgba(255,255,255,0.1)",
   },
   mobileAvatar: {
-    width: "40px", // Larger avatar for mobile
+    width: "40px",
     height: "40px",
     borderRadius: "50%",
     objectFit: "cover",
@@ -786,6 +850,8 @@ const baseStyles = {
     alignItems: "center",
     justifyContent: "center",
     gap: "8px",
+    pointerEvents: "auto",
+    userSelect: "none",
   },
   mobileSignOutBtn: {
     padding: "12px 16px",
@@ -802,10 +868,12 @@ const baseStyles = {
     alignItems: "center",
     justifyContent: "center",
     gap: "8px",
+    pointerEvents: "auto",
+    userSelect: "none",
   },
 };
 
-// Light Theme Styles
+// 👇 KEEP: Light and dark styles (same as before)
 const lightStyles = {
   ...baseStyles,
   nav: {
@@ -838,12 +906,6 @@ const lightStyles = {
   mobileUserEmail: {
     ...baseStyles.mobileUserEmail,
     color: "#334155",
-  },
-  profileContainer: {
-    ...baseStyles.profileContainer,
-  },
-  mobileMenuBtn: {
-    ...baseStyles.mobileMenuBtn,
   },
   dropdown: {
     ...baseStyles.dropdown,
@@ -883,19 +945,12 @@ const lightStyles = {
   },
 };
 
-// Dark Theme Styles
 const darkStyles = {
   ...lightStyles,
   nav: {
     ...baseStyles.nav,
     background: "rgba(26,26,26,0.95)",
     borderBottom: "1px solid rgba(255,255,255,0.1)",
-  },
-  logoText: {
-    background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    backgroundClip: "text",
   },
   navLink: {
     ...baseStyles.navLink,
@@ -955,163 +1010,43 @@ const darkStyles = {
   },
 };
 
-// Enhanced CSS animations and media queries
+// 👇 NEW: Enhanced CSS for clickable divs
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* Ensure clickable divs work */
+    .clickable-div {
+      pointer-events: auto !important;
+      touch-action: manipulation !important;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.1) !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
     }
     
-    /* Mobile-first responsive design */
+    .clickable-div:hover {
+      background-color: rgba(16, 185, 129, 0.1) !important;
+    }
+    
+    .clickable-div:active {
+      background-color: rgba(16, 185, 129, 0.2) !important;
+    }
+    
+    /* Remove any conflicting styles */
+    .navbar *, .dropdown *, .mobile-menu * {
+      pointer-events: auto !important;
+    }
+    
+    /* Mobile responsiveness */
     @media (max-width: 768px) {
-      .nav-links {
-        display: none !important;
-      }
-      
-      .mobile-menu-btn {
-        display: block !important;
-      }
-      
-      .mobile-menu {
-        display: block !important;
-      }
-      
-      .theme-toggle-desktop {
-        display: none !important;
-      }
-      
-      .user-name-desktop {
-        display: none !important;
-      }
-      
-      .auth-buttons-desktop .login-btn,
-      .auth-buttons-desktop .signup-btn {
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .navbar .logo {
-        font-size: 18px !important;
-      }
-      
-      .navbar .logo span:first-child {
-        font-size: 20px !important;
-      }
-      
-      .mobile-menu-content {
-        padding: 12px !important;
-      }
-    }
-    
-    @media (max-width: 320px) {
-      .navbar {
-        height: 55px !important;
-      }
-      
-      .nav-container {
-        height: 55px !important;
-        padding: 0 12px !important;
-      }
-      
-      .logo {
-        font-size: 16px !important;
-        gap: 6px !important;
-      }
-      
-      .logo span:first-child {
-        font-size: 18px !important;
-      }
-    }
-    
-    /* Desktop hover effects */
-    @media (min-width: 769px) {
-      .logo:hover {
-        transform: scale(1.05);
-      }
-      
-      .nav-link:hover::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-        animation: slideIn 0.3s ease;
-      }
-      
-      .profile-container:hover {
-        background-color: rgba(16, 185, 129, 0.05) !important;
-      }
-      
-      .dropdown-item:hover {
-        background-color: rgba(16, 185, 129, 0.05) !important;
-      }
-    }
-    
-    /* Mobile touch improvements */
-    @media (max-width: 768px) {
-      .mobile-nav-link:hover,
-      .mobile-nav-link:active {
-        background-color: rgba(16, 185, 129, 0.1) !important;
-        transform: translateX(4px);
-      }
-      
-      .mobile-btn:hover,
-      .mobile-btn:active {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      }
-      
-      .mobile-menu-btn:hover {
-        background-color: rgba(16, 185, 129, 0.1) !important;
-      }
-    }
-    
-    @keyframes slideIn {
-      from {
-        width: 0;
-      }
-      to {
-        width: 100%;
-      }
-    }
-
-    /* Smooth scrolling for the entire page */
-    html {
-      scroll-behavior: smooth;
-    }
-    
-    /* Improve touch targets */
-    @media (max-width: 768px) {
-      .mobile-nav-link,
-      .mobile-btn {
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-      }
-    }
-    
-    /* Hide scrollbar but keep functionality */
-    .mobile-menu {
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    
-    .mobile-menu::-webkit-scrollbar {
-      display: none;
+      .nav-links { display: none !important; }
+      .mobile-menu-btn { display: block !important; }
+      .mobile-menu { display: block !important; }
+      .theme-toggle-desktop { display: none !important; }
+      .user-name-desktop { display: none !important; }
     }
   `;
   document.head.appendChild(style);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link'; // 👈 Add this import
 
 const Footer = ({ isDarkTheme }) => {
   const [selectedFilter, setSelectedFilter] = useState('All');
@@ -175,6 +176,21 @@ const Footer = ({ isDarkTheme }) => {
     setSelectedFilter(filter);
     setError(null);
   };
+
+  // Define the footer links with proper URLs
+  const helpLinks = [
+    { name: 'Contact', href: '#contact' },
+    { name: 'FAQ', href: '#faq' },
+    { name: 'Privacy Policy', href: '/settings/privacy' }, // 👈 Your privacy page
+    { name: 'Terms of Service', href: '/settings/terms' }   // 👈 Create this page
+  ];
+
+  const medicineLinks = [
+    { name: 'Medicine Database', href: '#' },
+    { name: 'Drug Interactions', href: '#' },
+    { name: 'Popular Searches', href: '#' },
+    { name: 'Emergency Medicines', href: '#' }
+  ];
 
   return (
     <div className={`min-h-screen font-['Poppins',sans-serif] transition-all duration-300 ${
@@ -384,13 +400,27 @@ const Footer = ({ isDarkTheme }) => {
                 Help
               </h3>
               <ul className="space-y-2 sm:space-y-3">
-                {['Contact', 'FAQ', 'Privacy Policy', 'Terms of Service'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className={`text-xs sm:text-sm transition-all duration-200 hover:translate-x-1 transform block py-1 ${
-                      isDarkTheme ? 'text-slate-400 hover:text-emerald-400' : 'text-gray-600 hover:text-emerald-600'
-                    }`}>
-                      {item}
-                    </a>
+                {helpLinks.map((link) => (
+                  <li key={link.name}>
+                    {link.href.startsWith('#') ? (
+                      <a 
+                        href={link.href} 
+                        className={`text-xs sm:text-sm transition-all duration-200 hover:translate-x-1 transform block py-1 ${
+                          isDarkTheme ? 'text-slate-400 hover:text-emerald-400' : 'text-gray-600 hover:text-emerald-600'
+                        }`}
+                      >
+                        {link.name}
+                      </a>
+                    ) : (
+                      <Link 
+                        href={link.href}
+                        className={`text-xs sm:text-sm transition-all duration-200 hover:translate-x-1 transform block py-1 ${
+                          isDarkTheme ? 'text-slate-400 hover:text-emerald-400' : 'text-gray-600 hover:text-emerald-600'
+                        }`}
+                      >
+                        {link.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -402,17 +432,32 @@ const Footer = ({ isDarkTheme }) => {
                 Medicine Links
               </h3>
               <ul className="space-y-2 sm:space-y-3">
-                {['Medicine Database', 'Drug Interactions', 'Popular Searches', 'Emergency Medicines'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className={`text-xs sm:text-sm transition-all duration-200 hover:translate-x-1 transform block py-1 ${
-                      isDarkTheme ? 'text-slate-400 hover:text-emerald-400' : 'text-gray-600 hover:text-emerald-600'
-                    }`}>
-                      {item}
-                    </a>
+                {medicineLinks.map((link) => (
+                  <li key={link.name}>
+                    {link.href.startsWith('#') ? (
+                      <a 
+                        href={link.href} 
+                        className={`text-xs sm:text-sm transition-all duration-200 hover:translate-x-1 transform block py-1 ${
+                          isDarkTheme ? 'text-slate-400 hover:text-emerald-400' : 'text-gray-600 hover:text-emerald-600'
+                        }`}
+                      >
+                        {link.name}
+                      </a>
+                    ) : (
+                      <Link 
+                        href={link.href}
+                        className={`text-xs sm:text-sm transition-all duration-200 hover:translate-x-1 transform block py-1 ${
+                          isDarkTheme ? 'text-slate-400 hover:text-emerald-400' : 'text-gray-600 hover:text-emerald-600'
+                        }`}
+                      >
+                        {link.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
             </div>
+
           </div>
 
           {/* Bottom Disclaimer */}
