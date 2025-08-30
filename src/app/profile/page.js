@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebase";
