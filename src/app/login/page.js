@@ -407,7 +407,7 @@ export default function LoginPage() {
 
             {/* Signup Link */}
             <p style={currentStyles.signupLink}>
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <a href="/signup" style={currentStyles.link}>
                 Sign up here
               </a>
