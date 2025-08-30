@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
                 <div style={currentStyles.header}>
                   <h1 style={currentStyles.title}>Forgot Password?</h1>
                   <p style={currentStyles.subtitle}>
-                    Enter your email address and we'll send you a link to reset your password.
+                    Enter your email address and we&apos;ll send you a link to reset your password.
                   </p>
                 </div>
                 
@@ -180,7 +180,7 @@ export default function ForgotPasswordPage() {
                   <div style={currentStyles.successIconLarge}>📧</div>
                   <h1 style={currentStyles.title}>Check Your Email</h1>
                   <p style={currentStyles.subtitle}>
-                    We've sent a password reset link to <strong>{email}</strong>
+                    We&apos;ve sent a password reset link to <strong>{email}</strong>
                   </p>
                 </div>
 
@@ -193,7 +193,7 @@ export default function ForgotPasswordPage() {
                     </li>
                     <li style={currentStyles.instructionItem}>
                       <span style={currentStyles.instructionIcon}>2️⃣</span>
-                      If you don't see it, check your spam/junk folder
+                      If you don&apos;t see it, check your spam/junk folder
                     </li>
                     <li style={currentStyles.instructionItem}>
                       <span style={currentStyles.instructionIcon}>3️⃣</span>
@@ -228,7 +228,7 @@ export default function ForgotPasswordPage() {
 
             {/* Sign Up Link */}
             <p style={currentStyles.signupLink}>
-              Don't have an account? <a href="/signup" style={currentStyles.link}>Sign up here</a>
+              Don&apos;t have an account? <a href="/signup" style={currentStyles.link}>Sign up here</a>
             </p>
           </div>
         </div>
@@ -239,7 +239,7 @@ export default function ForgotPasswordPage() {
             <div style={currentStyles.overlayContent}>
               <h2 style={currentStyles.overlayTitle}>Secure Password Reset</h2>
               <p style={currentStyles.overlayText}>
-                We'll help you get back into your account securely. Your data and privacy are our top priority.
+                We&apos;ll help you get back into your account securely. Your data and privacy are our top priority.
               </p>
               <div style={currentStyles.features}>
                 <div style={currentStyles.feature}>

@@ -154,7 +154,7 @@ export default function Dashboard() {
             Welcome back, {user?.displayName || user?.email?.split('@')[0] || 'User'}! 👋
           </h1>
           <p style={currentStyles.welcomeSubtitle}>
-            Here's your health overview for today
+            Here&apos;s your health overview for today
           </p>
         </div>
 

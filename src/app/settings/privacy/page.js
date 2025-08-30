@@ -32,7 +32,7 @@ export default function PrivacyPage() {
     { id: 'your-rights', title: 'Your Privacy Rights', icon: '👤' },
     { id: 'cookies', title: 'Cookies & Tracking', icon: '🍪' },
     { id: 'international', title: 'International Transfers', icon: '🌍' },
-    { id: 'children', title: 'Children\'s Privacy', icon: '👶' },
+    { id: 'children', title: 'Children\s Privacy', icon: '👶' },
     { id: 'policy-changes', title: 'Policy Changes', icon: '🔄' },
     { id: 'contact', title: 'Contact Us', icon: '📞' }
   ];
@@ -543,7 +543,7 @@ export default function PrivacyPage() {
                 </div>
                 <div style={currentStyles.sectionContent}>
                   <p style={currentStyles.paragraph}>
-                    Have questions about your privacy or want to exercise your rights? We're here to help.
+                    Have questions about your privacy or want to exercise your rights? We&apos;re here to help.
                   </p>
                   
                   <div style={currentStyles.contactGrid}>

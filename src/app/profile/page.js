@@ -519,7 +519,7 @@ export default function ProfilePage() {
             
             <div style={currentStyles.modalBody}>
               <div style={currentStyles.imagePreviewContainer}>
-                <img
+                <Image
                   src={imagePreview}
                   alt="Preview"
                   style={currentStyles.imagePreview}
@@ -557,7 +557,7 @@ export default function ProfilePage() {
           <div style={currentStyles.heroBackground}>
             <div style={currentStyles.heroContent}>
               <div style={currentStyles.profileImageContainer}>
-                <img 
+                <Image
                   src={getProfileImageSrc()}
                   alt="Profile"
                   style={currentStyles.profileImage}
@@ -655,7 +655,7 @@ export default function ProfilePage() {
                   </h3>
                   <div style={currentStyles.profilePictureContainer}>
                     <div style={currentStyles.profilePictureDisplay}>
-                      <img
+                      <Image
                         src={getProfileImageSrc()}
                         alt="Profile"
                         style={currentStyles.profilePictureImg}
