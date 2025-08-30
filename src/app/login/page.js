@@ -356,7 +356,7 @@ export default function LoginPage() {
 
               {/* Forgot Password Link */}
               <div style={currentStyles.forgotPasswordContainer}>
-                <a href="/forgot_password" style={currentStyles.link}>
+                <a href="/forgot-password" style={currentStyles.link}>
                   Forgot your password?
                 </a>
               </div>
