@@ -32,7 +32,7 @@ export default function PrivacyPage() {
     { id: 'your-rights', title: 'Your Privacy Rights', icon: '👤' },
     { id: 'cookies', title: 'Cookies & Tracking', icon: '🍪' },
     { id: 'international', title: 'International Transfers', icon: '🌍' },
-    { id: 'children', title: 'Children\s Privacy', icon: '👶' },
+    { id: 'children', title: 'Children&apos;s Privacy', icon: '👶' }, // FIXED
     { id: 'policy-changes', title: 'Policy Changes', icon: '🔄' },
     { id: 'contact', title: 'Contact Us', icon: '📞' }
   ];
@@ -507,7 +507,7 @@ export default function PrivacyPage() {
 
               {/* Children's Privacy */}
               <section style={currentStyles.section}>
-                <h2 style={currentStyles.sectionTitle}>10. Children's Privacy</h2>
+                <h2 style={currentStyles.sectionTitle}>10. Children&apos;s Privacy</h2> {/* FIXED */}
                 <div style={currentStyles.warningBox}>
                   <p style={currentStyles.warningText}>
                     <strong>Age Restriction:</strong> MediChecker is not intended for children under 13. We do not knowingly collect personal information from children under 13.
@@ -528,7 +528,7 @@ export default function PrivacyPage() {
                   <li>Email notification to registered users</li>
                   <li>In-app notifications</li>
                   <li>Prominent notice on our website</li>
-                  <li>Updated "Last modified" date</li>
+                  <li>Updated &quot;Last modified&quot; date</li> {/* FIXED */}
                 </ul>
               </section>
 
@@ -543,7 +543,7 @@ export default function PrivacyPage() {
                 </div>
                 <div style={currentStyles.sectionContent}>
                   <p style={currentStyles.paragraph}>
-                    Have questions about your privacy or want to exercise your rights? We&apos;re here to help.
+                    Have questions about your privacy or want to exercise your rights? We&apos;re here to help. {/* FIXED */}
                   </p>
                   
                   <div style={currentStyles.contactGrid}>

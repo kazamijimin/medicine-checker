@@ -153,7 +153,7 @@ export default function TermsPage() {
                 </div>
                 <div style={currentStyles.sectionContent}>
                   <p style={currentStyles.paragraph}>
-                    Welcome to <strong>MediChecker</strong>, your trusted healthcare companion for medicine verification and health management. These Terms and Conditions ("Terms") constitute a legally binding agreement between you ("User," "you," or "your") and MediChecker ("we," "us," or "our").
+                    Welcome to <strong>MediChecker</strong>, your trusted healthcare companion for medicine verification and health management. These Terms and Conditions (&quot;Terms&quot;) constitute a legally binding agreement between you (&quot;User,&quot; &quot;you,&quot; or &quot;your&quot;) and MediChecker (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;).
                   </p>
                   <div style={currentStyles.highlightBox}>
                     <h4 style={currentStyles.highlightTitle}>🎯 Key Points</h4>
