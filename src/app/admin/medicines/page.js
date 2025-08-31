@@ -977,7 +977,7 @@ export default function AdminMedicinesPage() {
             <span style={currentStyles.emptyIcon}>🚫</span>
             <h2 style={currentStyles.emptyTitle}>Access Denied</h2>
             <p style={currentStyles.emptyText}>
-              You don't have permission to manage medicines.<br/>
+              You don&apos;t have permission to manage medicines.<br/>
               Please contact an administrator for access.
             </p>
             <button 

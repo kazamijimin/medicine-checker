@@ -233,7 +233,7 @@ export default function AdminUsersPage() {
             <span style={currentStyles.emptyIcon}>🚫</span>
             <h2 style={currentStyles.emptyTitle}>Access Denied</h2>
             <p style={currentStyles.emptyText}>
-              You don't have permission to manage users.<br/>
+              You don&apos;t have permission to manage users.<br/>
               Please contact an administrator for access.
             </p>
             <button 

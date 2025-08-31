@@ -730,7 +730,7 @@ export default function AdminPage() {
             <h2 style={currentStyles.unauthorizedTitle}>Access Restricted</h2>
             <p style={currentStyles.unauthorizedText}>
               This area is reserved for system administrators only.<br/>
-              You don't have the necessary permissions to access the admin panel.<br/>
+              You don&apos;t have the necessary permissions to access the admin panel.<br/>
               Please contact your system administrator if you believe this is an error.
             </p>
             <button 

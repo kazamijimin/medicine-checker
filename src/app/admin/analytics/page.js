@@ -634,7 +634,7 @@ export default function AdminAnalyticsPage() {
             <span style={currentStyles.emptyIcon}>🚫</span>
             <h2 style={currentStyles.emptyTitle}>Access Denied</h2>
             <p style={currentStyles.emptyText}>
-              You don't have permission to view analytics.<br/>
+              You don&apos;t have permission to view analytics.<br/>
               Please contact an administrator for access.
             </p>
             <button 
@@ -664,7 +664,7 @@ export default function AdminAnalyticsPage() {
                 Analytics Dashboard
               </h1>
               <p style={currentStyles.heroSubtitle}>
-                Comprehensive insights into your platform's performance
+                Comprehensive insights into your platform&apos;s performance
               </p>
             </div>
           </div>

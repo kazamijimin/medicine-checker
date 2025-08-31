@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, collection, getDocs, addDoc, orderBy, query, limit } from "firebase/firestore";
@@ -23,42 +23,7 @@ export default function AdminLogsPage() {
     }
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        const adminStatus = await checkAdminStatus(currentUser.uid);
-        if (!adminStatus) {
-          setUnauthorized(true);
-        } else {
-          await loadLogs();
-        }
-      } else {
-        router.push('/login');
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-
-  const checkAdminStatus = async (userId) => {
-    try {
-      const userDoc = await getDoc(doc(db, "users", userId));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        const adminStatus = userData.role === 'admin' || userData.isAdmin === true;
-        setIsAdmin(adminStatus);
-        return adminStatus;
-      }
-      return false;
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-      return false;
-    }
-  };
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     try {
       const logsQuery = query(
         collection(db, "systemLogs"),
@@ -78,9 +43,9 @@ export default function AdminLogsPage() {
         await createSampleLogs();
       }
     }
-  };
+  }, []);
 
-  const createSampleLogs = async () => {
+  const createSampleLogs = useCallback(async () => {
     try {
       const sampleLogs = [
         {
@@ -107,7 +72,42 @@ export default function AdminLogsPage() {
     } catch (error) {
       console.error("Error creating sample logs:", error);
     }
-  };
+  }, [user?.uid, loadLogs]);
+
+  const checkAdminStatus = useCallback(async (userId) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const adminStatus = userData.role === 'admin' || userData.isAdmin === true;
+        setIsAdmin(adminStatus);
+        return adminStatus;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        const adminStatus = await checkAdminStatus(currentUser.uid);
+        if (!adminStatus) {
+          setUnauthorized(true);
+        } else {
+          await loadLogs();
+        }
+      } else {
+        router.push('/login');
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router, checkAdminStatus, loadLogs]);
 
   const getLogColor = (level) => {
     switch (level) {

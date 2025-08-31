@@ -309,7 +309,7 @@ export default function AdminSettingsPage() {
             <div style={styles.unauthorizedTitle}>🚫</div>
             <h2>Access Denied</h2>
             <p style={styles.unauthorizedText}>
-              You don't have permission to access admin settings.
+              You don&apos;t have permission to access admin settings.
             </p>
             <button 
               style={styles.backButton}
