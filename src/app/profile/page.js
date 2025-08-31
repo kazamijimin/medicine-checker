@@ -374,8 +374,8 @@ export default function ProfilePage() {
         return;
       }
 
-      // Validate image dimensions (optional)
-      const img = new Image();
+      // Use HTMLImageElement constructor explicitly
+      const img = new window.Image(); // Use window.Image to avoid conflict with Next.js Image
       img.onload = function() {
         // Check if image is reasonable size
         if (this.width < 50 || this.height < 50) {
@@ -459,8 +459,7 @@ export default function ProfilePage() {
   // Enhanced profile image source function
   const getProfileImageSrc = () => {
     if (user?.photoURL) {
-      // Add timestamp to prevent caching issues
-      return `${user.photoURL}?t=${Date.now()}`;
+      return user.photoURL;
     }
     
     // Create a more personalized fallback avatar
@@ -521,17 +520,12 @@ export default function ProfilePage() {
             
             <div style={currentStyles.modalBody}>
               <div style={currentStyles.imagePreviewContainer}>
-                {imagePreview && (
-                  <Image
-                    src={imagePreview}
-                    alt="Profile Preview"
-                    width={200}
-                    height={200}
-                    style={currentStyles.imagePreview}
-                    unoptimized={true}
-                    priority={true}
-                  />
-                )}
+                {/* Use img tag instead of Next.js Image for data URLs */}
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={currentStyles.imagePreview}
+                />
               </div>
               
               <div style={currentStyles.modalActions}>
@@ -565,17 +559,14 @@ export default function ProfilePage() {
           <div style={currentStyles.heroBackground}>
             <div style={currentStyles.heroContent}>
               <div style={currentStyles.profileImageContainer}>
-                <Image
+                {/* Use img tag for profile images */}
+                <img
                   src={getProfileImageSrc()}
-                  alt="Profile Picture"
-                  width={120}
-                  height={120}
+                  alt="Profile"
                   style={currentStyles.profileImage}
                   onError={(e) => {
                     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.displayName || user?.email || 'User')}&background=10b981&color=fff&size=120`;
                   }}
-                  unoptimized={true}
-                  priority={true}
                 />
                 <div 
                   style={currentStyles.profileImageOverlay}
@@ -667,16 +658,14 @@ export default function ProfilePage() {
                   </h3>
                   <div style={currentStyles.profilePictureContainer}>
                     <div style={currentStyles.profilePictureDisplay}>
-                      <Image
+                      {/* Use img tag here too */}
+                      <img
                         src={getProfileImageSrc()}
-                        alt="Profile Picture"
-                        width={80}
-                        height={80}
+                        alt="Profile"
                         style={currentStyles.profilePictureImg}
                         onError={(e) => {
                           e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.displayName || user?.email || 'User')}&background=10b981&color=fff&size=80`;
                         }}
-                        unoptimized={true}
                       />
                     </div>
                     <div style={currentStyles.profilePictureInfo}>
@@ -694,7 +683,7 @@ export default function ProfilePage() {
                         >
                           📷 Change Photo
                         </button>
-                        {user?.photoURL && !user.photoURL.includes('ui-avatars.com') && (
+                        {user?.photoURL && (
                           <button
                             onClick={removeProfileImage}
                             style={currentStyles.removePhotoButton}
@@ -805,7 +794,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Keep all your other tabs exactly as they are */}
+            {/* Keep all your existing tabs - security, preferences, activity */}
             {activeTab === 'security' && (
               <div style={currentStyles.tabContent}>
                 <div style={currentStyles.sectionHeader}>
