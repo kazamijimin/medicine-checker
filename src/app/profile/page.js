@@ -459,7 +459,8 @@ export default function ProfilePage() {
   // Enhanced profile image source function
   const getProfileImageSrc = () => {
     if (user?.photoURL) {
-      return user.photoURL;
+      // Add timestamp to prevent caching issues
+      return `${user.photoURL}?t=${Date.now()}`;
     }
     
     // Create a more personalized fallback avatar
@@ -520,11 +521,17 @@ export default function ProfilePage() {
             
             <div style={currentStyles.modalBody}>
               <div style={currentStyles.imagePreviewContainer}>
-                <Image
-                  src={imagePreview}
-                  alt="Preview"
-                  style={currentStyles.imagePreview}
-                />
+                {imagePreview && (
+                  <Image
+                    src={imagePreview}
+                    alt="Profile Preview"
+                    width={200}
+                    height={200}
+                    style={currentStyles.imagePreview}
+                    unoptimized={true}
+                    priority={true}
+                  />
+                )}
               </div>
               
               <div style={currentStyles.modalActions}>
@@ -560,11 +567,15 @@ export default function ProfilePage() {
               <div style={currentStyles.profileImageContainer}>
                 <Image
                   src={getProfileImageSrc()}
-                  alt="Profile"
+                  alt="Profile Picture"
+                  width={120}
+                  height={120}
                   style={currentStyles.profileImage}
                   onError={(e) => {
                     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.displayName || user?.email || 'User')}&background=10b981&color=fff&size=120`;
                   }}
+                  unoptimized={true}
+                  priority={true}
                 />
                 <div 
                   style={currentStyles.profileImageOverlay}
@@ -658,11 +669,14 @@ export default function ProfilePage() {
                     <div style={currentStyles.profilePictureDisplay}>
                       <Image
                         src={getProfileImageSrc()}
-                        alt="Profile"
+                        alt="Profile Picture"
+                        width={80}
+                        height={80}
                         style={currentStyles.profilePictureImg}
                         onError={(e) => {
                           e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.displayName || user?.email || 'User')}&background=10b981&color=fff&size=80`;
                         }}
+                        unoptimized={true}
                       />
                     </div>
                     <div style={currentStyles.profilePictureInfo}>
@@ -680,7 +694,7 @@ export default function ProfilePage() {
                         >
                           📷 Change Photo
                         </button>
-                        {user?.photoURL && (
+                        {user?.photoURL && !user.photoURL.includes('ui-avatars.com') && (
                           <button
                             onClick={removeProfileImage}
                             style={currentStyles.removePhotoButton}
@@ -791,7 +805,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Keep all your existing tabs - security, preferences, activity */}
+            {/* Keep all your other tabs exactly as they are */}
             {activeTab === 'security' && (
               <div style={currentStyles.tabContent}>
                 <div style={currentStyles.sectionHeader}>

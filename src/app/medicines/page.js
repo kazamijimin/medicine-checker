@@ -6,6 +6,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from 'next/image';
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/firebase";
 
 // Pre-defined medicine categories with sample medicines
 const medicineCategories = {
@@ -253,9 +255,58 @@ export default function MedicinesPage() {
       setUser(user);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
+
+  // Add CSS animations in useEffect
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @media (max-width: 768px) {
+        .medicine-grid {
+          grid-template-columns: 1fr !important;
+        }
+        .category-filter {
+          justify-content: center;
+        }
+        .quick-search-grid {
+          grid-template-columns: 1fr 1fr !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Function to log search to Firebase
+  const logSearchToFirebase = async (searchTerm, results, searchType = 'text') => {
+    if (!auth.currentUser || !searchTerm.trim()) return;
+    try {
+      await addDoc(collection(db, "searches"), {
+        userId: auth.currentUser.uid,
+        medicineName: searchTerm,
+        searchQuery: searchTerm,
+        searchType: searchType,
+        resultCount: results.length,
+        verified: results.length > 0,
+        timestamp: new Date(),
+        source: 'medicine_page',
+        userEmail: auth.currentUser.email,
+        createdAt: new Date()
+      });
+      console.log('✅ Search logged to Firebase:', searchTerm);
+    } catch (error) {
+      console.error('❌ Failed to log search:', error);
+    }
+  };
+
+
 
   // Function to get medicine image placeholder
   const getMedicineImage = (medicineName, category) => {
@@ -1210,29 +1261,3 @@ const darkStyles = {
     color: "#ff6b6b",
   },
 };
-
-// Add CSS animations
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    @media (max-width: 768px) {
-      .medicine-grid {
-        grid-template-columns: 1fr !important;
-      }
-      
-      .category-filter {
-        justify-content: center;
-      }
-      
-      .quick-search-grid {
-        grid-template-columns: 1fr 1fr !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-}
