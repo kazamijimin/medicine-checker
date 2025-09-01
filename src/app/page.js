@@ -13,6 +13,7 @@ import Testimonials from "@/components/Testimonials";
 import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import AIAssistant from "@/components/AIAssistant"; // Add this import
 
 export default function HomePage() {
   const [user, setUser] = useState(null);
@@ -79,6 +80,9 @@ export default function HomePage() {
         <FAQ isDarkMode={isDarkMode} />
         <Contact isDarkMode={isDarkMode} />
         <Footer isDarkTheme={isDarkMode} />
+        
+        {/* Add AI Assistant - it will appear as floating button */}
+        <AIAssistant isDarkMode={isDarkMode} />
       </div>
     </>
   );
