@@ -682,8 +682,8 @@ const baseStyles = {
     display: "flex",
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     position: "relative",
-    // Mobile: Stack vertically, Desktop: Side by side
-    flexDirection: window?.innerWidth < 768 ? "column" : "row",
+    // Mobile/Desktop flexDirection is set at runtime in the component to avoid SSR window access
+    flexDirection: "row",
   },
   themeToggle: {
     position: "fixed",
