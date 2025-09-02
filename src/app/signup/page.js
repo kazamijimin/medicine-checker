@@ -75,10 +75,8 @@ export default function SignupPage() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -547,7 +545,13 @@ export default function SignupPage() {
 
   return (
     <>
-      <div style={currentStyles.container}>
+      <div
+        style={{
+          ...currentStyles.container,
+          // set flex direction at runtime (no SSR window access)
+          flexDirection: isMobile ? "column" : "row"
+        }}
+      >
         {/* Dark/Light Mode Toggle */}
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
