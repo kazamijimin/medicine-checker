@@ -94,14 +94,16 @@ export default function Dashboard() {
               Welcome back, {user.displayName?.split(' ')[0] || 'User'}! 👋
             </h1>
             <p style={currentStyles.welcomeSubtitle}>
-              Your personal dashboard with quick access to your medicine checker app.
+              Your personal dashboard with quick access to your featured projects.
             </p>
           </section>
 
-          {/* Featured App Section */}
+          {/* Featured Apps Section */}
           <section style={currentStyles.actionsSection}>
-            <h2 style={currentStyles.sectionTitle}>🌟 Featured App</h2>
+            <h2 style={currentStyles.sectionTitle}>🌟 Multi-System Projects</h2>
             <div style={styles.featuredGrid}>
+              
+              {/* Medicine Checker App */}
               <div style={currentStyles.featuredCard}>
                 <div style={styles.featuredIcon}>🏥</div>
                 <h3 style={currentStyles.featuredTitle}>Medicine Checker</h3>
@@ -121,6 +123,28 @@ export default function Dashboard() {
                   🚀 Launch Medicine Checker
                 </button>
               </div>
+
+              {/* Tsukihime Design Project */}
+              <div style={currentStyles.featuredCard}>
+                <div style={styles.featuredIcon}>🌙</div>
+                <h3 style={currentStyles.featuredTitle}>Tsukihime Design</h3>
+                <p style={currentStyles.featuredDescription}>
+                  🎨 Beautiful and elegant design inspired by the Tsukihime visual novel. 
+                  Experience stunning UI/UX with modern web technologies and artistic aesthetics.
+                </p>
+                <div style={styles.featuredFeatures}>
+                  <span style={currentStyles.featureBadgeSecondary}>🎨 Visual Design</span>
+                  <span style={currentStyles.featureBadgeSecondary}>🌙 Dark Theme</span>
+                  <span style={currentStyles.featureBadgeSecondary}>✨ Aesthetic UI</span>
+                </div>
+                <button 
+                  style={currentStyles.featuredButtonSecondary}
+                  onClick={() => handleRedirect('https://schoolproject-tsukiwebvn.vercel.app')}
+                >
+                  🌙 View Tsukihime Design
+                </button>
+              </div>
+
             </div>
           </section>
         </div>
@@ -186,14 +210,17 @@ const styles = {
     objectFit: 'cover'
   },
   dashboardContent: {
-    maxWidth: '1200px',
+    maxWidth: '1400px', // Increased max width
     margin: '0 auto',
     padding: '20px'
   },
   featuredGrid: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginTop: '40px'
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr', // Force exactly 2 columns
+    gap: '50px', // Increased gap
+    marginTop: '40px',
+    alignItems: 'stretch', // Make both cards same height
+    justifyContent: 'center'
   },
   featuredIcon: {
     fontSize: '64px',
@@ -282,26 +309,30 @@ const lightStyles = {
   },
   featuredCard: {
     backgroundColor: '#ffffff',
-    padding: '50px',
+    padding: '40px',
     borderRadius: '20px',
     boxShadow: '0 12px 40px rgba(0,123,255,0.15)',
     border: '3px solid #007bff',
     textAlign: 'center',
-    maxWidth: '700px',
-    width: '100%',
+    width: '100%', // Take full width of grid column
+    height: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease'
   },
   featuredTitle: {
-    fontSize: '32px',
+    fontSize: '28px',
     fontWeight: '700',
     color: '#007bff',
     margin: '0 0 20px 0'
   },
   featuredDescription: {
-    fontSize: '18px',
+    fontSize: '16px',
     color: '#666',
     lineHeight: '1.7',
-    marginBottom: '30px'
+    marginBottom: '30px',
+    flex: 1 // Allow description to take available space
   },
   featureBadge: {
     backgroundColor: '#e3f2fd',
@@ -312,21 +343,46 @@ const lightStyles = {
     fontWeight: '600',
     border: '1px solid #bbdefb'
   },
+  featureBadgeSecondary: {
+    backgroundColor: '#f3e5f5',
+    color: '#7b1fa2',
+    padding: '8px 16px',
+    borderRadius: '25px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: '1px solid #ce93d8'
+  },
   featuredButton: {
     background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
     color: 'white',
     border: 'none',
-    padding: '20px 40px',
+    padding: '18px 35px',
     borderRadius: '15px',
     cursor: 'pointer',
-    fontSize: '18px',
+    fontSize: '16px',
     fontWeight: '700',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    boxShadow: '0 6px 20px rgba(0,123,255,0.3)'
+    boxShadow: '0 6px 20px rgba(0,123,255,0.3)',
+    alignSelf: 'center',
+    width: 'fit-content'
+  },
+  featuredButtonSecondary: {
+    background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '18px 35px',
+    borderRadius: '15px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    fontWeight: '700',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    boxShadow: '0 6px 20px rgba(156,39,176,0.3)',
+    alignSelf: 'center',
+    width: 'fit-content'
   }
 };
 
-// Dark theme
+// Dark theme (same featured card styling)
 const darkStyles = {
   ...lightStyles,
   container: {
@@ -374,10 +430,16 @@ const darkStyles = {
     backgroundColor: '#1e3a8a',
     color: '#93c5fd',
     border: '1px solid #3b82f6'
+  },
+  featureBadgeSecondary: {
+    ...lightStyles.featureBadgeSecondary,
+    backgroundColor: '#4a148c',
+    color: '#ce93d8',
+    border: '1px solid #9c27b0'
   }
 };
 
-// Add CSS animations
+// Updated CSS with proper side-by-side layout
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
@@ -388,41 +450,117 @@ if (typeof document !== 'undefined') {
       100% { transform: rotate(360deg); }
     }
     
+    /* Featured card hover effects */
     .featured-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 16px 50px rgba(0,123,255,0.3);
+      transform: translateY(-8px) !important;
     }
     
-    .featured-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0,123,255,0.5);
+    .featured-button:hover, 
+    .featured-button-secondary:hover {
+      transform: translateY(-2px) !important;
     }
     
+    /* Ensure cards are equal height */
+    [style*="featuredGrid"] > div {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    
+    /* Desktop - Force side by side */
+    @media (min-width: 1025px) {
+      [style*="featuredGrid"] {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 60px !important;
+        max-width: 1400px !important;
+        margin: 40px auto 0 !important;
+      }
+    }
+    
+    /* Laptop/Tablet - Still side by side */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      [style*="featuredGrid"] {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 40px !important;
+        margin: 40px 20px 0 !important;
+      }
+      
+      [style*="featuredCard"] {
+        padding: 35px 25px !important;
+      }
+    }
+    
+    /* Mobile - Stack vertically */
     @media (max-width: 768px) {
-      .featured-card {
-        margin: 0 15px;
-        padding: 30px 20px;
+      [style*="featuredGrid"] {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 30px !important;
+        margin: 40px 15px 0 !important;
       }
       
-      .featured-title {
-        font-size: 26px !important;
+      [style*="featuredCard"] {
+        margin: 0 !important;
+        padding: 30px 20px !important;
+        max-width: none !important;
       }
       
-      .featured-description {
-        font-size: 16px !important;
+      [style*="featuredTitle"] {
+        font-size: 24px !important;
       }
       
-      .featured-button {
+      [style*="featuredDescription"] {
+        font-size: 15px !important;
+      }
+      
+      [style*="featuredButton"], 
+      [style*="featuredButtonSecondary"] {
         padding: 16px 28px !important;
-        font-size: 16px !important;
+        font-size: 15px !important;
       }
       
-      .welcome-title {
+      [style*="welcomeTitle"] {
         font-size: 32px !important;
       }
       
-      .welcome-subtitle {
+      [style*="welcomeSubtitle"] {
         font-size: 18px !important;
+      }
+      
+      [style*="sectionTitle"] {
+        font-size: 24px !important;
+      }
+    }
+    
+    /* Very small mobile */
+    @media (max-width: 480px) {
+      [style*="featuredGrid"] {
+        margin: 40px 10px 0 !important;
+      }
+      
+      [style*="featuredCard"] {
+        padding: 25px 15px !important;
+      }
+      
+      [style*="featuredIcon"] {
+        font-size: 48px !important;
+      }
+      
+      [style*="featuredTitle"] {
+        font-size: 22px !important;
+      }
+      
+      [style*="featuredDescription"] {
+        font-size: 14px !important;
+      }
+      
+      [style*="welcomeTitle"] {
+        font-size: 28px !important;
+      }
+      
+      [style*="welcomeSubtitle"] {
+        font-size: 16px !important;
       }
     }
   `;
