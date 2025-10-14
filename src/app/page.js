@@ -2,568 +2,427 @@
 
 import { useState, useEffect } from "react";
 import { auth } from "@/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import Stats from "@/components/Stats";
-import Features from "@/components/Features";
-import HowItWorks from "@/components/HowItWorks";
-import About from "@/components/About";
-import Testimonials from "@/components/Testimonials";
-import FAQ from "@/components/FAQ";
-import Contact from "@/components/Contact";
-import Footer from "@/components/Footer";
-import AIAssistant from "@/components/AIAssistant"; // Add this import
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
-export default function HomePage() {
+export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
+      if (!user) {
+        router.push('/auth');
+      }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push('/auth');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const handleRedirect = (url) => {
+    window.open(url, '_blank');
+  };
 
   if (loading) {
     return (
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        fontFamily: "'Poppins', sans-serif",
-        backgroundColor: isDarkMode ? "#1a1a1a" : "#ffffff",
-        color: isDarkMode ? "#ffffff" : "#333333",
-        padding: "20px"
-      }}>
-        <div style={{ 
-          textAlign: "center",
-          maxWidth: "300px",
-          width: "100%"
-        }}>
-          <div style={{
-            width: "50px",
-            height: "50px",
-            border: "3px solid #e9ecef",
-            borderTop: "3px solid #28a745",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-            margin: "0 auto 20px"
-          }}></div>
-          <p style={{
-            fontSize: "16px",
-            margin: "0",
-            padding: "0 10px"
-          }}>Loading MediChecker...</p>
-        </div>
+      <div style={styles.loadingContainer}>
+        <div style={styles.loader}></div>
+        <p>Loading Dashboard...</p>
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
 
   return (
-    <>
-      <div style={currentStyles.container}>
-        <Navbar user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-        <Hero user={user} isDarkMode={isDarkMode} currentStyles={currentStyles} />
-        <Stats isDarkMode={isDarkMode} />
-        <Features isDarkMode={isDarkMode} />
-        <HowItWorks isDarkMode={isDarkMode} />
-        <About isDarkMode={isDarkMode} />
-        <Testimonials isDarkMode={isDarkMode} />
-        <FAQ isDarkMode={isDarkMode} />
-        <Contact isDarkMode={isDarkMode} />
-        <Footer isDarkTheme={isDarkMode} />
-        
-        {/* Add AI Assistant - it will appear as floating button */}
-        <AIAssistant isDarkMode={isDarkMode} />
-      </div>
-    </>
+    <div style={currentStyles.container}>
+      {/* Header */}
+      <header style={currentStyles.header}>
+        <div style={styles.headerContent}>
+          <div style={styles.logo}>
+            <span style={styles.logoIcon}>🚀</span>
+            <span style={styles.logoText}>Dashboard</span>
+          </div>
+          
+          <div style={styles.headerRight}>
+            <button onClick={toggleTheme} style={currentStyles.themeButton}>
+              {isDarkMode ? '☀️' : '🌙'}
+            </button>
+            
+            <div style={styles.userMenu}>
+              <img 
+                src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=007bff&color=fff`}
+                alt="User Avatar"
+                style={styles.avatar}
+              />
+              <span style={currentStyles.userName}>{user.displayName || user.email}</span>
+              <button onClick={handleSignOut} style={currentStyles.signOutButton}>
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Dashboard Content */}
+      <main style={currentStyles.main}>
+        <div style={styles.dashboardContent}>
+          {/* Welcome Section */}
+          <section style={currentStyles.welcomeSection}>
+            <h1 style={currentStyles.welcomeTitle}>
+              Welcome back, {user.displayName?.split(' ')[0] || 'User'}! 👋
+            </h1>
+            <p style={currentStyles.welcomeSubtitle}>
+              Your personal dashboard with quick access to your medicine checker app.
+            </p>
+          </section>
+
+          {/* Featured App Section */}
+          <section style={currentStyles.actionsSection}>
+            <h2 style={currentStyles.sectionTitle}>🌟 Featured App</h2>
+            <div style={styles.featuredGrid}>
+              <div style={currentStyles.featuredCard}>
+                <div style={styles.featuredIcon}>🏥</div>
+                <h3 style={currentStyles.featuredTitle}>Medicine Checker</h3>
+                <p style={currentStyles.featuredDescription}>
+                  🤖 Chat with Nick AI for medical advice, medicine information, and health guidance. 
+                  Get instant answers to your health questions with our advanced AI assistant.
+                </p>
+                <div style={styles.featuredFeatures}>
+                  <span style={currentStyles.featureBadge}>💊 Medicine Info</span>
+                  <span style={currentStyles.featureBadge}>🤖 AI Assistant</span>
+                  <span style={currentStyles.featureBadge}>⚕️ Health Advice</span>
+                </div>
+                <button 
+                  style={currentStyles.featuredButton}
+                  onClick={() => handleRedirect('https://medicine-checker.vercel.app/home')}
+                >
+                  🚀 Launch Medicine Checker
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
   );
 }
 
-// Mobile-first responsive styles
-const baseStyles = {
-  container: {
+// Base styles
+const styles = {
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
     fontFamily: "'Poppins', sans-serif",
-    minHeight: "100vh",
-    margin: 0,
-    padding: 0,
-    lineHeight: 1.6,
-    overflow: "hidden", // Prevent horizontal scroll
+    gap: '20px'
   },
-  hero: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    padding: "80px 16px 40px", // Mobile-first: top padding for navbar, side padding
-    position: "relative",
+  loader: {
+    width: '50px',
+    height: '50px',
+    border: '3px solid #e9ecef',
+    borderTop: '3px solid #007bff',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite'
   },
-  heroContent: {
-    maxWidth: "100%", // Mobile-first: full width
-    width: "100%",
-    padding: "0 8px", // Additional mobile padding
+  headerContent: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '0 20px'
   },
-  heroTitle: {
-    fontSize: "28px", // Mobile-first: smaller starting size
-    fontWeight: "700",
-    marginBottom: "16px", // Smaller mobile margins
-    lineHeight: "1.2",
-    wordBreak: "break-word", // Prevent overflow
-    hyphens: "auto", // Better text wrapping
+  logo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px'
   },
-  highlight: {
-    background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    backgroundClip: "text",
-    display: "inline-block", // Better text rendering
+  logoIcon: {
+    fontSize: '28px'
   },
-  heroSubtitle: {
-    fontSize: "14px", // Mobile-first: smaller text
-    marginBottom: "24px", // Smaller mobile margins
-    opacity: 0.8,
-    lineHeight: "1.6",
-    padding: "0 8px", // Mobile text padding
-    maxWidth: "100%",
+  logoText: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#007bff'
   },
-  heroButtons: {
-    display: "flex",
-    gap: "12px", // Smaller mobile gaps
-    justifyContent: "center",
-    flexDirection: "column", // Mobile-first: stack vertically
-    alignItems: "center",
-    width: "100%",
-    padding: "0 16px", // Mobile button container padding
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '15px'
   },
-  primaryButton: {
-    padding: "14px 24px", // Smaller mobile padding
-    background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-    color: "white",
-    border: "none",
-    borderRadius: "12px",
-    fontSize: "16px", // Mobile-appropriate size
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontFamily: "'Poppins', sans-serif",
-    boxShadow: "0 4px 15px rgba(40, 167, 69, 0.2)",
-    width: "100%", // Full width on mobile
-    maxWidth: "280px", // Constrain maximum width
-    minHeight: "48px", // Minimum touch target
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+  userMenu: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px'
   },
-  secondaryButton: {
-    padding: "14px 24px", // Smaller mobile padding
-    background: "transparent",
-    border: "2px solid #28a745",
-    borderRadius: "12px",
-    fontSize: "16px", // Mobile-appropriate size
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontFamily: "'Poppins', sans-serif",
-    width: "100%", // Full width on mobile
-    maxWidth: "280px", // Constrain maximum width
-    minHeight: "48px", // Minimum touch target
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+  avatar: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    objectFit: 'cover'
   },
-  welcomeBack: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "16px", // Smaller mobile gaps
-    width: "100%",
-    padding: "0 16px", // Mobile padding
+  dashboardContent: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '20px'
   },
-  userInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px", // Smaller mobile gaps
-    flexDirection: "column", // Mobile-first: stack vertically
-    textAlign: "center",
-    width: "100%",
+  featuredGrid: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: '40px'
   },
-  userAvatar: {
-    width: "64px", // Smaller on mobile
-    height: "64px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "3px solid #28a745", // Slightly thinner border
+  featuredIcon: {
+    fontSize: '64px',
+    textAlign: 'center',
+    marginBottom: '20px'
   },
-  welcomeText: {
-    fontSize: "20px", // Smaller mobile text
-    margin: 0,
-    padding: "0 8px",
-    textAlign: "center",
-    wordBreak: "break-word",
-  },
-  ctaButton: {
-    padding: "14px 24px", // Smaller mobile padding
-    background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-    color: "white",
-    border: "none",
-    borderRadius: "12px",
-    fontSize: "16px", // Mobile-appropriate size
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontFamily: "'Poppins', sans-serif",
-    boxShadow: "0 4px 15px rgba(40, 167, 69, 0.2)",
-    width: "100%", // Full width on mobile
-    maxWidth: "280px", // Constrain maximum width
-    minHeight: "48px", // Minimum touch target
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  featuredFeatures: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px',
+    justifyContent: 'center',
+    marginBottom: '25px'
+  }
 };
 
-// Light Theme with mobile responsiveness
+// Light theme
 const lightStyles = {
-  ...baseStyles,
   container: {
-    ...baseStyles.container,
-    backgroundColor: "#ffffff",
-    color: "#333333",
+    fontFamily: "'Poppins', sans-serif",
+    minHeight: '100vh',
+    backgroundColor: '#f8f9fa',
+    color: '#333'
   },
-  hero: {
-    ...baseStyles.hero,
-    background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+  header: {
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e9ecef',
+    padding: '15px 0',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
   },
-  heroTitle: {
-    ...baseStyles.heroTitle,
-    color: "#333333",
+  themeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '20px',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: '8px',
+    transition: 'background-color 0.3s ease'
   },
-  heroSubtitle: {
-    ...baseStyles.heroSubtitle,
-    color: "#666666",
+  userName: {
+    fontWeight: '500',
+    color: '#333'
   },
-  secondaryButton: {
-    ...baseStyles.secondaryButton,
-    color: "#28a745",
+  signOutButton: {
+    background: '#dc3545',
+    color: 'white',
+    border: 'none',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500'
   },
-  welcomeText: {
-    ...baseStyles.welcomeText,
-    color: "#333333",
+  main: {
+    padding: '40px 0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 'calc(100vh - 80px)'
   },
+  welcomeSection: {
+    textAlign: 'center',
+    marginBottom: '60px'
+  },
+  welcomeTitle: {
+    fontSize: '42px',
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: '15px'
+  },
+  welcomeSubtitle: {
+    fontSize: '20px',
+    color: '#666',
+    margin: 0
+  },
+  actionsSection: {
+    textAlign: 'center'
+  },
+  sectionTitle: {
+    fontSize: '28px',
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: '30px'
+  },
+  featuredCard: {
+    backgroundColor: '#ffffff',
+    padding: '50px',
+    borderRadius: '20px',
+    boxShadow: '0 12px 40px rgba(0,123,255,0.15)',
+    border: '3px solid #007bff',
+    textAlign: 'center',
+    maxWidth: '700px',
+    width: '100%',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+  },
+  featuredTitle: {
+    fontSize: '32px',
+    fontWeight: '700',
+    color: '#007bff',
+    margin: '0 0 20px 0'
+  },
+  featuredDescription: {
+    fontSize: '18px',
+    color: '#666',
+    lineHeight: '1.7',
+    marginBottom: '30px'
+  },
+  featureBadge: {
+    backgroundColor: '#e3f2fd',
+    color: '#1976d2',
+    padding: '8px 16px',
+    borderRadius: '25px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: '1px solid #bbdefb'
+  },
+  featuredButton: {
+    background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '20px 40px',
+    borderRadius: '15px',
+    cursor: 'pointer',
+    fontSize: '18px',
+    fontWeight: '700',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    boxShadow: '0 6px 20px rgba(0,123,255,0.3)'
+  }
 };
 
-// Dark Theme with mobile responsiveness
+// Dark theme
 const darkStyles = {
-  ...baseStyles,
+  ...lightStyles,
   container: {
-    ...baseStyles.container,
-    backgroundColor: "#1a1a1a",
-    color: "#ffffff",
+    ...lightStyles.container,
+    backgroundColor: '#1a1a1a',
+    color: '#ffffff'
   },
-  hero: {
-    ...baseStyles.hero,
-    background: "linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%)",
+  header: {
+    ...lightStyles.header,
+    backgroundColor: '#2d2d2d',
+    borderBottom: '1px solid #404040'
   },
-  heroTitle: {
-    ...baseStyles.heroTitle,
-    color: "#ffffff",
+  userName: {
+    ...lightStyles.userName,
+    color: '#ffffff'
   },
-  heroSubtitle: {
-    ...baseStyles.heroSubtitle,
-    color: "#b0b0b0",
+  welcomeTitle: {
+    ...lightStyles.welcomeTitle,
+    color: '#ffffff'
   },
-  secondaryButton: {
-    ...baseStyles.secondaryButton,
-    color: "#28a745",
+  welcomeSubtitle: {
+    ...lightStyles.welcomeSubtitle,
+    color: '#b0b0b0'
   },
-  welcomeText: {
-    ...baseStyles.welcomeText,
-    color: "#ffffff",
+  sectionTitle: {
+    ...lightStyles.sectionTitle,
+    color: '#ffffff'
   },
+  featuredCard: {
+    ...lightStyles.featuredCard,
+    backgroundColor: '#2d2d2d',
+    boxShadow: '0 12px 40px rgba(0,123,255,0.2)',
+    border: '3px solid #0066cc'
+  },
+  featuredTitle: {
+    ...lightStyles.featuredTitle,
+    color: '#66b3ff'
+  },
+  featuredDescription: {
+    ...lightStyles.featuredDescription,
+    color: '#b0b0b0'
+  },
+  featureBadge: {
+    ...lightStyles.featureBadge,
+    backgroundColor: '#1e3a8a',
+    color: '#93c5fd',
+    border: '1px solid #3b82f6'
+  }
 };
 
-// Enhanced CSS with comprehensive mobile responsiveness
+// Add CSS animations
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-    
-    /* Global mobile optimizations */
-    * {
-      box-sizing: border-box;
-    }
-    
-    html {
-      font-size: 16px;
-      -webkit-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
-    }
-    
-    body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
     
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
     
-    /* Mobile-first responsive breakpoints */
-    
-    /* Small mobile phones (320px and up) */
-    @media (min-width: 320px) {
-      .hero-title {
-        font-size: 32px !important;
-      }
-      
-      .hero-subtitle {
-        font-size: 15px !important;
-      }
-      
-      .hero-buttons {
-        gap: 14px !important;
-      }
-      
-      .user-avatar {
-        width: 70px !important;
-        height: 70px !important;
-      }
+    .featured-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 50px rgba(0,123,255,0.3);
     }
     
-    /* Mobile phones (375px and up) */
-    @media (min-width: 375px) {
-      .hero-title {
-        font-size: 36px !important;
+    .featured-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,123,255,0.5);
+    }
+    
+    @media (max-width: 768px) {
+      .featured-card {
+        margin: 0 15px;
+        padding: 30px 20px;
       }
       
-      .hero-subtitle {
+      .featured-title {
+        font-size: 26px !important;
+      }
+      
+      .featured-description {
         font-size: 16px !important;
-        padding: 0 12px !important;
       }
       
-      .hero-buttons {
-        gap: 16px !important;
-        padding: 0 20px !important;
-      }
-      
-      .primary-button, .secondary-button, .cta-button {
+      .featured-button {
         padding: 16px 28px !important;
-        font-size: 17px !important;
-      }
-    }
-    
-    /* Large mobile phones (414px and up) */
-    @media (min-width: 414px) {
-      .hero-title {
-        font-size: 40px !important;
+        font-size: 16px !important;
       }
       
-      .hero-content {
-        padding: 0 12px !important;
-      }
-      
-      .user-avatar {
-        width: 75px !important;
-        height: 75px !important;
-      }
-      
-      .welcome-text {
-        font-size: 22px !important;
-      }
-    }
-    
-    /* Small tablets (768px and up) */
-    @media (min-width: 768px) {
-      .hero {
-        padding: 100px 32px 60px !important;
-      }
-      
-      .hero-content {
-        max-width: 600px !important;
-        padding: 0 !important;
-      }
-      
-      .hero-title {
-        font-size: 48px !important;
-        margin-bottom: 20px !important;
-      }
-      
-      .hero-subtitle {
-        font-size: 18px !important;
-        margin-bottom: 32px !important;
-        padding: 0 !important;
-      }
-      
-      .hero-buttons {
-        flex-direction: row !important;
-        gap: 20px !important;
-        padding: 0 !important;
-      }
-      
-      .primary-button, .secondary-button, .cta-button {
-        width: auto !important;
-        padding: 16px 32px !important;
-        font-size: 18px !important;
-      }
-      
-      .user-info {
-        flex-direction: row !important;
-        gap: 15px !important;
-      }
-      
-      .user-avatar {
-        width: 80px !important;
-        height: 80px !important;
-      }
-      
-      .welcome-text {
-        font-size: 24px !important;
-        text-align: left !important;
-      }
-      
-      .welcome-back {
-        gap: 20px !important;
-        padding: 0 !important;
-      }
-    }
-    
-    /* Large tablets and small desktops (1024px and up) */
-    @media (min-width: 1024px) {
-      .hero-content {
-        max-width: 800px !important;
-      }
-      
-      .hero-title {
-        font-size: 56px !important;
-      }
-      
-      .hero-subtitle {
-        font-size: 20px !important;
-        margin-bottom: 40px !important;
-      }
-      
-      .hero-buttons {
-        gap: 24px !important;
-      }
-    }
-    
-    /* Large desktops (1200px and up) */
-    @media (min-width: 1200px) {
-      .hero-title {
-        font-size: 64px !important;
-      }
-    }
-    
-    /* Touch device optimizations */
-    @media (hover: none) and (pointer: coarse) {
-      .primary-button, .secondary-button, .cta-button {
-        min-height: 48px !important;
-        padding: 16px 24px !important;
-      }
-      
-      .primary-button:active, .secondary-button:active, .cta-button:active {
-        transform: scale(0.98);
-        transition: transform 0.1s ease;
-      }
-    }
-    
-    /* Landscape orientation on mobile */
-    @media (max-height: 500px) and (orientation: landscape) {
-      .hero {
-        padding: 80px 16px 30px !important;
-        min-height: auto !important;
-      }
-      
-      .hero-title {
+      .welcome-title {
         font-size: 32px !important;
-        margin-bottom: 12px !important;
       }
       
-      .hero-subtitle {
-        font-size: 14px !important;
-        margin-bottom: 20px !important;
-      }
-      
-      .hero-buttons {
-        gap: 12px !important;
-      }
-      
-      .user-avatar {
-        width: 50px !important;
-        height: 50px !important;
-      }
-      
-      .welcome-text {
+      .welcome-subtitle {
         font-size: 18px !important;
-      }
-    }
-    
-    /* Very small screens (below 320px) */
-    @media (max-width: 319px) {
-      .hero {
-        padding: 80px 12px 30px !important;
-      }
-      
-      .hero-title {
-        font-size: 24px !important;
-        margin-bottom: 12px !important;
-      }
-      
-      .hero-subtitle {
-        font-size: 13px !important;
-        margin-bottom: 20px !important;
-        padding: 0 4px !important;
-      }
-      
-      .hero-buttons {
-        padding: 0 8px !important;
-        gap: 10px !important;
-      }
-      
-      .primary-button, .secondary-button, .cta-button {
-        padding: 12px 20px !important;
-        font-size: 14px !important;
-        max-width: 240px !important;
-      }
-    }
-    
-    /* Accessibility improvements */
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-    
-    /* High contrast mode support */
-    @media (prefers-contrast: high) {
-      .primary-button {
-        border: 2px solid transparent !important;
-      }
-      
-      .secondary-button {
-        border-width: 3px !important;
-      }
-    }
-    
-    /* Print styles */
-    @media print {
-      .hero-buttons {
-        display: none !important;
       }
     }
   `;

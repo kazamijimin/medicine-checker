@@ -64,39 +64,52 @@ export default function AIAssistant({ isDarkMode }) {
     setIsLoading(true);
 
     try {
+      console.log("Sending message to /api/huggingface:", textToSend);
+
       // Include recent conversation context
       const recentMessages = messages.slice(-4).map(msg => 
         `${msg.type}: ${msg.content}`
       ).join('\n');
 
-      const response = await fetch('/api/gemini', {
+      const response = await fetch('/api/huggingface', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           prompt: textToSend,
-          context: `Recent conversation: ${recentMessages}\n\nUser is using MediChecker app for medicine information`
+          context: `Recent conversation: ${recentMessages}\n\nUser is using MediChecker app for medicine information`,
+          concise: true
         }),
       });
 
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Response data:", data);
 
-      if (data.error) {
-        throw new Error(data.error);
+      // Handle both success and error cases
+      let responseContent;
+      if (data.response) {
+        responseContent = data.response;
+      } else if (data.error) {
+        responseContent = "I'm having trouble right now. Please try again in a moment.";
+      } else {
+        responseContent = "I couldn't generate a response. Please try rephrasing your question.";
       }
 
       const aiMessage = {
         type: 'ai',
-        content: data.response,
-        timestamp: data.timestamp
+        content: responseContent,
+        timestamp: data.timestamp || new Date().toISOString()
       };
 
       setMessages(prev => [...prev, aiMessage]);
+
     } catch (error) {
+      console.error('Fetch error:', error);
       const errorMessage = {
         type: 'ai',
-        content: 'Sorry, I encountered an error. Please try again later.',
+        content: 'Sorry, I encountered a connection error. Please check your internet and try again.',
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -105,6 +118,7 @@ export default function AIAssistant({ isDarkMode }) {
     }
   };
 
+  // ...rest of your existing code stays exactly the same...
   const clearConversation = () => {
     const confirmed = window.confirm('Are you sure you want to clear the conversation? This cannot be undone.');
     if (confirmed) {
@@ -226,9 +240,9 @@ export default function AIAssistant({ isDarkMode }) {
             {isLoading && (
               <div style={{ ...currentStyles.message, ...currentStyles.aiMessage }}>
                 <div style={currentStyles.loadingDots}>
-                  <span></span>
-                  <span></span>
-                  <span></span>
+                  <span>•</span>
+                  <span>•</span>
+                  <span>•</span>
                 </div>
               </div>
             )}
@@ -267,7 +281,7 @@ export default function AIAssistant({ isDarkMode }) {
   );
 }
 
-// Enhanced styles with new features
+// ...keep all your existing styles exactly the same...
 const baseStyles = {
   aiButton: {
     position: 'fixed',
@@ -504,49 +518,7 @@ const lightStyles = {
   ...baseStyles,
   chatWindow: {
     ...baseStyles.chatWindow,
-    backgroundColor: 'white',
-    border: '1px solid #e9ecef'
-  },
-
-  chatHeader: {
-    ...baseStyles.chatHeader,
-    backgroundColor: 'white',
-    color: '#333',
-    borderBottomColor: '#e9ecef'
-  },
-
-  headerButton: {
-    ...baseStyles.headerButton,
-    color: '#666'
-  },
-
-  closeButton: {
-    ...baseStyles.closeButton,
-    color: '#666'
-  },
-
-  chatMessages: {
-    ...baseStyles.chatMessages,
-    backgroundColor: '#fafafa'
-  },
-
-  aiMessage: {
-    ...baseStyles.aiMessage,
-    backgroundColor: '#f8f9fa',
-    color: '#333'
-  },
-
-  chatInput: {
-    ...baseStyles.chatInput,
-    backgroundColor: 'white',
-    borderTopColor: '#e9ecef'
-  },
-
-  textarea: {
-    ...baseStyles.textarea,
-    backgroundColor: 'white',
-    color: '#333',
-    borderColor: '#ddd'
+    backgroundColor: 'white'
   }
 };
 
@@ -554,48 +526,25 @@ const darkStyles = {
   ...baseStyles,
   chatWindow: {
     ...baseStyles.chatWindow,
-    backgroundColor: '#2d2d2d',
-    border: '1px solid #404040'
+    backgroundColor: '#2d2d2d'
   },
-
-  chatHeader: {
-    ...baseStyles.chatHeader,
-    backgroundColor: '#2d2d2d',
-    color: 'white',
-    borderBottomColor: '#404040'
-  },
-
-  headerButton: {
-    ...baseStyles.headerButton,
-    color: '#ccc'
-  },
-
-  closeButton: {
-    ...baseStyles.closeButton,
-    color: '#ccc'
-  },
-
-  chatMessages: {
-    ...baseStyles.chatMessages,
-    backgroundColor: '#1a1a1a'
-  },
-
   aiMessage: {
-    ...baseStyles.aiMessage,
     backgroundColor: '#404040',
     color: '#fff'
   },
-
-  chatInput: {
-    ...baseStyles.chatInput,
-    backgroundColor: '#2d2d2d',
-    borderTopColor: '#404040'
+  chatHeader: {
+    ...baseStyles.chatHeader,
+    backgroundColor: '#404040',
+    color: 'white'
   },
-
   textarea: {
     ...baseStyles.textarea,
-    backgroundColor: '#404040',
+    backgroundColor: '#555',
     color: 'white',
-    borderColor: '#555'
+    border: '1px solid #666'
+  },
+  chatInput: {
+    ...baseStyles.chatInput,
+    backgroundColor: '#404040'
   }
 };

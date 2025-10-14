@@ -1,8 +1,12 @@
 import { collection, query, where, orderBy, limit, getDocs, addDoc, setDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 
-export class NotificationService {
-  
+class NotificationService {
+  constructor() {
+    this.notifications = [];
+    this.subscribers = [];
+  }
+
   // Get all users who have notifications enabled - USES INDEX
   static async getNotificationEnabledUsers() {
     try {
@@ -167,4 +171,53 @@ export class NotificationService {
       return null;
     }
   }
+
+  addNotification(notification) {
+    const newNotification = {
+      id: notification.id || Date.now(),
+      type: notification.type || 'info', // 'success', 'error', 'warning', 'info'
+      title: notification.title || '',
+      message: notification.message || '',
+      timestamp: notification.timestamp || new Date(),
+      autoClose: notification.autoClose !== false, // default true
+      duration: notification.duration || 5000,
+      action: notification.action || null
+    };
+
+    this.notifications.unshift(newNotification);
+    this.notifySubscribers();
+
+    // Auto-remove notification if autoClose is true
+    if (newNotification.autoClose) {
+      setTimeout(() => {
+        this.removeNotification(newNotification.id);
+      }, newNotification.duration);
+    }
+  }
+
+  removeNotification(id) {
+    this.notifications = this.notifications.filter(n => n.id !== id);
+    this.notifySubscribers();
+  }
+
+  clearAll() {
+    this.notifications = [];
+    this.notifySubscribers();
+  }
+
+  subscribe(callback) {
+    this.subscribers.push(callback);
+    callback(this.notifications); // Send current notifications immediately
+    
+    // Return unsubscribe function
+    return () => {
+      this.subscribers = this.subscribers.filter(sub => sub !== callback);
+    };
+  }
+
+  notifySubscribers() {
+    this.subscribers.forEach(callback => callback([...this.notifications]));
+  }
 }
+
+export const notificationService = new NotificationService();
