@@ -16,7 +16,7 @@ export default function Dashboard() {
       setUser(user);
       setLoading(false);
       if (!user) {
-        router.push('/auth');
+        router.push('/login');
       }
     });
 
