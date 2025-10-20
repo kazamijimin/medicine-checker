@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -16,7 +17,10 @@ export default function Dashboard() {
       setUser(user);
       setLoading(false);
       if (!user) {
-        router.push('/login');
+        // Allow guest access instead of redirecting
+        setIsGuest(true);
+      } else {
+        setIsGuest(false);
       }
     });
 
@@ -26,10 +30,15 @@ export default function Dashboard() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push('/auth');
+      setIsGuest(true);
+      setUser(null);
     } catch (error) {
       console.error('Sign out error:', error);
     }
+  };
+
+  const handleSignIn = () => {
+    router.push('/auth');
   };
 
   const toggleTheme = () => {
@@ -49,11 +58,9 @@ export default function Dashboard() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
+  const displayName = user?.displayName || user?.email || 'Guest';
+  const userName = user ? (user.displayName?.split(' ')[0] || 'User') : 'Guest';
 
   return (
     <div style={currentStyles.container}>
@@ -71,15 +78,23 @@ export default function Dashboard() {
             </button>
             
             <div style={styles.userMenu}>
-              <img 
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=007bff&color=fff`}
-                alt="User Avatar"
-                style={styles.avatar}
-              />
-              <span style={currentStyles.userName}>{user.displayName || user.email}</span>
-              <button onClick={handleSignOut} style={currentStyles.signOutButton}>
-                Sign Out
-              </button>
+              {user ? (
+                <>
+
+                  <span style={currentStyles.userName}>{displayName}</span>
+                  <button onClick={handleSignOut} style={currentStyles.signOutButton}>
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={styles.guestAvatar}>👤</div>
+                  <span style={currentStyles.userName}>Guest User</span>
+                  <button onClick={handleSignIn} style={currentStyles.signInButton}>
+                    Sign In
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -91,12 +106,34 @@ export default function Dashboard() {
           {/* Welcome Section */}
           <section style={currentStyles.welcomeSection}>
             <h1 style={currentStyles.welcomeTitle}>
-              Welcome back, {user.displayName?.split(' ')[0] || 'User'}! 👋
+              Welcome back, {userName}! 👋
             </h1>
             <p style={currentStyles.welcomeSubtitle}>
-              Your personal dashboard with quick access to your featured projects.
+              {isGuest 
+                ? "Explore our featured projects as a guest. Sign in for a personalized experience!" 
+                : "Your personal dashboard with quick access to your featured projects."
+              }
             </p>
           </section>
+
+          {/* Guest Info Banner */}
+          {isGuest && (
+            <section style={currentStyles.guestBanner}>
+              <div style={currentStyles.guestBannerContent}>
+                <span style={currentStyles.guestBannerIcon}>ℹ️</span>
+                <span style={currentStyles.guestBannerText}>
+                  You re browsing as a guest. 
+                  <button 
+                    onClick={handleSignIn} 
+                    style={currentStyles.guestSignInLink}
+                  >
+                    Sign in
+                  </button> 
+                  for full access to features!
+                </span>
+              </div>
+            </section>
+          )}
 
           {/* Featured Apps Section */}
           <section style={currentStyles.actionsSection}>
@@ -142,6 +179,27 @@ export default function Dashboard() {
                   onClick={() => handleRedirect('https://schoolproject-tsukiwebvn.vercel.app')}
                 >
                   🌙 View Tsukihime Design
+                </button>
+              </div>
+
+              {/* Prescriptory Project */}
+              <div style={currentStyles.featuredCard}>
+                <div style={styles.featuredIcon}>💊</div>
+                <h3 style={currentStyles.featuredTitle}>Prescriptory</h3>
+                <p style={currentStyles.featuredDescription}>
+                  📋 Advanced prescription management system with comprehensive medication tracking, 
+                  doctor consultations, and personalized healthcare management tools.
+                </p>
+                <div style={styles.featuredFeatures}>
+                  <span style={currentStyles.featureBadgeTertiary}>📋 Prescriptions</span>
+                  <span style={currentStyles.featureBadgeTertiary}>👨‍⚕️ Doctors</span>
+                  <span style={currentStyles.featureBadgeTertiary}>🔔 Reminders</span>
+                </div>
+                <button 
+                  style={currentStyles.featuredButtonTertiary}
+                  onClick={() => handleRedirect('https://prescriptory-test.vercel.app')}
+                >
+                  💊 View Prescriptory
                 </button>
               </div>
 
@@ -209,17 +267,28 @@ const styles = {
     borderRadius: '50%',
     objectFit: 'cover'
   },
+  guestAvatar: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    backgroundColor: '#6c757d',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '20px',
+    color: 'white'
+  },
   dashboardContent: {
-    maxWidth: '1400px', // Increased max width
+    maxWidth: '1500px',
     margin: '0 auto',
     padding: '20px'
   },
   featuredGrid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr', // Force exactly 2 columns
-    gap: '50px', // Increased gap
+    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+    gap: '40px',
     marginTop: '40px',
-    alignItems: 'stretch', // Make both cards same height
+    alignItems: 'stretch',
     justifyContent: 'center'
   },
   featuredIcon: {
@@ -274,7 +343,19 @@ const lightStyles = {
     borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
-    fontWeight: '500'
+    fontWeight: '500',
+    transition: 'background-color 0.3s ease'
+  },
+  signInButton: {
+    background: '#28a745',
+    color: 'white',
+    border: 'none',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    transition: 'background-color 0.3s ease'
   },
   main: {
     padding: '40px 0',
@@ -285,7 +366,7 @@ const lightStyles = {
   },
   welcomeSection: {
     textAlign: 'center',
-    marginBottom: '60px'
+    marginBottom: '40px'
   },
   welcomeTitle: {
     fontSize: '42px',
@@ -297,6 +378,37 @@ const lightStyles = {
     fontSize: '20px',
     color: '#666',
     margin: 0
+  },
+  guestBanner: {
+    backgroundColor: '#e3f2fd',
+    border: '1px solid #bbdefb',
+    borderRadius: '12px',
+    padding: '15px',
+    marginBottom: '40px',
+    textAlign: 'center'
+  },
+  guestBannerContent: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    flexWrap: 'wrap'
+  },
+  guestBannerIcon: {
+    fontSize: '18px'
+  },
+  guestBannerText: {
+    color: '#1976d2',
+    fontWeight: '500'
+  },
+  guestSignInLink: {
+    background: 'none',
+    border: 'none',
+    color: '#007bff',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '16px'
   },
   actionsSection: {
     textAlign: 'center'
@@ -314,7 +426,7 @@ const lightStyles = {
     boxShadow: '0 12px 40px rgba(0,123,255,0.15)',
     border: '3px solid #007bff',
     textAlign: 'center',
-    width: '100%', // Take full width of grid column
+    width: '100%',
     height: 'auto',
     display: 'flex',
     flexDirection: 'column',
@@ -332,7 +444,7 @@ const lightStyles = {
     color: '#666',
     lineHeight: '1.7',
     marginBottom: '30px',
-    flex: 1 // Allow description to take available space
+    flex: 1
   },
   featureBadge: {
     backgroundColor: '#e3f2fd',
@@ -351,6 +463,15 @@ const lightStyles = {
     fontSize: '14px',
     fontWeight: '600',
     border: '1px solid #ce93d8'
+  },
+  featureBadgeTertiary: {
+    backgroundColor: '#e8f5e8',
+    color: '#2e7d32',
+    padding: '8px 16px',
+    borderRadius: '25px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: '1px solid #81c784'
   },
   featuredButton: {
     background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
@@ -379,10 +500,24 @@ const lightStyles = {
     boxShadow: '0 6px 20px rgba(156,39,176,0.3)',
     alignSelf: 'center',
     width: 'fit-content'
+  },
+  featuredButtonTertiary: {
+    background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '18px 35px',
+    borderRadius: '15px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    fontWeight: '700',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    boxShadow: '0 6px 20px rgba(46,125,50,0.3)',
+    alignSelf: 'center',
+    width: 'fit-content'
   }
 };
 
-// Dark theme (same featured card styling)
+// Dark theme
 const darkStyles = {
   ...lightStyles,
   container: {
@@ -406,6 +541,19 @@ const darkStyles = {
   welcomeSubtitle: {
     ...lightStyles.welcomeSubtitle,
     color: '#b0b0b0'
+  },
+  guestBanner: {
+    ...lightStyles.guestBanner,
+    backgroundColor: '#1e3a8a',
+    border: '1px solid #3b82f6'
+  },
+  guestBannerText: {
+    ...lightStyles.guestBannerText,
+    color: '#93c5fd'
+  },
+  guestSignInLink: {
+    ...lightStyles.guestSignInLink,
+    color: '#66b3ff'
   },
   sectionTitle: {
     ...lightStyles.sectionTitle,
@@ -436,10 +584,16 @@ const darkStyles = {
     backgroundColor: '#4a148c',
     color: '#ce93d8',
     border: '1px solid #9c27b0'
+  },
+  featureBadgeTertiary: {
+    ...lightStyles.featureBadgeTertiary,
+    backgroundColor: '#1b5e20',
+    color: '#81c784',
+    border: '1px solid #2e7d32'
   }
 };
 
-// Updated CSS with proper side-by-side layout
+// Updated CSS with responsive 3-card layout
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
@@ -456,8 +610,14 @@ if (typeof document !== 'undefined') {
     }
     
     .featured-button:hover, 
-    .featured-button-secondary:hover {
+    .featured-button-secondary:hover,
+    .featured-button-tertiary:hover {
       transform: translateY(-2px) !important;
+    }
+    
+    /* Button hover effects */
+    button:hover {
+      opacity: 0.9 !important;
     }
     
     /* Ensure cards are equal height */
@@ -466,23 +626,23 @@ if (typeof document !== 'undefined') {
       flex-direction: column !important;
     }
     
-    /* Desktop - Force side by side */
-    @media (min-width: 1025px) {
+    /* Desktop - 3 cards in a row */
+    @media (min-width: 1200px) {
       [style*="featuredGrid"] {
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 60px !important;
-        max-width: 1400px !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 40px !important;
+        max-width: 1500px !important;
         margin: 40px auto 0 !important;
       }
     }
     
-    /* Laptop/Tablet - Still side by side */
-    @media (min-width: 769px) and (max-width: 1024px) {
+    /* Laptop - 2 cards per row, third below */
+    @media (min-width: 769px) and (max-width: 1199px) {
       [style*="featuredGrid"] {
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 40px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 30px !important;
         margin: 40px 20px 0 !important;
       }
       
@@ -515,7 +675,8 @@ if (typeof document !== 'undefined') {
       }
       
       [style*="featuredButton"], 
-      [style*="featuredButtonSecondary"] {
+      [style*="featuredButtonSecondary"],
+      [style*="featuredButtonTertiary"] {
         padding: 16px 28px !important;
         font-size: 15px !important;
       }
@@ -530,6 +691,11 @@ if (typeof document !== 'undefined') {
       
       [style*="sectionTitle"] {
         font-size: 24px !important;
+      }
+      
+      [style*="guestBannerContent"] {
+        flex-direction: column !important;
+        gap: 5px !important;
       }
     }
     
