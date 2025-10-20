@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, orderBy, getDocs, doc, deleteDoc, addDoc } from "firebase/firestore";
@@ -30,23 +30,46 @@ export default function HistoryPage() {
     }
   }, []);
 
-  // Auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        await loadUserHistory(currentUser.uid);
-      } else {
-        router.push('/login');
+  // Show notification (memoized to prevent dependency issues)
+  const showNotification = useCallback((message, type) => {
+    const existingNotifications = document.querySelectorAll('.custom-notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    const notification = document.createElement('div');
+    notification.className = 'custom-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+      background-color: ${type === 'success' ? '#10b981' : '#ef4444'};
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      max-width: 400px;
+      word-wrap: break-word;
+      font-family: 'Poppins', sans-serif;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
       }
-      setLoading(false);
-    });
+    }, 5000);
+  }, []);
 
-    return () => unsubscribe();
-  }, [router]);
-
-  // Load user's search history
-  const loadUserHistory = async (userId) => {
+  // Load user's search history (now showNotification is defined above)
+  const loadUserHistory = useCallback(async (userId) => {
     try {
       const historyRef = collection(db, "searchHistory");
       const q = query(
@@ -71,7 +94,22 @@ export default function HistoryPage() {
       console.error("Error loading history:", error);
       showNotification('Failed to load search history.', 'error');
     }
-  };
+  }, [showNotification]);
+
+  // Auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        await loadUserHistory(currentUser.uid);
+      } else {
+        router.push('/login');
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router, loadUserHistory]);
 
   // Filter history based on search term and type
   useEffect(() => {
@@ -203,44 +241,6 @@ export default function HistoryPage() {
       case 'expired': return '⏰';
       default: return '🔍';
     }
-  };
-
-  // Show notification
-  const showNotification = (message, type) => {
-    const existingNotifications = document.querySelectorAll('.custom-notification');
-    existingNotifications.forEach(notification => notification.remove());
-
-    const notification = document.createElement('div');
-    notification.className = 'custom-notification';
-    notification.style.cssText = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      padding: 16px 24px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      z-index: 10000;
-      animation: slideIn 0.3s ease;
-      background-color: ${type === 'success' ? '#10b981' : '#ef4444'};
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-      max-width: 400px;
-      word-wrap: break-word;
-      font-family: 'Poppins', sans-serif;
-    `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-          if (notification.parentNode) {
-            document.body.removeChild(notification);
-          }
-        }, 300);
-      }
-    }, 5000);
   };
 
   if (loading) {

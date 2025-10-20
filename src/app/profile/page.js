@@ -521,7 +521,7 @@ export default function ProfilePage() {
             <div style={currentStyles.modalBody}>
               <div style={currentStyles.imagePreviewContainer}>
                 {/* Use img tag instead of Next.js Image for data URLs */}
-                <img
+                <Image
                   src={imagePreview}
                   alt="Preview"
                   style={currentStyles.imagePreview}
@@ -560,7 +560,7 @@ export default function ProfilePage() {
             <div style={currentStyles.heroContent}>
               <div style={currentStyles.profileImageContainer}>
                 {/* Use img tag for profile images */}
-                <img
+                <Image
                   src={getProfileImageSrc()}
                   alt="Profile"
                   style={currentStyles.profileImage}
@@ -659,7 +659,7 @@ export default function ProfilePage() {
                   <div style={currentStyles.profilePictureContainer}>
                     <div style={currentStyles.profilePictureDisplay}>
                       {/* Use img tag here too */}
-                      <img
+                      <Image
                         src={getProfileImageSrc()}
                         alt="Profile"
                         style={currentStyles.profilePictureImg}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { 
@@ -48,23 +48,46 @@ export default function RemindersPage() {
     }
   }, []);
 
-  // Auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        await loadReminders(currentUser.uid);
-      } else {
-        router.push('/login');
+  // Show notification function (memoized)
+  const showNotification = useCallback((message, type) => {
+    const existingNotifications = document.querySelectorAll('.custom-notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    const notification = document.createElement('div');
+    notification.className = 'custom-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+      background-color: ${type === 'success' ? '#10b981' : '#ef4444'};
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      max-width: 400px;
+      word-wrap: break-word;
+      font-family: 'Poppins', sans-serif;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
       }
-      setLoading(false);
-    });
+    }, 5000);
+  }, []);
 
-    return () => unsubscribe();
-  }, [router]);
-
-  // Load user reminders
-  const loadReminders = async (userId) => {
+  // Load user reminders (memoized with useCallback)
+  const loadReminders = useCallback(async (userId) => {
     try {
       console.log("Loading reminders for user:", userId); // Debug log
       
@@ -103,7 +126,22 @@ export default function RemindersPage() {
       console.error("Error loading reminders:", error);
       showNotification('Failed to load reminders.', 'error');
     }
-  };
+  }, [showNotification]);
+
+  // Auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        await loadReminders(currentUser.uid);
+      } else {
+        router.push('/login');
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router, loadReminders]);
 
   // Add new reminder
   const addReminder = async () => {
@@ -316,44 +354,6 @@ export default function RemindersPage() {
       hour: '2-digit',
       minute: '2-digit'
     });
-  };
-
-  // Show notification
-  const showNotification = (message, type) => {
-    const existingNotifications = document.querySelectorAll('.custom-notification');
-    existingNotifications.forEach(notification => notification.remove());
-
-    const notification = document.createElement('div');
-    notification.className = 'custom-notification';
-    notification.style.cssText = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      padding: 16px 24px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      z-index: 10000;
-      animation: slideIn 0.3s ease;
-      background-color: ${type === 'success' ? '#10b981' : '#ef4444'};
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-      max-width: 400px;
-      word-wrap: break-word;
-      font-family: 'Poppins', sans-serif;
-    `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-          if (notification.parentNode) {
-            document.body.removeChild(notification);
-          }
-        }, 300);
-      }
-    }, 5000);
   };
 
   if (loading) {

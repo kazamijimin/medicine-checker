@@ -86,180 +86,172 @@ export default function ForgotPasswordPage() {
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
 
   return (
-    <>
-      {/* Import Poppins Font */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
-      
-      <div style={currentStyles.container}>
-        {/* Dark/Light Mode Toggle */}
-        <button 
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          style={currentStyles.themeToggle}
-        >
-          {isDarkMode ? '☀️' : '🌙'}
-        </button>
+    <div style={currentStyles.container}>
+      {/* Dark/Light Mode Toggle */}
+      <button 
+        onClick={() => setIsDarkMode(!isDarkMode)}
+        style={currentStyles.themeToggle}
+      >
+        {isDarkMode ? '☀️' : '🌙'}
+      </button>
 
-        {/* Left Side - Form Section */}
-        <div style={currentStyles.leftSection}>
-          <div style={currentStyles.formContainer}>
-            {!emailSent ? (
-              <>
-                {/* Header */}
-                <div style={currentStyles.header}>
-                  <h1 style={currentStyles.title}>Forgot Password?</h1>
-                  <p style={currentStyles.subtitle}>
-                    Enter your email address and we&apos;ll send you a link to reset your password.
-                  </p>
-                </div>
-                
-                {/* Reset Password Form */}
-                <form onSubmit={handleResetPassword} style={currentStyles.form}>
-                  <div style={currentStyles.inputContainer}>
-                    <input
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={email}
-                      onChange={handleEmailChange}
-                      style={{
-                        ...currentStyles.input,
-                        borderColor: error && !email ? "#dc3545" : currentStyles.input.borderColor
-                      }}
-                      required
-                      autoFocus
-                    />
-                  </div>
-
-                  {/* Error Message */}
-                  {error && (
-                    <div style={currentStyles.errorContainer}>
-                      <p style={currentStyles.error}>
-                        <span style={currentStyles.errorIcon}>⚠️</span>
-                        {error}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Success Message */}
-                  {success && (
-                    <div style={currentStyles.successContainer}>
-                      <p style={currentStyles.success}>
-                        <span style={currentStyles.successIcon}>✅</span>
-                        {success}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Reset Button */}
-                  <button 
-                    type="submit"
-                    disabled={isLoading}
+      {/* Left Side - Form Section */}
+      <div style={currentStyles.leftSection}>
+        <div style={currentStyles.formContainer}>
+          {!emailSent ? (
+            <>
+              {/* Header */}
+              <div style={currentStyles.header}>
+                <h1 style={currentStyles.title}>Forgot Password?</h1>
+                <p style={currentStyles.subtitle}>
+                  Enter your email address and we&apos;ll send you a link to reset your password.
+                </p>
+              </div>
+              
+              {/* Reset Password Form */}
+              <form onSubmit={handleResetPassword} style={currentStyles.form}>
+                <div style={currentStyles.inputContainer}>
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={handleEmailChange}
                     style={{
-                      ...currentStyles.submitButton,
-                      opacity: isLoading ? 0.6 : 1,
-                      cursor: isLoading ? "not-allowed" : "pointer"
+                      ...currentStyles.input,
+                      borderColor: error && !email ? "#dc3545" : currentStyles.input.borderColor
                     }}
-                  >
-                    {isLoading ? (
-                      <span style={currentStyles.loadingContent}>
-                        <span style={currentStyles.spinner}></span>
-                        Sending Email...
-                      </span>
-                    ) : (
-                      "Send Reset Email"
-                    )}
-                  </button>
-                </form>
-              </>
-            ) : (
-              <>
-                {/* Success State */}
-                <div style={currentStyles.header}>
-                  <div style={currentStyles.successIconLarge}>📧</div>
-                  <h1 style={currentStyles.title}>Check Your Email</h1>
-                  <p style={currentStyles.subtitle}>
-                    We&apos;ve sent a password reset link to <strong>{email}</strong>
-                  </p>
+                    required
+                    autoFocus
+                  />
                 </div>
 
-                <div style={currentStyles.instructionsContainer}>
-                  <h3 style={currentStyles.instructionsTitle}>What to do next:</h3>
-                  <ul style={currentStyles.instructionsList}>
-                    <li style={currentStyles.instructionItem}>
-                      <span style={currentStyles.instructionIcon}>1️⃣</span>
-                      Check your email inbox for a message from us
-                    </li>
-                    <li style={currentStyles.instructionItem}>
-                      <span style={currentStyles.instructionIcon}>2️⃣</span>
-                      If you don&apos;t see it, check your spam/junk folder
-                    </li>
-                    <li style={currentStyles.instructionItem}>
-                      <span style={currentStyles.instructionIcon}>3️⃣</span>
-                      Click the reset link in the email to create a new password
-                    </li>
-                  </ul>
-                </div>
+                {/* Error Message */}
+                {error && (
+                  <div style={currentStyles.errorContainer}>
+                    <p style={currentStyles.error}>
+                      <span style={currentStyles.errorIcon}>⚠️</span>
+                      {error}
+                    </p>
+                  </div>
+                )}
 
-                {/* Resend Email Button */}
+                {/* Success Message */}
+                {success && (
+                  <div style={currentStyles.successContainer}>
+                    <p style={currentStyles.success}>
+                      <span style={currentStyles.successIcon}>✅</span>
+                      {success}
+                    </p>
+                  </div>
+                )}
+
+                {/* Reset Button */}
                 <button 
-                  onClick={() => {
-                    setEmailSent(false);
-                    setSuccess("");
-                    setError("");
+                  type="submit"
+                  disabled={isLoading}
+                  style={{
+                    ...currentStyles.submitButton,
+                    opacity: isLoading ? 0.6 : 1,
+                    cursor: isLoading ? "not-allowed" : "pointer"
                   }}
-                  style={currentStyles.resendButton}
                 >
-                  Send Another Email
+                  {isLoading ? (
+                    <span style={currentStyles.loadingContent}>
+                      <span style={currentStyles.spinner}></span>
+                      Sending Email...
+                    </span>
+                  ) : (
+                    "Send Reset Email"
+                  )}
                 </button>
-              </>
-            )}
+              </form>
+            </>
+          ) : (
+            <>
+              {/* Success State */}
+              <div style={currentStyles.header}>
+                <div style={currentStyles.successIconLarge}>📧</div>
+                <h1 style={currentStyles.title}>Check Your Email</h1>
+                <p style={currentStyles.subtitle}>
+                  We&apos;ve sent a password reset link to <strong>{email}</strong>
+                </p>
+              </div>
 
-            {/* Back to Login Link */}
-            <div style={currentStyles.backToLoginContainer}>
+              <div style={currentStyles.instructionsContainer}>
+                <h3 style={currentStyles.instructionsTitle}>What to do next:</h3>
+                <ul style={currentStyles.instructionsList}>
+                  <li style={currentStyles.instructionItem}>
+                    <span style={currentStyles.instructionIcon}>1️⃣</span>
+                    Check your email inbox for a message from us
+                  </li>
+                  <li style={currentStyles.instructionItem}>
+                    <span style={currentStyles.instructionIcon}>2️⃣</span>
+                    If you don&apos;t see it, check your spam/junk folder
+                  </li>
+                  <li style={currentStyles.instructionItem}>
+                    <span style={currentStyles.instructionIcon}>3️⃣</span>
+                    Click the reset link in the email to create a new password
+                  </li>
+                </ul>
+              </div>
+
+              {/* Resend Email Button */}
               <button 
-                onClick={() => router.push('/login')}
-                style={currentStyles.backButton}
+                onClick={() => {
+                  setEmailSent(false);
+                  setSuccess("");
+                  setError("");
+                }}
+                style={currentStyles.resendButton}
               >
-                ← Back to Sign In
+                Send Another Email
               </button>
-            </div>
+            </>
+          )}
 
-            {/* Sign Up Link */}
-            <p style={currentStyles.signupLink}>
-              Don&apos;t have an account? <a href="/signup" style={currentStyles.link}>Sign up here</a>
-            </p>
+          {/* Back to Login Link */}
+          <div style={currentStyles.backToLoginContainer}>
+            <button 
+              onClick={() => router.push('/login')}
+              style={currentStyles.backButton}
+            >
+              ← Back to Sign In
+            </button>
           </div>
-        </div>
 
-        {/* Right Side - Image Section */}
-        <div style={currentStyles.rightSection}>
-          <div style={currentStyles.imageContainer}>
-            <div style={currentStyles.overlayContent}>
-              <h2 style={currentStyles.overlayTitle}>Secure Password Reset</h2>
-              <p style={currentStyles.overlayText}>
-                We&apos;ll help you get back into your account securely. Your data and privacy are our top priority.
-              </p>
-              <div style={currentStyles.features}>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>🔒</span>
-                  <span style={currentStyles.featureText}>Secure Reset Process</span>
-                </div>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>⚡</span>
-                  <span style={currentStyles.featureText}>Quick & Easy</span>
-                </div>
-                <div style={currentStyles.feature}>
-                  <span style={currentStyles.featureIcon}>🔐</span>
-                  <span style={currentStyles.featureText}>Email Verification</span>
-                </div>
+          {/* Sign Up Link */}
+          <p style={currentStyles.signupLink}>
+            Don&apos;t have an account? <a href="/signup" style={currentStyles.link}>Sign up here</a>
+          </p>
+        </div>
+      </div>
+
+      {/* Right Side - Image Section */}
+      <div style={currentStyles.rightSection}>
+        <div style={currentStyles.imageContainer}>
+          <div style={currentStyles.overlayContent}>
+            <h2 style={currentStyles.overlayTitle}>Secure Password Reset</h2>
+            <p style={currentStyles.overlayText}>
+              We&apos;ll help you get back into your account securely. Your data and privacy are our top priority.
+            </p>
+            <div style={currentStyles.features}>
+              <div style={currentStyles.feature}>
+                <span style={currentStyles.featureIcon}>🔒</span>
+                <span style={currentStyles.featureText}>Secure Reset Process</span>
+              </div>
+              <div style={currentStyles.feature}>
+                <span style={currentStyles.featureIcon}>⚡</span>
+                <span style={currentStyles.featureText}>Quick & Easy</span>
+              </div>
+              <div style={currentStyles.feature}>
+                <span style={currentStyles.featureIcon}>🔐</span>
+                <span style={currentStyles.featureText}>Email Verification</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

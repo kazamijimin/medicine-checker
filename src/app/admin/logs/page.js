@@ -23,28 +23,6 @@ export default function AdminLogsPage() {
     }
   }, []);
 
-  const loadLogs = useCallback(async () => {
-    try {
-      const logsQuery = query(
-        collection(db, "systemLogs"),
-        orderBy("timestamp", "desc"),
-        limit(100)
-      );
-      const logsSnapshot = await getDocs(logsQuery);
-      const logsData = logsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setLogs(logsData);
-    } catch (error) {
-      console.error("Error loading logs:", error);
-      // Create a sample log if collection doesn't exist
-      if (error.code === 'failed-precondition') {
-        await createSampleLogs();
-      }
-    }
-  }, []);
-
   const createSampleLogs = useCallback(async () => {
     try {
       const sampleLogs = [
@@ -68,11 +46,44 @@ export default function AdminLogsPage() {
         await addDoc(collection(db, "systemLogs"), log);
       }
       
-      await loadLogs();
+      // Reload logs directly instead of calling loadLogs
+      const logsQuery = query(
+        collection(db, "systemLogs"),
+        orderBy("timestamp", "desc"),
+        limit(100)
+      );
+      const logsSnapshot = await getDocs(logsQuery);
+      const logsData = logsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setLogs(logsData);
     } catch (error) {
       console.error("Error creating sample logs:", error);
     }
-  }, [user?.uid, loadLogs]);
+  }, [user?.uid]);
+
+  const loadLogs = useCallback(async () => {
+    try {
+      const logsQuery = query(
+        collection(db, "systemLogs"),
+        orderBy("timestamp", "desc"),
+        limit(100)
+      );
+      const logsSnapshot = await getDocs(logsQuery);
+      const logsData = logsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setLogs(logsData);
+    } catch (error) {
+      console.error("Error loading logs:", error);
+      // Create a sample log if collection doesn't exist
+      if (error.code === 'failed-precondition') {
+        await createSampleLogs();
+      }
+    }
+  }, [createSampleLogs]);
 
   const checkAdminStatus = useCallback(async (userId) => {
     try {
