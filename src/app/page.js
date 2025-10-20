@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import { auth } from "@/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -16,7 +18,10 @@ export default function Dashboard() {
       setUser(user);
       setLoading(false);
       if (!user) {
-        router.push('/login');
+        // Allow guest access instead of redirecting
+        setIsGuest(true);
+      } else {
+        setIsGuest(false);
       }
     });
 
@@ -26,10 +31,15 @@ export default function Dashboard() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push('/auth');
+      setIsGuest(true);
+      setUser(null);
     } catch (error) {
       console.error('Sign out error:', error);
     }
+  };
+
+  const handleSignIn = () => {
+    router.push('/auth');
   };
 
   const toggleTheme = () => {
@@ -49,11 +59,9 @@ export default function Dashboard() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
+  const displayName = user?.displayName || user?.email || 'Guest';
+  const userName = user ? (user.displayName?.split(' ')[0] || 'User') : 'Guest';
 
   return (
     <div style={currentStyles.container}>
@@ -71,15 +79,30 @@ export default function Dashboard() {
             </button>
             
             <div style={styles.userMenu}>
-              <img 
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=007bff&color=fff`}
-                alt="User Avatar"
-                style={styles.avatar}
-              />
-              <span style={currentStyles.userName}>{user.displayName || user.email}</span>
-              <button onClick={handleSignOut} style={currentStyles.signOutButton}>
-                Sign Out
-              </button>
+              {user ? (
+                <>
+                  <Image
+                    src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=007bff&color=fff`}
+                    alt="User Avatar"
+                    width={40}
+                    height={40}
+                    style={styles.avatar}
+                    unoptimized={true}
+                  />
+                  <span style={currentStyles.userName}>{displayName}</span>
+                  <button onClick={handleSignOut} style={currentStyles.signOutButton}>
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={styles.guestAvatar}>👤</div>
+                  <span style={currentStyles.userName}>Guest User</span>
+                  <button onClick={handleSignIn} style={currentStyles.signInButton}>
+                    Sign In
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -91,12 +114,34 @@ export default function Dashboard() {
           {/* Welcome Section */}
           <section style={currentStyles.welcomeSection}>
             <h1 style={currentStyles.welcomeTitle}>
-              Welcome back, {user.displayName?.split(' ')[0] || 'User'}! 👋
+              Welcome back, {userName}! 👋
             </h1>
             <p style={currentStyles.welcomeSubtitle}>
-              Your personal dashboard with quick access to your featured projects.
+              {isGuest 
+                ? "Explore our featured projects as a guest. Sign in for a personalized experience!" 
+                : "Your personal dashboard with quick access to your featured projects."
+              }
             </p>
           </section>
+
+          {/* Guest Info Banner */}
+          {isGuest && (
+            <section style={currentStyles.guestBanner}>
+              <div style={currentStyles.guestBannerContent}>
+                <span style={currentStyles.guestBannerIcon}>ℹ️</span>
+                <span style={currentStyles.guestBannerText}>
+                  You&apos;re browsing as a guest. 
+                  <button 
+                    onClick={handleSignIn} 
+                    style={currentStyles.guestSignInLink}
+                  >
+                    Sign in
+                  </button> 
+                  for full access to features!
+                </span>
+              </div>
+            </section>
+          )}
 
           {/* Featured Apps Section */}
           <section style={currentStyles.actionsSection}>
@@ -225,19 +270,28 @@ const styles = {
     gap: '10px'
   },
   avatar: {
-    width: '40px',
-    height: '40px',
     borderRadius: '50%',
     objectFit: 'cover'
   },
+  guestAvatar: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    backgroundColor: '#6c757d',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '20px',
+    color: 'white'
+  },
   dashboardContent: {
-    maxWidth: '1500px', // Increased for 3 cards
+    maxWidth: '1500px',
     margin: '0 auto',
     padding: '20px'
   },
   featuredGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', // Responsive grid for 3 cards
+    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
     gap: '40px',
     marginTop: '40px',
     alignItems: 'stretch',
@@ -295,7 +349,19 @@ const lightStyles = {
     borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
-    fontWeight: '500'
+    fontWeight: '500',
+    transition: 'background-color 0.3s ease'
+  },
+  signInButton: {
+    background: '#28a745',
+    color: 'white',
+    border: 'none',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    transition: 'background-color 0.3s ease'
   },
   main: {
     padding: '40px 0',
@@ -306,7 +372,7 @@ const lightStyles = {
   },
   welcomeSection: {
     textAlign: 'center',
-    marginBottom: '60px'
+    marginBottom: '40px'
   },
   welcomeTitle: {
     fontSize: '42px',
@@ -318,6 +384,37 @@ const lightStyles = {
     fontSize: '20px',
     color: '#666',
     margin: 0
+  },
+  guestBanner: {
+    backgroundColor: '#e3f2fd',
+    border: '1px solid #bbdefb',
+    borderRadius: '12px',
+    padding: '15px',
+    marginBottom: '40px',
+    textAlign: 'center'
+  },
+  guestBannerContent: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    flexWrap: 'wrap'
+  },
+  guestBannerIcon: {
+    fontSize: '18px'
+  },
+  guestBannerText: {
+    color: '#1976d2',
+    fontWeight: '500'
+  },
+  guestSignInLink: {
+    background: 'none',
+    border: 'none',
+    color: '#007bff',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '16px'
   },
   actionsSection: {
     textAlign: 'center'
@@ -451,6 +548,19 @@ const darkStyles = {
     ...lightStyles.welcomeSubtitle,
     color: '#b0b0b0'
   },
+  guestBanner: {
+    ...lightStyles.guestBanner,
+    backgroundColor: '#1e3a8a',
+    border: '1px solid #3b82f6'
+  },
+  guestBannerText: {
+    ...lightStyles.guestBannerText,
+    color: '#93c5fd'
+  },
+  guestSignInLink: {
+    ...lightStyles.guestSignInLink,
+    color: '#66b3ff'
+  },
   sectionTitle: {
     ...lightStyles.sectionTitle,
     color: '#ffffff'
@@ -509,6 +619,11 @@ if (typeof document !== 'undefined') {
     .featured-button-secondary:hover,
     .featured-button-tertiary:hover {
       transform: translateY(-2px) !important;
+    }
+    
+    /* Button hover effects */
+    button:hover {
+      opacity: 0.9 !important;
     }
     
     /* Ensure cards are equal height */
@@ -582,6 +697,11 @@ if (typeof document !== 'undefined') {
       
       [style*="sectionTitle"] {
         font-size: 24px !important;
+      }
+      
+      [style*="guestBannerContent"] {
+        flex-direction: column !important;
+        gap: 5px !important;
       }
     }
     
