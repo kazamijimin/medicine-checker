@@ -1,14 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { auth } from "@/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function AIAssistant({ isDarkMode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
+
+  // Check authentication status
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Quick action suggestions
   const quickActions = [
@@ -26,28 +40,30 @@ export default function AIAssistant({ isDarkMode }) {
     timestamp: new Date().toISOString()
   };
 
-  // Load saved conversation on component mount
+  // Load saved conversation on component mount (only if authenticated)
   useEffect(() => {
-    const savedMessages = localStorage.getItem('mediChecker_aiChat');
-    if (savedMessages) {
-      try {
-        const parsedMessages = JSON.parse(savedMessages);
-        setMessages(parsedMessages);
-      } catch (error) {
-        console.error('Error loading saved messages:', error);
+    if (user) {
+      const savedMessages = localStorage.getItem(`mediChecker_aiChat_${user.uid}`);
+      if (savedMessages) {
+        try {
+          const parsedMessages = JSON.parse(savedMessages);
+          setMessages(parsedMessages);
+        } catch (error) {
+          console.error('Error loading saved messages:', error);
+          setMessages([welcomeMessage]);
+        }
+      } else {
         setMessages([welcomeMessage]);
       }
-    } else {
-      setMessages([welcomeMessage]);
     }
-  }, []);
+  }, [user]);
 
-  // Save conversation whenever messages change
+  // Save conversation whenever messages change (user-specific)
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('mediChecker_aiChat', JSON.stringify(messages));
+    if (messages.length > 0 && user) {
+      localStorage.setItem(`mediChecker_aiChat_${user.uid}`, JSON.stringify(messages));
     }
-  }, [messages]);
+  }, [messages, user]);
 
   const sendMessage = async (messageText = null) => {
     const textToSend = messageText || inputMessage;
@@ -118,12 +134,13 @@ export default function AIAssistant({ isDarkMode }) {
     }
   };
 
-  // ...rest of your existing code stays exactly the same...
   const clearConversation = () => {
     const confirmed = window.confirm('Are you sure you want to clear the conversation? This cannot be undone.');
     if (confirmed) {
       setMessages([welcomeMessage]);
-      localStorage.removeItem('mediChecker_aiChat');
+      if (user) {
+        localStorage.removeItem(`mediChecker_aiChat_${user.uid}`);
+      }
     }
   };
 
@@ -149,6 +166,11 @@ export default function AIAssistant({ isDarkMode }) {
       sendMessage();
     }
   };
+
+  // Don't render anything while checking auth or if user is not authenticated
+  if (authLoading || !user) {
+    return null;
+  }
 
   return (
     <>
@@ -281,7 +303,7 @@ export default function AIAssistant({ isDarkMode }) {
   );
 }
 
-// ...keep all your existing styles exactly the same...
+// Base styles remain the same...
 const baseStyles = {
   aiButton: {
     position: 'fixed',

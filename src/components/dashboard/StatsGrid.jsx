@@ -6,44 +6,67 @@ export default function StatsGrid({ healthStats, isDarkMode }) {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
       gap: "20px",
-      marginBottom: "40px",
       maxWidth: "1200px",
-      margin: "0 auto 40px"
+      margin: "0 auto 40px",
+      padding: "0 20px"
     },
     
     statCard: {
       padding: "24px",
       borderRadius: "16px",
-      border: "1px solid #e9ecef",
+      background: isDarkMode 
+        ? "linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%)" 
+        : "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+      border: "1px solid",
+      borderColor: isDarkMode ? "#404040" : "#e9ecef",
       textAlign: "center",
-      background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-      color: "white",
-      boxShadow: "0 4px 20px rgba(16, 185, 129, 0.2)"
+      transition: "all 0.3s ease",
+      cursor: "default",
+      boxShadow: isDarkMode ? "none" : "0 2px 10px rgba(0,0,0,0.05)"
     },
     
     statIcon: {
       fontSize: "32px",
-      marginBottom: "12px"
+      marginBottom: "12px",
+      display: "block"
     },
     
     statValue: {
-      fontSize: "28px",
+      fontSize: "32px",
       fontWeight: "700",
+      color: "#10b981",
       marginBottom: "4px"
     },
     
     statLabel: {
       fontSize: "14px",
       opacity: 0.9,
-      fontWeight: "500"
+      fontWeight: "500",
+      color: isDarkMode ? "#e9ecef" : "#374151"
     }
   };
 
   const stats = [
-    { icon: "🔍", value: healthStats.totalSearches, label: "Total Searches" },
-    { icon: "💊", value: healthStats.activeMedicines, label: "Active Medicines" },
-    { icon: "⏰", value: healthStats.upcomingDoses, label: "Upcoming Doses" },
-    { icon: "⚠️", value: healthStats.interactions, label: "Interactions" }
+    { 
+      icon: "🔍", 
+      value: healthStats?.totalSearches || 0, 
+      label: "Total Searches" 
+    },
+    { 
+      icon: "💊", 
+      value: healthStats?.activeMedicines || 0, 
+      label: "Active Medicines" 
+    },
+    { 
+      icon: "⏰", 
+      value: healthStats?.upcomingDoses || 0, 
+      label: "Upcoming Doses" 
+    },
+    { 
+      icon: "⚠️", 
+      value: healthStats?.interactions || 0, 
+      label: "Interactions" 
+    }
   ];
 
   return (

@@ -11,6 +11,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const router = useRouter();
 
   useEffect(() => {
@@ -18,12 +20,17 @@ export default function Dashboard() {
       setUser(user);
       setLoading(false);
       if (!user) {
-        // Allow guest access instead of redirecting
         setIsGuest(true);
       } else {
         setIsGuest(false);
       }
     });
+
+    // Load theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+    }
 
     return () => unsubscribe();
   }, [router]);
@@ -43,18 +50,98 @@ export default function Dashboard() {
   };
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
 
   const handleRedirect = (url) => {
     window.open(url, '_blank');
   };
 
+  const projects = [
+    {
+      id: 1,
+      title: "Medicine Checker",
+      description: "AI-powered medical assistant for health guidance and medicine information",
+      icon: "🏥",
+      category: "healthcare",
+      color: "#3b82f6",
+      gradient: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+      tags: ["AI", "Healthcare", "Chat"],
+      url: "https://medicine-checker.vercel.app/home",
+      stats: { users: "10K+", rating: "4.8" }
+    },
+    {
+      id: 2,
+      title: "Tsukihime Design",
+      description: "Elegant visual novel inspired design with modern aesthetics",
+      icon: "🌙",
+      category: "design",
+      color: "#8b5cf6",
+      gradient: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+      tags: ["Design", "Visual", "UI/UX"],
+      url: "https://schoolproject-tsukiwebvn.vercel.app",
+      stats: { users: "5K+", rating: "4.9" }
+    },
+    {
+      id: 3,
+      title: "Prescriptory",
+      description: "Advanced prescription and medication tracking system",
+      icon: "💊",
+      category: "healthcare",
+      color: "#10b981",
+      gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+      tags: ["Health", "Tracking", "Management"],
+      url: "https://prescriptory-test.vercel.app",
+      stats: { users: "8K+", rating: "4.7" }
+    },
+    {
+      id: 4,
+      title: "SSC Forum",
+      description: "Interactive student community for collaboration and learning",
+      icon: "💬",
+      category: "education",
+      color: "#f59e0b",
+      gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+      tags: ["Community", "Education", "Forum"],
+      url: "https://javascript-proj-images.vercel.app/admin-dashboard.html",
+      stats: { users: "15K+", rating: "4.6" }
+    },
+    {
+      id: 5,
+      title: "Freelance Hub",
+      description: "Professional platform connecting freelancers with clients",
+      icon: "💼",
+      category: "business",
+      color: "#06b6d4",
+      gradient: "linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)",
+      tags: ["Business", "Freelance", "Portfolio"],
+      url: "https://freelance-website-example.vercel.app",
+      stats: { users: "12K+", rating: "4.8" }
+    }
+  ];
+
+  const categories = [
+    { id: "all", name: "All Projects", icon: "🌟" },
+    { id: "healthcare", name: "Healthcare", icon: "⚕️" },
+    { id: "design", name: "Design", icon: "🎨" },
+    { id: "education", name: "Education", icon: "📚" },
+    { id: "business", name: "Business", icon: "💼" }
+  ];
+
+  const filteredProjects = projects.filter(project => {
+    const matchesCategory = selectedCategory === "all" || project.category === selectedCategory;
+    const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         project.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.loader}></div>
-        <p>Loading Dashboard...</p>
+        <p style={styles.loadingText}>Loading Dashboard...</p>
       </div>
     );
   }
@@ -65,156 +152,221 @@ export default function Dashboard() {
 
   return (
     <div style={currentStyles.container}>
-      {/* Header */}
+      {/* Modern Header */}
       <header style={currentStyles.header}>
         <div style={styles.headerContent}>
           <div style={styles.logo}>
-            <span style={styles.logoIcon}>🚀</span>
-            <span style={styles.logoText}>Dashboard</span>
+            <div style={currentStyles.logoCircle}>🚀</div>
+            <span style={currentStyles.logoText}>Dashboard</span>
           </div>
           
-          <div style={styles.headerRight}>
-            <button onClick={toggleTheme} style={currentStyles.themeButton}>
+          <div style={styles.headerActions}>
+            <button onClick={toggleTheme} style={currentStyles.themeButton} title="Toggle theme">
               {isDarkMode ? '☀️' : '🌙'}
             </button>
             
-            <div style={styles.userMenu}>
-              {user ? (
-                <>
+            {user ? (
+              <>
+                <div style={currentStyles.userInfo}>
                   <Image
-                    src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=007bff&color=fff`}
+                    src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3b82f6&color=fff`}
                     alt="User Avatar"
-                    width={40}
-                    height={40}
+                    width={36}
+                    height={36}
                     style={styles.avatar}
                     unoptimized={true}
                   />
                   <span style={currentStyles.userName}>{displayName}</span>
-                  <button onClick={handleSignOut} style={currentStyles.signOutButton}>
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div style={styles.guestAvatar}>👤</div>
-                  <span style={currentStyles.userName}>Guest User</span>
-                  <button onClick={handleSignIn} style={currentStyles.signInButton}>
-                    Sign In
-                  </button>
-                </>
-              )}
-            </div>
+                </div>
+                <button onClick={handleSignOut} style={currentStyles.signOutButton}>
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={handleSignIn} style={currentStyles.signInButton}>
+                  Sign In
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Dashboard Content */}
+      {/* Main Content */}
       <main style={currentStyles.main}>
-        <div style={styles.dashboardContent}>
-          {/* Welcome Section */}
-          <section style={currentStyles.welcomeSection}>
-            <h1 style={currentStyles.welcomeTitle}>
+        <div style={styles.container}>
+          
+          {/* Hero Section */}
+          <section style={currentStyles.hero}>
+            <h1 style={currentStyles.heroTitle}>
               Welcome back, {userName}! 👋
             </h1>
-            <p style={currentStyles.welcomeSubtitle}>
+            <p style={currentStyles.heroSubtitle}>
               {isGuest 
-                ? "Explore our featured projects as a guest. Sign in for a personalized experience!" 
-                : "Your personal dashboard with quick access to your featured projects."
+                ? "Explore our featured projects. Sign in for a personalized experience!" 
+                : "Manage and access all your projects in one place"
               }
             </p>
           </section>
 
-          {/* Guest Info Banner */}
-          {isGuest && (
-            <section style={currentStyles.guestBanner}>
-              <div style={currentStyles.guestBannerContent}>
-                <span style={currentStyles.guestBannerIcon}>ℹ️</span>
-                <span style={currentStyles.guestBannerText}>
-                  You&apos;re browsing as a guest. 
-                  <button 
-                    onClick={handleSignIn} 
-                    style={currentStyles.guestSignInLink}
-                  >
-                    Sign in
-                  </button> 
-                  for full access to features!
-                </span>
+          {/* Search and Filter Section */}
+          <section style={currentStyles.searchSection}>
+            <div style={currentStyles.searchBar}>
+              <span style={currentStyles.searchIcon}>🔍</span>
+              <input
+                type="text"
+                placeholder="Search projects..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={currentStyles.searchInput}
+              />
+            </div>
+            
+            <div style={currentStyles.categoryFilter}>
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  style={{
+                    ...currentStyles.categoryButton,
+                    ...(selectedCategory === cat.id ? currentStyles.categoryButtonActive : {})
+                  }}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.name}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Stats Section */}
+          <section style={currentStyles.statsSection}>
+            <div style={currentStyles.statCard}>
+              <div style={currentStyles.statIcon}>📊</div>
+              <div style={currentStyles.statContent}>
+                <div style={currentStyles.statValue}>5</div>
+                <div style={currentStyles.statLabel}>Total Projects</div>
+              </div>
+            </div>
+            <div style={currentStyles.statCard}>
+              <div style={currentStyles.statIcon}>👥</div>
+              <div style={currentStyles.statContent}>
+                <div style={currentStyles.statValue}>50K+</div>
+                <div style={currentStyles.statLabel}>Active Users</div>
+              </div>
+            </div>
+            <div style={currentStyles.statCard}>
+              <div style={currentStyles.statIcon}>⭐</div>
+              <div style={currentStyles.statContent}>
+                <div style={currentStyles.statValue}>4.8</div>
+                <div style={currentStyles.statLabel}>Avg Rating</div>
+              </div>
+            </div>
+            <div style={currentStyles.statCard}>
+              <div style={currentStyles.statIcon}>🚀</div>
+              <div style={currentStyles.statContent}>
+                <div style={currentStyles.statValue}>100%</div>
+                <div style={currentStyles.statLabel}>Uptime</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Projects Grid */}
+          <section style={currentStyles.projectsSection}>
+            <div style={currentStyles.sectionHeader}>
+              <h2 style={currentStyles.sectionTitle}>
+                {selectedCategory === "all" ? "All Projects" : categories.find(c => c.id === selectedCategory)?.name}
+              </h2>
+              <span style={currentStyles.projectCount}>
+                {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
+              </span>
+            </div>
+
+            {filteredProjects.length === 0 ? (
+              <div style={currentStyles.emptyState}>
+                <div style={currentStyles.emptyIcon}>🔍</div>
+                <h3 style={currentStyles.emptyTitle}>No projects found</h3>
+                <p style={currentStyles.emptyText}>
+                  Try adjusting your search or filter criteria
+                </p>
+              </div>
+            ) : (
+              <div style={currentStyles.projectsGrid}>
+                {filteredProjects.map(project => (
+                  <div key={project.id} style={currentStyles.projectCard}>
+                    <div style={{ ...currentStyles.projectHeader, background: project.gradient }}>
+                      <div style={currentStyles.projectIcon}>{project.icon}</div>
+                      <div style={currentStyles.projectStats}>
+                        <span style={currentStyles.projectStat}>
+                          👥 {project.stats.users}
+                        </span>
+                        <span style={currentStyles.projectStat}>
+                          ⭐ {project.stats.rating}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div style={currentStyles.projectBody}>
+                      <h3 style={currentStyles.projectTitle}>{project.title}</h3>
+                      <p style={currentStyles.projectDescription}>{project.description}</p>
+                      
+                      <div style={currentStyles.projectTags}>
+                        {project.tags.map(tag => (
+                          <span key={tag} style={currentStyles.projectTag}>{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div style={currentStyles.projectFooter}>
+                      <button
+                        onClick={() => handleRedirect(project.url)}
+                        style={{ ...currentStyles.projectButton, background: project.gradient }}
+                      >
+                        Launch Project →
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Quick Actions */}
+          {!isGuest && (
+            <section style={currentStyles.quickActions}>
+              <h3 style={currentStyles.quickActionsTitle}>Quick Actions</h3>
+              <div style={currentStyles.actionsGrid}>
+                <button style={currentStyles.actionButton} onClick={() => router.push('/profile')}>
+                  <span style={currentStyles.actionIcon}>👤</span>
+                  <span>Profile</span>
+                </button>
+                <button style={currentStyles.actionButton} onClick={() => router.push('/reminders')}>
+                  <span style={currentStyles.actionIcon}>⏰</span>
+                  <span>Reminders</span>
+                </button>
+                <button style={currentStyles.actionButton} onClick={() => router.push('/settings')}>
+                  <span style={currentStyles.actionIcon}>⚙️</span>
+                  <span>Settings</span>
+                </button>
+                <button style={currentStyles.actionButton} onClick={() => router.push('/help')}>
+                  <span style={currentStyles.actionIcon}>❓</span>
+                  <span>Help</span>
+                </button>
               </div>
             </section>
           )}
-
-          {/* Featured Apps Section */}
-          <section style={currentStyles.actionsSection}>
-            <h2 style={currentStyles.sectionTitle}>🌟 Multi-System Projects</h2>
-            <div style={styles.featuredGrid}>
-              
-              {/* Medicine Checker App */}
-              <div style={currentStyles.featuredCard}>
-                <div style={styles.featuredIcon}>🏥</div>
-                <h3 style={currentStyles.featuredTitle}>Medicine Checker</h3>
-                <p style={currentStyles.featuredDescription}>
-                  🤖 Chat with Nick AI for medical advice, medicine information, and health guidance. 
-                  Get instant answers to your health questions with our advanced AI assistant.
-                </p>
-                <div style={styles.featuredFeatures}>
-                  <span style={currentStyles.featureBadge}>💊 Medicine Info</span>
-                  <span style={currentStyles.featureBadge}>🤖 AI Assistant</span>
-                  <span style={currentStyles.featureBadge}>⚕️ Health Advice</span>
-                </div>
-                <button 
-                  style={currentStyles.featuredButton}
-                  onClick={() => handleRedirect('https://medicine-checker.vercel.app/home')}
-                >
-                  🚀 Launch Medicine Checker
-                </button>
-              </div>
-
-              {/* Tsukihime Design Project */}
-              <div style={currentStyles.featuredCard}>
-                <div style={styles.featuredIcon}>🌙</div>
-                <h3 style={currentStyles.featuredTitle}>Tsukihime Design</h3>
-                <p style={currentStyles.featuredDescription}>
-                  🎨 Beautiful and elegant design inspired by the Tsukihime visual novel. 
-                  Experience stunning UI/UX with modern web technologies and artistic aesthetics.
-                </p>
-                <div style={styles.featuredFeatures}>
-                  <span style={currentStyles.featureBadgeSecondary}>🎨 Visual Design</span>
-                  <span style={currentStyles.featureBadgeSecondary}>🌙 Dark Theme</span>
-                  <span style={currentStyles.featureBadgeSecondary}>✨ Aesthetic UI</span>
-                </div>
-                <button 
-                  style={currentStyles.featuredButtonSecondary}
-                  onClick={() => handleRedirect('https://schoolproject-tsukiwebvn.vercel.app')}
-                >
-                  🌙 View Tsukihime Design
-                </button>
-              </div>
-
-              {/* Prescriptory Project */}
-              <div style={currentStyles.featuredCard}>
-                <div style={styles.featuredIcon}>💊</div>
-                <h3 style={currentStyles.featuredTitle}>Prescriptory</h3>
-                <p style={currentStyles.featuredDescription}>
-                  📋 Advanced prescription management system with comprehensive medication tracking, 
-                  doctor consultations, and personalized healthcare management tools.
-                </p>
-                <div style={styles.featuredFeatures}>
-                  <span style={currentStyles.featureBadgeTertiary}>📋 Prescriptions</span>
-                  <span style={currentStyles.featureBadgeTertiary}>👨‍⚕️ Doctors</span>
-                  <span style={currentStyles.featureBadgeTertiary}>🔔 Reminders</span>
-                </div>
-                <button 
-                  style={currentStyles.featuredButtonTertiary}
-                  onClick={() => handleRedirect('https://prescriptory-test.vercel.app')}
-                >
-                  💊 View Prescriptory
-                </button>
-              </div>
-
-            </div>
-          </section>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer style={currentStyles.footer}>
+        <div style={styles.container}>
+          <p style={currentStyles.footerText}>
+            © 2024 Dashboard. Made with ❤️ by Your Team
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -227,299 +379,407 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     height: '100vh',
-    fontFamily: "'Poppins', sans-serif",
+    fontFamily: "'Inter', 'Segoe UI', sans-serif",
     gap: '20px'
   },
   loader: {
     width: '50px',
     height: '50px',
-    border: '3px solid #e9ecef',
-    borderTop: '3px solid #007bff',
+    border: '4px solid rgba(59, 130, 246, 0.1)',
+    borderTop: '4px solid #3b82f6',
     borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
+    animation: 'spin 0.8s linear infinite'
+  },
+  loadingText: {
+    fontSize: '16px',
+    color: '#666'
   },
   headerContent: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    maxWidth: '1200px',
+    maxWidth: '1400px',
     margin: '0 auto',
-    padding: '0 20px'
+    padding: '0 24px'
   },
   logo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px'
+    gap: '12px'
   },
-  logoIcon: {
-    fontSize: '28px'
-  },
-  logoText: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#007bff'
-  },
-  headerRight: {
+  headerActions: {
     display: 'flex',
     alignItems: 'center',
-    gap: '15px'
-  },
-  userMenu: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px'
+    gap: '12px'
   },
   avatar: {
     borderRadius: '50%',
     objectFit: 'cover'
   },
-  guestAvatar: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    backgroundColor: '#6c757d',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '20px',
-    color: 'white'
-  },
-  dashboardContent: {
-    maxWidth: '1500px',
+  container: {
+    maxWidth: '1400px',
     margin: '0 auto',
-    padding: '20px'
-  },
-  featuredGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-    gap: '40px',
-    marginTop: '40px',
-    alignItems: 'stretch',
-    justifyContent: 'center'
-  },
-  featuredIcon: {
-    fontSize: '64px',
-    textAlign: 'center',
-    marginBottom: '20px'
-  },
-  featuredFeatures: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '10px',
-    justifyContent: 'center',
-    marginBottom: '25px'
+    padding: '0 24px'
   }
 };
 
 // Light theme
 const lightStyles = {
   container: {
-    fontFamily: "'Poppins', sans-serif",
+    fontFamily: "'Inter', 'Segoe UI', sans-serif",
     minHeight: '100vh',
-    backgroundColor: '#f8f9fa',
-    color: '#333'
+    backgroundColor: '#f8fafc',
+    color: '#1e293b'
   },
   header: {
     backgroundColor: '#ffffff',
-    borderBottom: '1px solid #e9ecef',
-    padding: '15px 0',
+    borderBottom: '1px solid #e2e8f0',
+    padding: '16px 0',
     position: 'sticky',
     top: 0,
     zIndex: 100,
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    backdropFilter: 'blur(10px)',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+  },
+  logoCircle: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '20px'
+  },
+  logoText: {
+    fontSize: '20px',
+    fontWeight: '700',
+    color: '#1e293b',
+    letterSpacing: '-0.5px'
   },
   themeButton: {
-    background: 'none',
-    border: 'none',
-    fontSize: '20px',
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    border: '1px solid #e2e8f0',
+    background: '#f8fafc',
     cursor: 'pointer',
-    padding: '8px',
-    borderRadius: '8px',
-    transition: 'background-color 0.3s ease'
+    fontSize: '18px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+    '&:hover': {
+      background: '#e2e8f0'
+    }
+  },
+  userInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '6px 16px',
+    background: '#f8fafc',
+    borderRadius: '10px',
+    border: '1px solid #e2e8f0'
   },
   userName: {
-    fontWeight: '500',
-    color: '#333'
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#1e293b'
   },
   signOutButton: {
-    background: '#dc3545',
-    color: 'white',
+    padding: '8px 20px',
+    borderRadius: '10px',
     border: 'none',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    cursor: 'pointer',
+    background: '#ef4444',
+    color: 'white',
     fontSize: '14px',
-    fontWeight: '500',
-    transition: 'background-color 0.3s ease'
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
   },
   signInButton: {
-    background: '#28a745',
-    color: 'white',
+    padding: '8px 20px',
+    borderRadius: '10px',
     border: 'none',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    cursor: 'pointer',
+    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+    color: 'white',
     fontSize: '14px',
-    fontWeight: '500',
-    transition: 'background-color 0.3s ease'
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
   },
   main: {
     padding: '40px 0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 'calc(100vh - 80px)'
+    minHeight: 'calc(100vh - 200px)'
   },
-  welcomeSection: {
+  hero: {
     textAlign: 'center',
+    marginBottom: '48px',
+    padding: '20px 0'
+  },
+  heroTitle: {
+    fontSize: '48px',
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: '16px',
+    letterSpacing: '-1px'
+  },
+  heroSubtitle: {
+    fontSize: '18px',
+    color: '#64748b',
+    fontWeight: '400'
+  },
+  searchSection: {
     marginBottom: '40px'
   },
-  welcomeTitle: {
-    fontSize: '42px',
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: '15px'
-  },
-  welcomeSubtitle: {
-    fontSize: '20px',
-    color: '#666',
-    margin: 0
-  },
-  guestBanner: {
-    backgroundColor: '#e3f2fd',
-    border: '1px solid #bbdefb',
-    borderRadius: '12px',
-    padding: '15px',
-    marginBottom: '40px',
-    textAlign: 'center'
-  },
-  guestBannerContent: {
+  searchBar: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
+    gap: '12px',
+    padding: '14px 20px',
+    background: '#ffffff',
+    borderRadius: '12px',
+    border: '2px solid #e2e8f0',
+    marginBottom: '20px',
+    transition: 'all 0.2s'
+  },
+  searchIcon: {
+    fontSize: '20px'
+  },
+  searchInput: {
+    flex: 1,
+    border: 'none',
+    outline: 'none',
+    fontSize: '16px',
+    color: '#1e293b',
+    background: 'transparent'
+  },
+  categoryFilter: {
+    display: 'flex',
+    gap: '12px',
     flexWrap: 'wrap'
   },
-  guestBannerIcon: {
-    fontSize: '18px'
+  categoryButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 20px',
+    borderRadius: '10px',
+    border: '2px solid #e2e8f0',
+    background: '#ffffff',
+    color: '#64748b',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
   },
-  guestBannerText: {
-    color: '#1976d2',
+  categoryButtonActive: {
+    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+    color: 'white',
+    borderColor: '#3b82f6'
+  },
+  statsSection: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '20px',
+    marginBottom: '48px'
+  },
+  statCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    padding: '24px',
+    background: '#ffffff',
+    borderRadius: '16px',
+    border: '1px solid #e2e8f0',
+    transition: 'all 0.2s'
+  },
+  statIcon: {
+    fontSize: '32px',
+    width: '56px',
+    height: '56px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  statContent: {
+    flex: 1
+  },
+  statValue: {
+    fontSize: '28px',
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: '4px'
+  },
+  statLabel: {
+    fontSize: '13px',
+    color: '#64748b',
     fontWeight: '500'
   },
-  guestSignInLink: {
-    background: 'none',
-    border: 'none',
-    color: '#007bff',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '16px'
+  projectsSection: {
+    marginBottom: '48px'
   },
-  actionsSection: {
-    textAlign: 'center'
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px'
   },
   sectionTitle: {
     fontSize: '28px',
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: '30px'
+    fontWeight: '700',
+    color: '#1e293b'
   },
-  featuredCard: {
-    backgroundColor: '#ffffff',
-    padding: '40px',
-    borderRadius: '20px',
-    boxShadow: '0 12px 40px rgba(0,123,255,0.15)',
-    border: '3px solid #007bff',
-    textAlign: 'center',
-    width: '100%',
-    height: 'auto',
+  projectCount: {
+    fontSize: '14px',
+    color: '#64748b',
+    fontWeight: '600',
+    padding: '6px 12px',
+    background: '#f1f5f9',
+    borderRadius: '8px'
+  },
+  projectsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+    gap: '24px'
+  },
+  projectCard: {
+    background: '#ffffff',
+    borderRadius: '16px',
+    overflow: 'hidden',
+    border: '1px solid #e2e8f0',
+    transition: 'all 0.3s',
+    cursor: 'pointer'
+  },
+  projectHeader: {
+    padding: '32px 24px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start'
+  },
+  projectIcon: {
+    fontSize: '48px'
+  },
+  projectStats: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+    gap: '8px',
+    alignItems: 'flex-end'
   },
-  featuredTitle: {
-    fontSize: '28px',
+  projectStat: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.9)',
+    background: 'rgba(255,255,255,0.2)',
+    padding: '4px 10px',
+    borderRadius: '6px',
+    backdropFilter: 'blur(10px)'
+  },
+  projectBody: {
+    padding: '24px'
+  },
+  projectTitle: {
+    fontSize: '20px',
     fontWeight: '700',
-    color: '#007bff',
-    margin: '0 0 20px 0'
+    color: '#1e293b',
+    marginBottom: '12px'
   },
-  featuredDescription: {
+  projectDescription: {
+    fontSize: '14px',
+    color: '#64748b',
+    lineHeight: '1.6',
+    marginBottom: '16px'
+  },
+  projectTags: {
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap'
+  },
+  projectTag: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#3b82f6',
+    background: '#eff6ff',
+    padding: '4px 12px',
+    borderRadius: '6px'
+  },
+  projectFooter: {
+    padding: '16px 24px',
+    borderTop: '1px solid #f1f5f9'
+  },
+  projectButton: {
+    width: '100%',
+    padding: '12px',
+    borderRadius: '10px',
+    border: 'none',
+    color: 'white',
+    fontSize: '14px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  },
+  emptyState: {
+    textAlign: 'center',
+    padding: '80px 20px'
+  },
+  emptyIcon: {
+    fontSize: '64px',
+    marginBottom: '20px'
+  },
+  emptyTitle: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: '12px'
+  },
+  emptyText: {
     fontSize: '16px',
-    color: '#666',
-    lineHeight: '1.7',
-    marginBottom: '30px',
-    flex: 1
+    color: '#64748b'
   },
-  featureBadge: {
-    backgroundColor: '#e3f2fd',
-    color: '#1976d2',
-    padding: '8px 16px',
-    borderRadius: '25px',
+  quickActions: {
+    marginBottom: '48px'
+  },
+  quickActionsTitle: {
+    fontSize: '20px',
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: '20px'
+  },
+  actionsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gap: '16px'
+  },
+  actionButton: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '24px',
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
+    cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '600',
-    border: '1px solid #bbdefb'
+    color: '#1e293b',
+    transition: 'all 0.2s'
   },
-  featureBadgeSecondary: {
-    backgroundColor: '#f3e5f5',
-    color: '#7b1fa2',
-    padding: '8px 16px',
-    borderRadius: '25px',
+  actionIcon: {
+    fontSize: '32px'
+  },
+  footer: {
+    borderTop: '1px solid #e2e8f0',
+    padding: '24px 0',
+    background: '#ffffff'
+  },
+  footerText: {
+    textAlign: 'center',
     fontSize: '14px',
-    fontWeight: '600',
-    border: '1px solid #ce93d8'
-  },
-  featureBadgeTertiary: {
-    backgroundColor: '#e8f5e8',
-    color: '#2e7d32',
-    padding: '8px 16px',
-    borderRadius: '25px',
-    fontSize: '14px',
-    fontWeight: '600',
-    border: '1px solid #81c784'
-  },
-  featuredButton: {
-    background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
-    color: 'white',
-    border: 'none',
-    padding: '18px 35px',
-    borderRadius: '15px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: '700',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    boxShadow: '0 6px 20px rgba(0,123,255,0.3)',
-    alignSelf: 'center',
-    width: 'fit-content'
-  },
-  featuredButtonSecondary: {
-    background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
-    color: 'white',
-    border: 'none',
-    padding: '18px 35px',
-    borderRadius: '15px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: '700',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    boxShadow: '0 6px 20px rgba(156,39,176,0.3)',
-    alignSelf: 'center',
-    width: 'fit-content'
-  },
-  featuredButtonTertiary: {
-    background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
-    color: 'white',
-    border: 'none',
-    padding: '18px 35px',
-    borderRadius: '15px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: '700',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    boxShadow: '0 6px 20px rgba(46,125,50,0.3)',
-    alignSelf: 'center',
-    width: 'fit-content'
+    color: '#64748b'
   }
 };
 
@@ -529,210 +789,158 @@ const darkStyles = {
   container: {
     ...lightStyles.container,
     backgroundColor: '#1a1a1a',
-    color: '#ffffff'
+    color: '#f1f5f9'
   },
   header: {
     ...lightStyles.header,
-    backgroundColor: '#2d2d2d',
-    borderBottom: '1px solid #404040'
+    backgroundColor: '#1e293b',
+    borderBottom: '1px solid #334155'
+  },
+  logoText: {
+    ...lightStyles.logoText,
+    color: '#f1f5f9'
+  },
+  themeButton: {
+    ...lightStyles.themeButton,
+    background: '#334155',
+    borderColor: '#475569'
+  },
+  userInfo: {
+    ...lightStyles.userInfo,
+    background: '#334155',
+    borderColor: '#475569'
   },
   userName: {
     ...lightStyles.userName,
-    color: '#ffffff'
+    color: '#f1f5f9'
   },
-  welcomeTitle: {
-    ...lightStyles.welcomeTitle,
-    color: '#ffffff'
+  heroTitle: {
+    ...lightStyles.heroTitle,
+    color: '#f1f5f9'
   },
-  welcomeSubtitle: {
-    ...lightStyles.welcomeSubtitle,
-    color: '#b0b0b0'
+  heroSubtitle: {
+    ...lightStyles.heroSubtitle,
+    color: '#94a3b8'
   },
-  guestBanner: {
-    ...lightStyles.guestBanner,
-    backgroundColor: '#1e3a8a',
-    border: '1px solid #3b82f6'
+  searchBar: {
+    ...lightStyles.searchBar,
+    background: '#1e293b',
+    borderColor: '#334155'
   },
-  guestBannerText: {
-    ...lightStyles.guestBannerText,
-    color: '#93c5fd'
+  searchInput: {
+    ...lightStyles.searchInput,
+    color: '#f1f5f9'
   },
-  guestSignInLink: {
-    ...lightStyles.guestSignInLink,
-    color: '#66b3ff'
+  categoryButton: {
+    ...lightStyles.categoryButton,
+    background: '#1e293b',
+    borderColor: '#334155',
+    color: '#94a3b8'
+  },
+  statCard: {
+    ...lightStyles.statCard,
+    background: '#1e293b',
+    borderColor: '#334155'
+  },
+  statValue: {
+    ...lightStyles.statValue,
+    color: '#f1f5f9'
   },
   sectionTitle: {
     ...lightStyles.sectionTitle,
-    color: '#ffffff'
+    color: '#f1f5f9'
   },
-  featuredCard: {
-    ...lightStyles.featuredCard,
-    backgroundColor: '#2d2d2d',
-    boxShadow: '0 12px 40px rgba(0,123,255,0.2)',
-    border: '3px solid #0066cc'
+  projectCount: {
+    ...lightStyles.projectCount,
+    background: '#334155',
+    color: '#94a3b8'
   },
-  featuredTitle: {
-    ...lightStyles.featuredTitle,
-    color: '#66b3ff'
+  projectCard: {
+    ...lightStyles.projectCard,
+    background: '#1e293b',
+    borderColor: '#334155'
   },
-  featuredDescription: {
-    ...lightStyles.featuredDescription,
-    color: '#b0b0b0'
+  projectTitle: {
+    ...lightStyles.projectTitle,
+    color: '#f1f5f9'
   },
-  featureBadge: {
-    ...lightStyles.featureBadge,
-    backgroundColor: '#1e3a8a',
-    color: '#93c5fd',
-    border: '1px solid #3b82f6'
+  projectDescription: {
+    ...lightStyles.projectDescription,
+    color: '#94a3b8'
   },
-  featureBadgeSecondary: {
-    ...lightStyles.featureBadgeSecondary,
-    backgroundColor: '#4a148c',
-    color: '#ce93d8',
-    border: '1px solid #9c27b0'
+  projectFooter: {
+    ...lightStyles.projectFooter,
+    borderTop: '1px solid #334155'
   },
-  featureBadgeTertiary: {
-    ...lightStyles.featureBadgeTertiary,
-    backgroundColor: '#1b5e20',
-    color: '#81c784',
-    border: '1px solid #2e7d32'
+  emptyTitle: {
+    ...lightStyles.emptyTitle,
+    color: '#f1f5f9'
+  },
+  emptyText: {
+    ...lightStyles.emptyText,
+    color: '#94a3b8'
+  },
+  quickActionsTitle: {
+    ...lightStyles.quickActionsTitle,
+    color: '#f1f5f9'
+  },
+  actionButton: {
+    ...lightStyles.actionButton,
+    background: '#1e293b',
+    borderColor: '#334155',
+    color: '#f1f5f9'
+  },
+  footer: {
+    ...lightStyles.footer,
+    background: '#1e293b',
+    borderTop: '1px solid #334155'
+  },
+  footerText: {
+    ...lightStyles.footerText,
+    color: '#94a3b8'
   }
 };
 
-// Updated CSS with responsive 3-card layout
+// CSS animations
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
     
-    /* Featured card hover effects */
-    .featured-card:hover {
-      transform: translateY(-8px) !important;
+    * {
+      box-sizing: border-box;
     }
     
-    .featured-button:hover, 
-    .featured-button-secondary:hover,
-    .featured-button-tertiary:hover {
-      transform: translateY(-2px) !important;
+    button {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
     }
     
-    /* Button hover effects */
-    button:hover {
-      opacity: 0.9 !important;
+    input::placeholder {
+      color: #94a3b8;
     }
     
-    /* Ensure cards are equal height */
-    [style*="featuredGrid"] > div {
-      display: flex !important;
-      flex-direction: column !important;
-    }
-    
-    /* Desktop - 3 cards in a row */
-    @media (min-width: 1200px) {
-      [style*="featuredGrid"] {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 40px !important;
-        max-width: 1500px !important;
-        margin: 40px auto 0 !important;
-      }
-    }
-    
-    /* Laptop - 2 cards per row, third below */
-    @media (min-width: 769px) and (max-width: 1199px) {
-      [style*="featuredGrid"] {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 30px !important;
-        margin: 40px 20px 0 !important;
-      }
-      
-      [style*="featuredCard"] {
-        padding: 35px 25px !important;
-      }
-    }
-    
-    /* Mobile - Stack vertically */
     @media (max-width: 768px) {
-      [style*="featuredGrid"] {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 30px !important;
-        margin: 40px 15px 0 !important;
-      }
-      
-      [style*="featuredCard"] {
-        margin: 0 !important;
-        padding: 30px 20px !important;
-        max-width: none !important;
-      }
-      
-      [style*="featuredTitle"] {
-        font-size: 24px !important;
-      }
-      
-      [style*="featuredDescription"] {
-        font-size: 15px !important;
-      }
-      
-      [style*="featuredButton"], 
-      [style*="featuredButtonSecondary"],
-      [style*="featuredButtonTertiary"] {
-        padding: 16px 28px !important;
-        font-size: 15px !important;
-      }
-      
-      [style*="welcomeTitle"] {
+      [style*="heroTitle"] {
         font-size: 32px !important;
       }
       
-      [style*="welcomeSubtitle"] {
-        font-size: 18px !important;
+      [style*="projectsGrid"] {
+        grid-template-columns: 1fr !important;
       }
       
-      [style*="sectionTitle"] {
-        font-size: 24px !important;
+      [style*="statsSection"] {
+        grid-template-columns: repeat(2, 1fr) !important;
       }
       
-      [style*="guestBannerContent"] {
-        flex-direction: column !important;
-        gap: 5px !important;
-      }
-    }
-    
-    /* Very small mobile */
-    @media (max-width: 480px) {
-      [style*="featuredGrid"] {
-        margin: 40px 10px 0 !important;
-      }
-      
-      [style*="featuredCard"] {
-        padding: 25px 15px !important;
-      }
-      
-      [style*="featuredIcon"] {
-        font-size: 48px !important;
-      }
-      
-      [style*="featuredTitle"] {
-        font-size: 22px !important;
-      }
-      
-      [style*="featuredDescription"] {
-        font-size: 14px !important;
-      }
-      
-      [style*="welcomeTitle"] {
-        font-size: 28px !important;
-      }
-      
-      [style*="welcomeSubtitle"] {
-        font-size: 16px !important;
+      [style*="categoryFilter"] {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 10px;
       }
     }
   `;

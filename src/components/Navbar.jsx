@@ -949,7 +949,7 @@ const darkStyles = {
   ...lightStyles,
   nav: {
     ...baseStyles.nav,
-    background: "rgba(26,26,26,0.95)",
+    background: "#1a1a1a",
     borderBottom: "1px solid rgba(255,255,255,0.1)",
   },
   navLink: {

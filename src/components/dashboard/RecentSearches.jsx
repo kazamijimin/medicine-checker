@@ -405,7 +405,7 @@ export default function RecentSearches({ recentSearches = [], isDarkMode }) {
             <span style={styles.emptyIcon}>🔍</span>
             <p style={styles.emptyText}>No recent searches</p>
             <button 
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/home')}
               style={styles.emptyButton}
             >
               Start Searching

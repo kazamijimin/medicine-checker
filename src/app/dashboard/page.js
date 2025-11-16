@@ -103,69 +103,95 @@ export default function Dashboard() {
       console.error("Error checking admin status:", error);
     }
   };
+// ...existing code...
 
-  const loadDashboardData = async (userId) => {
+const loadDashboardData = async (userId) => {
+  try {
+    // Load recent searches
+    const searchesQuery = query(
+      collection(db, "searches"),
+      where("userId", "==", userId),
+      orderBy("timestamp", "desc"),
+      limit(5)
+    );
+    const searchesSnapshot = await getDocs(searchesQuery);
+    const recentSearches = searchesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Load medicine history
+    const historyQuery = query(
+      collection(db, "medicineHistory"),
+      where("userId", "==", userId),
+      orderBy("createdAt", "desc"),
+      limit(10)
+    );
+    const historySnapshot = await getDocs(historyQuery);
+    const medicineHistory = historySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Load active reminders - UPDATED
+    let activeReminders = [];
     try {
-      // Load recent searches
-      const searchesQuery = query(
-        collection(db, "searches"),
-        where("userId", "==", userId),
-        orderBy("timestamp", "desc"),
-        limit(5)
-      );
-      const searchesSnapshot = await getDocs(searchesQuery);
-      const recentSearches = searchesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      // Load medicine history
-      const historyQuery = query(
-        collection(db, "medicineHistory"),
-        where("userId", "==", userId),
-        orderBy("createdAt", "desc"),
-        limit(10)
-      );
-      const historySnapshot = await getDocs(historyQuery);
-      const medicineHistory = historySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      // Load active reminders
+      const remindersRef = collection(db, "reminders");
       const remindersQuery = query(
-        collection(db, "reminders"),
+        remindersRef,
         where("userId", "==", userId),
-        where("active", "==", true),
-        orderBy("nextDose", "asc"),
-        limit(5)
+        where("active", "==", true)
       );
+      
       const remindersSnapshot = await getDocs(remindersQuery);
-      const activeReminders = remindersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      // Calculate health stats
-      const healthStats = {
-        totalSearches: recentSearches.length + Math.floor(Math.random() * 100),
-        activeMedicines: medicineHistory.filter(m => m.status === 'active').length,
-        upcomingDoses: activeReminders.length,
-        interactions: Math.floor(Math.random() * 3)
-      };
-
-      setDashboardData({
-        recentSearches,
-        medicineHistory,
-        activeReminders,
-        healthStats
+      activeReminders = remindersSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Ensure dates are properly converted
+          nextDose: data.nextDose?.toDate ? data.nextDose.toDate() : new Date(data.nextDose),
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
+        };
       });
 
-    } catch (error) {
-      console.error("Error loading dashboard data:", error);
-    }
-  };
+      // Sort by next dose time
+      activeReminders.sort((a, b) => {
+        const dateA = new Date(a.nextDose);
+        const dateB = new Date(b.nextDose);
+        return dateA - dateB;
+      });
 
+      // Limit to 5 most upcoming
+      activeReminders = activeReminders.slice(0, 5);
+
+      console.log("Active reminders loaded:", activeReminders); // Debug log
+    } catch (error) {
+      console.error("Error loading reminders:", error);
+      // Continue without reminders if there's an error
+    }
+
+    // Calculate health stats
+    const healthStats = {
+      totalSearches: recentSearches.length,
+      activeMedicines: medicineHistory.filter(m => m.status === 'active').length,
+      upcomingDoses: activeReminders.length,
+      interactions: 0 // You can calculate this based on your logic
+    };
+
+    setDashboardData({
+      recentSearches,
+      medicineHistory,
+      activeReminders,
+      healthStats
+    });
+
+  } catch (error) {
+    console.error("Error loading dashboard data:", error);
+  }
+};
+
+// ...existing code...
   // Styles for main container
   const containerStyles = {
     minHeight: "100vh",
@@ -266,30 +292,6 @@ if (typeof document !== 'undefined') {
       from {
         transform: translateX(0);
         opacity: 1;
-      }
-      to {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-    }
-    
-    .search-item:hover,
-    .reminder-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    
-    .action-card:hover {
-      transform: translateY(-4px);
-      border-color: #10b981 !important;
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.2);
-    }
-
-    .notification-button:hover {
-      background-color: rgba(255,255,255,0.3) !important;
-      transform: translateY(-1px);
-    }
-    
     @media (max-width: 768px) {
       .main-grid {
         grid-template-columns: 1fr !important;

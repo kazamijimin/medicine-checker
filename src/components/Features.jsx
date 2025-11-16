@@ -1,6 +1,11 @@
+"use client";
+
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 const Features = ({ isDarkMode }) => {
+  const router = useRouter();
+
   const features = [
     {
       id: 1,
@@ -46,6 +51,18 @@ const Features = ({ isDarkMode }) => {
     { number: '99.9%', label: 'Accuracy', icon: '✅' },
     { number: '24/7', label: 'Support', icon: '🔄' }
   ];
+
+  const handleLearnMore = () => {
+    router.push('/learn-more');
+  };
+
+  const handleStartTrial = () => {
+    router.push('/signup');
+  };
+
+  const handleContactSales = () => {
+    router.push('/contact');
+  };
 
   // Theme-aware styles
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
@@ -100,7 +117,16 @@ const Features = ({ isDarkMode }) => {
                 {feature.description}
               </p>
               
-              <button style={currentStyles.featureButton}>
+              <button 
+                style={currentStyles.featureButton}
+                onClick={handleLearnMore}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateX(5px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateX(0)';
+                }}
+              >
                 Learn More →
               </button>
             </div>
@@ -116,12 +142,34 @@ const Features = ({ isDarkMode }) => {
             <p style={currentStyles.ctaDescription}>
               Join thousands of users who trust our platform for safe medicine management.
             </p>
-            <div style={currentStyles.ctaButtons}>
-              <button style={currentStyles.primaryButton}>
+            <div style={currentStyles.ctaButtons} className="ctaButtons">
+              <button 
+                style={currentStyles.primaryButton}
+                onClick={handleStartTrial}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(40, 167, 69, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.2)';
+                }}
+              >
                 🚀 Start Free Trial
               </button>
               
-              <button style={currentStyles.secondaryButton}>
+              <button 
+                style={currentStyles.secondaryButton}
+                onClick={handleContactSales}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.backgroundColor = isDarkMode ? 'rgba(40, 167, 69, 0.1)' : '#f0fdf4';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.backgroundColor = isDarkMode ? 'transparent' : 'white';
+                }}
+              >
                 📞 Contact Sales
               </button>
             </div>
@@ -291,7 +339,8 @@ const baseStyles = {
     fontSize: "16px",
     fontWeight: "600",
     cursor: "pointer",
-    transition: "all 0.3s ease"
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 15px rgba(40, 167, 69, 0.2)"
   },
   secondaryButton: {
     padding: "16px 32px",
