@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 const About = ({ isDarkMode }) => {
   const [activeTab, setActiveTab] = useState("mission");
 
@@ -14,43 +13,42 @@ const About = ({ isDarkMode }) => {
     {
       name: "Nick Narry S. Mendoza",
       role: "Chief Medical Officer",
-      image:
-        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+      image: "/nick.jpg",
       description: "15+ years in pharmacology and drug safety research.",
       specialties: ["Pharmacology", "Drug Safety", "Clinical Research"],
     },
     {
       name: "Jerick E. Mendez",
-      role: "CTO & Co-Founder",
+      role: "Visual Novelist & AI Engineer",
       image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+        "/jerick.jpg",
       description:
         "Former Google engineer specializing in healthcare technology.",
       specialties: ["AI/ML", "Healthcare Tech", "Data Science"],
     },
     {
       name: "Ross Cedric B. Nazareno",
-      role: "Head of Pharmacy",
+      role: "Free Lance Developer",
       image:
-        "https://images.unsplash.com/photo-1594824956935-1bc7139a7f85?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+        "/ross.jpg",
       description:
         "Licensed pharmacist with expertise in medication management.",
       specialties: ["Clinical Pharmacy", "Drug Interactions", "Patient Care"],
     },
     {
       name: "Lance Vincent Gallardo",
-      role: "Head of Pharmacy",
+      role: "Creator of SSC Forum",
       image:
-        "https://images.unsplash.com/photo-1594824956935-1bc7139a7f85?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+        "/lance.jpg",
       description:
         "Licensed pharmacist with expertise in medication management.",
       specialties: ["Clinical Pharmacy", "Drug Interactions", "Patient Care"],
     },
     {
       name: "Nigel R. Agojo",
-      role: "Head of Pharmacy",
+      role: "Prescription Drug Specialist",
       image:
-        "https://images.unsplash.com/photo-1594824956935-1bc7139a7f85?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+        "/nigel.jpg",
       description:
         "Licensed pharmacist with expertise in medication management.",
       specialties: ["Clinical Pharmacy", "Drug Interactions", "Patient Care"],
@@ -137,9 +135,15 @@ const About = ({ isDarkMode }) => {
             <div style={currentStyles.achievementsGrid}>
               {achievements.map((achievement, index) => (
                 <div key={index} style={currentStyles.achievementCard}>
-                  <div style={currentStyles.achievementIcon}>{achievement.icon}</div>
-                  <div style={currentStyles.achievementNumber}>{achievement.number}</div>
-                  <div style={currentStyles.achievementLabel}>{achievement.label}</div>
+                  <div style={currentStyles.achievementIcon}>
+                    {achievement.icon}
+                  </div>
+                  <div style={currentStyles.achievementNumber}>
+                    {achievement.number}
+                  </div>
+                  <div style={currentStyles.achievementLabel}>
+                    {achievement.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -150,9 +154,7 @@ const About = ({ isDarkMode }) => {
         return (
           <div style={currentStyles.tabContent}>
             <div style={currentStyles.teamHeader}>
-              <h3 style={currentStyles.contentTitle}>
-                Meet Our Expert Team
-              </h3>
+              <h3 style={currentStyles.contentTitle}>Meet Our Expert Team</h3>
               <p style={currentStyles.contentSubtitle}>
                 Leading medical professionals and technology experts working
                 together
@@ -174,12 +176,8 @@ const About = ({ isDarkMode }) => {
                   </div>
 
                   <div style={currentStyles.memberInfo}>
-                    <h4 style={currentStyles.memberName}>
-                      {member.name}
-                    </h4>
-                    <p style={currentStyles.memberRole}>
-                      {member.role}
-                    </p>
+                    <h4 style={currentStyles.memberName}>{member.name}</h4>
+                    <p style={currentStyles.memberRole}>{member.role}</p>
                     <p style={currentStyles.memberDescription}>
                       {member.description}
                     </p>
@@ -228,9 +226,7 @@ const About = ({ isDarkMode }) => {
               </div>
 
               <div style={currentStyles.techCard}>
-                <h4 style={currentStyles.techTitle}>
-                  ☁️ Cloud Infrastructure
-                </h4>
+                <h4 style={currentStyles.techTitle}>☁️ Cloud Infrastructure</h4>
                 <p style={currentStyles.techDescription}>
                   Scalable, secure cloud architecture ensuring 99.9% uptime and
                   global accessibility.
@@ -243,9 +239,7 @@ const About = ({ isDarkMode }) => {
               </div>
 
               <div style={currentStyles.techCard}>
-                <h4 style={currentStyles.techTitle}>
-                  🔒 Security & Privacy
-                </h4>
+                <h4 style={currentStyles.techTitle}>🔒 Security & Privacy</h4>
                 <p style={currentStyles.techDescription}>
                   Enterprise-grade security protecting sensitive medical data
                   with encryption and compliance.
@@ -258,9 +252,7 @@ const About = ({ isDarkMode }) => {
               </div>
 
               <div style={currentStyles.techCard}>
-                <h4 style={currentStyles.techTitle}>
-                  📊 Real-time Analytics
-                </h4>
+                <h4 style={currentStyles.techTitle}>📊 Real-time Analytics</h4>
                 <p style={currentStyles.techDescription}>
                   Live monitoring and analytics for continuous improvement and
                   instant drug safety alerts.
@@ -279,9 +271,7 @@ const About = ({ isDarkMode }) => {
         return (
           <div style={currentStyles.tabContent}>
             <div style={currentStyles.teamHeader}>
-              <h3 style={currentStyles.contentTitle}>
-                Safety & Trust First
-              </h3>
+              <h3 style={currentStyles.contentTitle}>Safety & Trust First</h3>
               <p style={currentStyles.contentSubtitle}>
                 Your safety and privacy are our top priorities
               </p>
@@ -292,9 +282,7 @@ const About = ({ isDarkMode }) => {
               {certifications.map((cert, index) => (
                 <div key={index} style={currentStyles.certCard}>
                   <div style={currentStyles.certIcon}>{cert.icon}</div>
-                  <h4 style={currentStyles.certName}>
-                    {cert.name}
-                  </h4>
+                  <h4 style={currentStyles.certName}>{cert.name}</h4>
                   <p style={currentStyles.certDescription}>
                     {cert.description}
                   </p>
@@ -310,9 +298,7 @@ const About = ({ isDarkMode }) => {
 
               <div style={currentStyles.safetyGrid}>
                 <div>
-                  <h5 style={currentStyles.safetySubtitle}>
-                    Data Protection
-                  </h5>
+                  <h5 style={currentStyles.safetySubtitle}>Data Protection</h5>
                   <ul style={currentStyles.safetyList}>
                     <li>• All data encrypted in transit and at rest</li>
                     <li>• Regular security audits and penetration testing</li>
@@ -322,9 +308,7 @@ const About = ({ isDarkMode }) => {
                 </div>
 
                 <div>
-                  <h5 style={currentStyles.safetySubtitle}>
-                    Medical Accuracy
-                  </h5>
+                  <h5 style={currentStyles.safetySubtitle}>Medical Accuracy</h5>
                   <ul style={currentStyles.safetyList}>
                     <li>• Reviewed by licensed medical professionals</li>
                     <li>• Sources from FDA, WHO, and medical journals</li>
@@ -382,7 +366,7 @@ const About = ({ isDarkMode }) => {
               onClick={() => setActiveTab(tab.id)}
               style={{
                 ...currentStyles.tab,
-                ...(activeTab === tab.id ? currentStyles.activeTab : {})
+                ...(activeTab === tab.id ? currentStyles.activeTab : {}),
               }}
             >
               <span style={currentStyles.tabIcon}>{tab.icon}</span>
@@ -403,17 +387,17 @@ const baseStyles = {
   section: {
     padding: "80px 20px",
     position: "relative",
-    fontFamily: "'Poppins', sans-serif"
+    fontFamily: "'Poppins', sans-serif",
   },
   container: {
     maxWidth: "1200px",
     margin: "0 auto",
     position: "relative",
-    zIndex: 10
+    zIndex: 10,
   },
   header: {
     textAlign: "center",
-    marginBottom: "60px"
+    marginBottom: "60px",
   },
   badge: {
     display: "inline-flex",
@@ -423,7 +407,7 @@ const baseStyles = {
     fontSize: "14px",
     fontWeight: "600",
     marginBottom: "24px",
-    border: "1px solid"
+    border: "1px solid",
   },
   badgeIcon: {
     width: "8px",
@@ -431,27 +415,27 @@ const baseStyles = {
     backgroundColor: "#28a745",
     borderRadius: "50%",
     marginRight: "8px",
-    animation: "pulse 2s infinite"
+    animation: "pulse 2s infinite",
   },
   title: {
     fontSize: "clamp(32px, 4vw, 48px)",
     fontWeight: "700",
     marginBottom: "16px",
-    lineHeight: "1.2"
+    lineHeight: "1.2",
   },
   titleHighlight: {
     display: "block",
     background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    backgroundClip: "text"
+    backgroundClip: "text",
   },
   subtitle: {
     fontSize: "clamp(16px, 2vw, 20px)",
     maxWidth: "600px",
     margin: "0 auto",
     lineHeight: "1.6",
-    opacity: 0.8
+    opacity: 0.8,
   },
   tabsContainer: {
     display: "flex",
@@ -461,7 +445,7 @@ const baseStyles = {
     marginBottom: "48px",
     padding: "8px",
     borderRadius: "16px",
-    border: "1px solid"
+    border: "1px solid",
   },
   tab: {
     padding: "12px 24px",
@@ -473,52 +457,52 @@ const baseStyles = {
     display: "flex",
     alignItems: "center",
     border: "none",
-    background: "none"
+    background: "none",
   },
   activeTab: {
     background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
     color: "white",
-    boxShadow: "0 4px 15px rgba(40, 167, 69, 0.3)"
+    boxShadow: "0 4px 15px rgba(40, 167, 69, 0.3)",
   },
   tabIcon: {
-    marginRight: "8px"
+    marginRight: "8px",
   },
   contentCard: {
     padding: "48px 32px",
     borderRadius: "24px",
     border: "1px solid",
-    boxShadow: "0 8px 30px rgba(0,0,0,0.1)"
+    boxShadow: "0 8px 30px rgba(0,0,0,0.1)",
   },
   tabContent: {
-    display: "block"
+    display: "block",
   },
   missionGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
     gap: "48px",
     alignItems: "center",
-    marginBottom: "48px"
+    marginBottom: "48px",
   },
   contentTitle: {
     fontSize: "28px",
     fontWeight: "700",
-    marginBottom: "24px"
+    marginBottom: "24px",
   },
   contentSubtitle: {
     fontSize: "18px",
     marginBottom: "24px",
-    opacity: 0.8
+    opacity: 0.8,
   },
   contentText: {
     fontSize: "18px",
     lineHeight: "1.6",
     marginBottom: "24px",
-    opacity: 0.8
+    opacity: 0.8,
   },
   valuesList: {
     display: "flex",
     flexWrap: "wrap",
-    gap: "12px"
+    gap: "12px",
   },
   valueTag: {
     padding: "8px 16px",
@@ -526,52 +510,52 @@ const baseStyles = {
     color: "white",
     borderRadius: "50px",
     fontSize: "14px",
-    fontWeight: "600"
+    fontWeight: "600",
   },
   imageContainer: {
-    position: "relative"
+    position: "relative",
   },
   missionImage: {
     width: "100%",
     height: "320px",
     objectFit: "cover",
     borderRadius: "16px",
-    boxShadow: "0 8px 30px rgba(0,0,0,0.1)"
+    boxShadow: "0 8px 30px rgba(0,0,0,0.1)",
   },
   achievementsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     gap: "24px",
-    marginTop: "48px"
+    marginTop: "48px",
   },
   achievementCard: {
     textAlign: "center",
     padding: "32px 20px",
     borderRadius: "16px",
-    border: "1px solid"
+    border: "1px solid",
   },
   achievementIcon: {
     fontSize: "48px",
-    marginBottom: "16px"
+    marginBottom: "16px",
   },
   achievementNumber: {
     fontSize: "32px",
     fontWeight: "800",
     color: "#28a745",
-    marginBottom: "8px"
+    marginBottom: "8px",
   },
   achievementLabel: {
     fontSize: "14px",
-    fontWeight: "500"
+    fontWeight: "500",
   },
   teamHeader: {
     textAlign: "center",
-    marginBottom: "48px"
+    marginBottom: "48px",
   },
   teamGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "32px"
+    gap: "32px",
   },
   teamCard: {
     padding: "32px 24px",
@@ -579,11 +563,11 @@ const baseStyles = {
     border: "1px solid",
     textAlign: "center",
     transition: "all 0.3s ease",
-    cursor: "pointer"
+    cursor: "pointer",
   },
   memberImageContainer: {
     position: "relative",
-    marginBottom: "24px"
+    marginBottom: "24px",
   },
   memberImage: {
     width: "96px",
@@ -592,7 +576,7 @@ const baseStyles = {
     objectFit: "cover",
     border: "4px solid #28a745",
     margin: "0 auto",
-    display: "block"
+    display: "block",
   },
   memberBadge: {
     position: "absolute",
@@ -604,77 +588,77 @@ const baseStyles = {
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   memberBadgeIcon: {
     color: "white",
-    fontSize: "14px"
+    fontSize: "14px",
   },
   memberInfo: {
-    textAlign: "center"
+    textAlign: "center",
   },
   memberName: {
     fontSize: "20px",
     fontWeight: "700",
-    marginBottom: "8px"
+    marginBottom: "8px",
   },
   memberRole: {
     color: "#28a745",
     fontSize: "16px",
     fontWeight: "600",
-    marginBottom: "16px"
+    marginBottom: "16px",
   },
   memberDescription: {
     fontSize: "14px",
     lineHeight: "1.6",
     marginBottom: "16px",
-    opacity: 0.8
+    opacity: 0.8,
   },
   specialtiesList: {
     display: "flex",
     flexWrap: "wrap",
     gap: "8px",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   specialtyTag: {
     padding: "4px 12px",
     fontSize: "12px",
     fontWeight: "500",
-    borderRadius: "50px"
+    borderRadius: "50px",
   },
   techGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "32px"
+    gap: "32px",
   },
   techCard: {
     padding: "32px 24px",
     borderRadius: "16px",
-    border: "1px solid"
+    border: "1px solid",
   },
   techTitle: {
     fontSize: "20px",
     fontWeight: "700",
-    marginBottom: "16px"
+    marginBottom: "16px",
   },
   techDescription: {
     fontSize: "16px",
     lineHeight: "1.6",
     marginBottom: "16px",
-    opacity: 0.8
+    opacity: 0.8,
   },
   techList: {
     listStyle: "none",
     padding: 0,
     margin: 0,
     fontSize: "14px",
-    lineHeight: "1.8"
+    lineHeight: "1.8",
   },
   certificationsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     gap: "24px",
-    marginBottom: "48px"
+    marginBottom: "48px",
   },
   certCard: {
     textAlign: "center",
@@ -682,58 +666,58 @@ const baseStyles = {
     borderRadius: "16px",
     border: "1px solid",
     transition: "transform 0.3s ease",
-    cursor: "pointer"
+    cursor: "pointer",
   },
   certIcon: {
     fontSize: "48px",
-    marginBottom: "16px"
+    marginBottom: "16px",
   },
   certName: {
     fontSize: "16px",
     fontWeight: "700",
-    marginBottom: "8px"
+    marginBottom: "8px",
   },
   certDescription: {
     fontSize: "14px",
-    opacity: 0.8
+    opacity: 0.8,
   },
   safetyCard: {
     padding: "32px",
     borderRadius: "24px",
-    border: "1px solid"
+    border: "1px solid",
   },
   safetyTitle: {
     fontSize: "20px",
     fontWeight: "700",
-    marginBottom: "24px"
+    marginBottom: "24px",
   },
   safetyGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "32px"
+    gap: "32px",
   },
   safetySubtitle: {
     fontSize: "16px",
     fontWeight: "600",
     color: "#28a745",
-    marginBottom: "12px"
+    marginBottom: "12px",
   },
   safetyList: {
     listStyle: "none",
     padding: 0,
     margin: 0,
     fontSize: "14px",
-    lineHeight: "1.8"
+    lineHeight: "1.8",
   },
   disclaimerBox: {
     marginTop: "24px",
     padding: "16px",
-    borderRadius: "12px"
+    borderRadius: "12px",
   },
   disclaimerText: {
     fontSize: "14px",
-    margin: 0
-  }
+    margin: 0,
+  },
 };
 
 // Light theme styles
@@ -741,127 +725,127 @@ const lightStyles = {
   ...baseStyles,
   section: {
     ...baseStyles.section,
-    backgroundColor: "#ffffff"
+    backgroundColor: "#ffffff",
   },
   badge: {
     ...baseStyles.badge,
     backgroundColor: "#e8f5e8",
     color: "#28a745",
-    borderColor: "#c3e6c3"
+    borderColor: "#c3e6c3",
   },
   title: {
     ...baseStyles.title,
-    color: "#333"
+    color: "#333",
   },
   subtitle: {
     ...baseStyles.subtitle,
-    color: "#666"
+    color: "#666",
   },
   tabsContainer: {
     ...baseStyles.tabsContainer,
     backgroundColor: "#f8f9fa",
-    borderColor: "#e9ecef"
+    borderColor: "#e9ecef",
   },
   tab: {
     ...baseStyles.tab,
-    color: "#666"
+    color: "#666",
   },
   contentCard: {
     ...baseStyles.contentCard,
     backgroundColor: "white",
-    borderColor: "#e9ecef"
+    borderColor: "#e9ecef",
   },
   contentTitle: {
     ...baseStyles.contentTitle,
-    color: "#333"
+    color: "#333",
   },
   contentSubtitle: {
     ...baseStyles.contentSubtitle,
-    color: "#666"
+    color: "#666",
   },
   contentText: {
     ...baseStyles.contentText,
-    color: "#666"
+    color: "#666",
   },
   achievementCard: {
     ...baseStyles.achievementCard,
     backgroundColor: "#f8f9fa",
-    borderColor: "#e9ecef"
+    borderColor: "#e9ecef",
   },
   achievementLabel: {
     ...baseStyles.achievementLabel,
-    color: "#666"
+    color: "#666",
   },
   teamCard: {
     ...baseStyles.teamCard,
     backgroundColor: "#f8f9fa",
-    borderColor: "#e9ecef"
+    borderColor: "#e9ecef",
   },
   memberName: {
     ...baseStyles.memberName,
-    color: "#333"
+    color: "#333",
   },
   memberDescription: {
     ...baseStyles.memberDescription,
-    color: "#666"
+    color: "#666",
   },
   specialtyTag: {
     ...baseStyles.specialtyTag,
     backgroundColor: "#e9ecef",
-    color: "#666"
+    color: "#666",
   },
   techCard: {
     ...baseStyles.techCard,
     backgroundColor: "#f8f9fa",
-    borderColor: "#e9ecef"
+    borderColor: "#e9ecef",
   },
   techTitle: {
     ...baseStyles.techTitle,
-    color: "#333"
+    color: "#333",
   },
   techDescription: {
     ...baseStyles.techDescription,
-    color: "#666"
+    color: "#666",
   },
   techList: {
     ...baseStyles.techList,
-    color: "#666"
+    color: "#666",
   },
   certCard: {
     ...baseStyles.certCard,
     backgroundColor: "#f8f9fa",
-    borderColor: "#e9ecef"
+    borderColor: "#e9ecef",
   },
   certName: {
     ...baseStyles.certName,
-    color: "#333"
+    color: "#333",
   },
   certDescription: {
     ...baseStyles.certDescription,
-    color: "#666"
+    color: "#666",
   },
   safetyCard: {
     ...baseStyles.safetyCard,
     backgroundColor: "#f8f9fa",
-    borderColor: "#e9ecef"
+    borderColor: "#e9ecef",
   },
   safetyTitle: {
     ...baseStyles.safetyTitle,
-    color: "#333"
+    color: "#333",
   },
   safetyList: {
     ...baseStyles.safetyList,
-    color: "#666"
+    color: "#666",
   },
   disclaimerBox: {
     ...baseStyles.disclaimerBox,
     backgroundColor: "#fff3cd",
-    border: "1px solid #ffeaa7"
+    border: "1px solid #ffeaa7",
   },
   disclaimerText: {
     ...baseStyles.disclaimerText,
-    color: "#856404"
-  }
+    color: "#856404",
+  },
 };
 
 // Dark theme styles
@@ -869,133 +853,133 @@ const darkStyles = {
   ...baseStyles,
   section: {
     ...baseStyles.section,
-    backgroundColor: "#1a1a1a"
+    backgroundColor: "#1a1a1a",
   },
   badge: {
     ...baseStyles.badge,
     backgroundColor: "rgba(40, 167, 69, 0.2)",
     color: "#4ade80",
-    borderColor: "rgba(40, 167, 69, 0.3)"
+    borderColor: "rgba(40, 167, 69, 0.3)",
   },
   title: {
     ...baseStyles.title,
-    color: "#fff"
+    color: "#fff",
   },
   subtitle: {
     ...baseStyles.subtitle,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   tabsContainer: {
     ...baseStyles.tabsContainer,
     backgroundColor: "#2d2d2d",
-    borderColor: "#404040"
+    borderColor: "#404040",
   },
   tab: {
     ...baseStyles.tab,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   contentCard: {
     ...baseStyles.contentCard,
     backgroundColor: "#2d2d2d",
     borderColor: "#404040",
-    boxShadow: "0 8px 30px rgba(0,0,0,0.3)"
+    boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
   },
   contentTitle: {
     ...baseStyles.contentTitle,
-    color: "#fff"
+    color: "#fff",
   },
   contentSubtitle: {
     ...baseStyles.contentSubtitle,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   contentText: {
     ...baseStyles.contentText,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   achievementCard: {
     ...baseStyles.achievementCard,
     backgroundColor: "#3d3d3d",
-    borderColor: "#404040"
+    borderColor: "#404040",
   },
   achievementLabel: {
     ...baseStyles.achievementLabel,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   teamCard: {
     ...baseStyles.teamCard,
     backgroundColor: "#3d3d3d",
-    borderColor: "#404040"
+    borderColor: "#404040",
   },
   memberName: {
     ...baseStyles.memberName,
-    color: "#fff"
+    color: "#fff",
   },
   memberDescription: {
     ...baseStyles.memberDescription,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   specialtyTag: {
     ...baseStyles.specialtyTag,
     backgroundColor: "#404040",
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   techCard: {
     ...baseStyles.techCard,
     backgroundColor: "#3d3d3d",
-    borderColor: "#404040"
+    borderColor: "#404040",
   },
   techTitle: {
     ...baseStyles.techTitle,
-    color: "#fff"
+    color: "#fff",
   },
   techDescription: {
     ...baseStyles.techDescription,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   techList: {
     ...baseStyles.techList,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   certCard: {
     ...baseStyles.certCard,
     backgroundColor: "#3d3d3d",
-    borderColor: "#404040"
+    borderColor: "#404040",
   },
   certName: {
     ...baseStyles.certName,
-    color: "#fff"
+    color: "#fff",
   },
   certDescription: {
     ...baseStyles.certDescription,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   safetyCard: {
     ...baseStyles.safetyCard,
     backgroundColor: "#3d3d3d",
-    borderColor: "#404040"
+    borderColor: "#404040",
   },
   safetyTitle: {
     ...baseStyles.safetyTitle,
-    color: "#fff"
+    color: "#fff",
   },
   safetyList: {
     ...baseStyles.safetyList,
-    color: "#b0b0b0"
+    color: "#b0b0b0",
   },
   disclaimerBox: {
     ...baseStyles.disclaimerBox,
     backgroundColor: "rgba(245, 158, 11, 0.2)",
-    border: "1px solid rgba(245, 158, 11, 0.3)"
+    border: "1px solid rgba(245, 158, 11, 0.3)",
   },
   disclaimerText: {
     ...baseStyles.disclaimerText,
-    color: "#fbbf24"
-  }
+    color: "#fbbf24",
+  },
 };
 
 // Add CSS for animations
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
   style.textContent = `
     @keyframes pulse {
       0%, 100% { opacity: 1; }

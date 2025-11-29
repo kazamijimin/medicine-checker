@@ -525,6 +525,8 @@ export default function ProfilePage() {
                   src={imagePreview}
                   alt="Preview"
                   style={currentStyles.imagePreview}
+                  width={200}   // match imagePreview style
+                  height={200}
                 />
               </div>
               
@@ -564,6 +566,8 @@ export default function ProfilePage() {
                   src={getProfileImageSrc()}
                   alt="Profile"
                   style={currentStyles.profileImage}
+                  width={120}   // match profileImage style
+                  height={120}
                   onError={(e) => {
                     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.displayName || user?.email || 'User')}&background=10b981&color=fff&size=120`;
                   }}
@@ -663,6 +667,8 @@ export default function ProfilePage() {
                         src={getProfileImageSrc()}
                         alt="Profile"
                         style={currentStyles.profilePictureImg}
+                        width={80}   // match profilePictureImg style
+                        height={80}
                         onError={(e) => {
                           e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.displayName || user?.email || 'User')}&background=10b981&color=fff&size=80`;
                         }}

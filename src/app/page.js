@@ -5,6 +5,7 @@ import { auth } from "@/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Footer from "@/components/Footer";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -13,27 +14,41 @@ export default function Dashboard() {
   const [isGuest, setIsGuest] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [themeLoaded, setThemeLoaded] = useState(false); // ✅ new
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
-      if (!user) {
-        setIsGuest(true);
-      } else {
-        setIsGuest(false);
-      }
+      setIsGuest(!user);
     });
 
-    // Load theme preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
+    // Load theme preference (light first, then maybe dark)
+    const savedTheme = typeof window !== "undefined"
+      ? localStorage.getItem("theme")
+      : null;
+
+    if (savedTheme === "dark") {
       setIsDarkMode(true);
+    } else {
+      setIsDarkMode(false); // ✅ explicitly light as default
     }
+
+    setThemeLoaded(true); // ✅ theme ready
 
     return () => unsubscribe();
   }, [router]);
+
+  // While auth or theme is not ready, show loader
+  if (loading || !themeLoaded) {
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.loader}></div>
+        <p style={styles.loadingText}>Loading Dashboard...</p>
+      </div>
+    );
+  }
 
   const handleSignOut = async () => {
     try {
@@ -137,15 +152,6 @@ export default function Dashboard() {
     return matchesCategory && matchesSearch;
   });
 
-  if (loading) {
-    return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.loader}></div>
-        <p style={styles.loadingText}>Loading Dashboard...</p>
-      </div>
-    );
-  }
-
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
   const displayName = user?.displayName || user?.email || 'Guest';
   const userName = user ? (user.displayName?.split(' ')[0] || 'User') : 'Guest';
@@ -158,6 +164,14 @@ export default function Dashboard() {
           <div style={styles.logo}>
             <div style={currentStyles.logoCircle}>🚀</div>
             <span style={currentStyles.logoText}>Dashboard</span>
+
+            {/* ✅ Home button */}
+            <button
+              onClick={() => router.push('/home')}
+              style={currentStyles.homeButton}
+            >
+              ⬅ Home
+            </button>
           </div>
           
           <div style={styles.headerActions}>
@@ -363,7 +377,8 @@ export default function Dashboard() {
       <footer style={currentStyles.footer}>
         <div style={styles.container}>
           <p style={currentStyles.footerText}>
-            © 2024 Dashboard. Made with ❤️ by Your Team
+<Footer>
+  </Footer>
           </p>
         </div>
       </footer>
