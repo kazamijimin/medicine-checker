@@ -254,11 +254,11 @@ const Hero = ({ isDarkMode }) => {
                             
                             {user ? (
                                 <button 
-                                    onClick={() => window.location.href = '/medicines'}
+                                    onClick={() => window.location.href = '/prescription-history'}
                                     className={themeStyles.secondaryButton}
                                 >
                                     <span className="flex items-center justify-center gap-2">
-                                        <span className="hidden xs:inline">My </span>Medicines
+                                        <span className="hidden xs:inline">My </span>Prescription History
                                         <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                         </svg>
