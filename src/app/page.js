@@ -61,7 +61,7 @@ export default function Dashboard() {
   };
 
   const handleSignIn = () => {
-    router.push('/auth');
+    router.push('/login');
   };
 
   const toggleTheme = () => {

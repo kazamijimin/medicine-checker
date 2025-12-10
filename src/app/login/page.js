@@ -228,7 +228,7 @@ export default function LoginPage() {
       // Save/update user in Firestore
       await saveUserToFirestore(userCredential.user);
 
-      router.push("/");
+      router.push("/home");
     } catch (err) {
       console.error("Login error:", err);
       setError(getErrorMessage(err.code));
