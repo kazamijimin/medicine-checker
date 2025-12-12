@@ -1009,12 +1009,7 @@ export default function ProfilePage() {
               >
                 📊 Dashboard
               </button>
-              <button 
-                onClick={() => router.push('/')}
-                style={currentStyles.actionButton}
-              >
-                🔍 Search Medicine
-              </button>
+           
               <button 
                 onClick={() => router.push('/settings/privacy')}
                 style={currentStyles.actionButton}

@@ -79,6 +79,20 @@ export default function AIAssistant({ isDarkMode }) {
     if (!messageText) setInputMessage('');
     setIsLoading(true);
 
+    // Check if asking about Nick or the team
+    const lowerText = textToSend.toLowerCase();
+    if (lowerText.includes('who is nick') || lowerText.includes('who\'s nick') || 
+        lowerText.includes('about nick') || lowerText.includes('tell me about nick')) {
+      const teamInfoMessage = {
+        type: 'ai',
+        content: '🎉 Great question! Nick is the CEO and Founder of MediChecker - he created this amazing project to help people with their medicine needs!\n\n👥 Our amazing team:\n\n• **Nick** - CEO & Founder of MediChecker 💊\n• **Jerick** - Creator of Tsukihime Design 🌙\n• **Lance** - Co-Founder & Creator of SSC Forum 💬\n• **Nigel** - Creator of Prescription History for MediChecker 📋\n• **Ross** - Creator of Freelance Hub 💼\n\nTogether, we\'re building tools to make healthcare and technology more accessible!',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, teamInfoMessage]);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       console.log("Sending message to /api/huggingface:", textToSend);
 

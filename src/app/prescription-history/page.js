@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { 
   collection, 
   query, 
   where, 
-  orderBy, 
   getDocs, 
   addDoc, 
   updateDoc, 
@@ -16,6 +15,10 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "@/firebase";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
+// RxNorm API Base URL
+const RXNORM_API_BASE = "https://rxnav.nlm.nih.gov/REST";
 
 export default function PrescriptionHistoryPage() {
   const [user, setUser] = useState(null);
@@ -27,6 +30,7 @@ export default function PrescriptionHistoryPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [selectedDoseMedicine, setSelectedDoseMedicine] = useState('');
   
   // Form states
   const [formData, setFormData] = useState({
@@ -41,9 +45,11 @@ export default function PrescriptionHistoryPage() {
 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   
   const router = useRouter();
   const currentStyles = isDarkMode ? darkStyles : lightStyles;
+  const refillIntervalRef = useRef(null);
 
   // Load theme
   useEffect(() => {
@@ -83,16 +89,52 @@ export default function PrescriptionHistoryPage() {
     }, 5000);
   }, []);
 
+  // ✨ NEW: Fetch RxNorm Suggestions
+  const fetchRxNormSuggestions = async (term) => {
+    if (term.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setLoadingSuggestions(true);
+    const url = `${RXNORM_API_BASE}/approximateTerm.json?term=${encodeURIComponent(term)}&maxEntries=10`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      const candidates = data.approximateGroup?.candidate || [];
+      const suggestionNames = candidates.map((c) => c.name).filter(Boolean);
+      
+      setSuggestions(suggestionNames);
+      setShowSuggestions(suggestionNames.length > 0);
+    } catch (error) {
+      console.error("Error fetching RxNorm suggestions:", error);
+      setSuggestions([]);
+      setShowSuggestions(false);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // ✨ NEW: Fetch RxNorm RXCUI (drug identifier)
+  const fetchRxNormInfo = async (drugName) => {
+    const url = `${RXNORM_API_BASE}/rxcui.json?name=${encodeURIComponent(drugName)}`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.idGroup?.rxnormId ? data.idGroup.rxnormId[0] : null;
+    } catch (error) {
+      console.error("Error fetching RxNorm info:", error);
+      return null;
+    }
+  };
+
   // Load prescriptions from Firestore
   const loadPrescriptions = useCallback(async (userId) => {
     try {
       const prescriptionsRef = collection(db, "prescriptions");
-      
-      // ✅ Simpler query - just filter by userId, sort in memory
-      const q = query(
-        prescriptionsRef,
-        where("userId", "==", userId)
-      );
+      const q = query(prescriptionsRef, where("userId", "==", userId));
       
       const querySnapshot = await getDocs(q);
       const prescriptionsData = [];
@@ -104,11 +146,11 @@ export default function PrescriptionHistoryPage() {
         });
       });
       
-      // ✅ Sort in JavaScript instead of Firestore
+      // Sort in JavaScript (newest first)
       prescriptionsData.sort((a, b) => {
         const dateA = new Date(a.startDate || 0);
         const dateB = new Date(b.startDate || 0);
-        return dateB - dateA; // descending order (newest first)
+        return dateB - dateA;
       });
       
       setPrescriptions(prescriptionsData);
@@ -142,38 +184,52 @@ export default function PrescriptionHistoryPage() {
     return () => unsubscribe();
   }, [router, loadPrescriptions, loadDoseLogs]);
 
-  // Fetch RxNorm suggestions (mock for now - you can integrate real API)
-  const fetchSuggestions = async (term) => {
-    if (term.length < 3) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
+  // ✨ NEW: Refill reminder interval (check every 12 hours)
+  useEffect(() => {
+    if (prescriptions.length > 0) {
+      runRefillReminder();
+      
+      // Set interval to check every 12 hours
+      refillIntervalRef.current = setInterval(() => {
+        runRefillReminder();
+      }, 43200000); // 12 hours in milliseconds
+
+      return () => {
+        if (refillIntervalRef.current) {
+          clearInterval(refillIntervalRef.current);
+        }
+      };
     }
+  }, [prescriptions]);
 
-    // Mock suggestions - replace with actual RxNorm API call
-    const mockSuggestions = [
-      'Amoxicillin 500mg',
-      'Ibuprofen 200mg',
-      'Aspirin 81mg',
-      'Lisinopril 10mg',
-      'Metformin 500mg'
-    ].filter(med => med.toLowerCase().includes(term.toLowerCase()));
+  // ✨ NEW: Run refill reminder notifications
+  const runRefillReminder = () => {
+    const maintenance = prescriptions.filter(
+      (p) => p.rxType === 'maintenance' && p.refillDays
+    );
 
-    setSuggestions(mockSuggestions);
-    setShowSuggestions(mockSuggestions.length > 0);
+    maintenance.forEach((p) => {
+      const days = getDaysRemaining(p);
+      
+      if (days <= 3 && days >= 0) {
+        showNotification(`Reminder: ${p.medicine} needs refill in ${days} day(s)`, 'error');
+      } else if (days < 0) {
+        showNotification(`OVERDUE: ${p.medicine} refill is ${Math.abs(days)} day(s) overdue!`, 'error');
+      }
+    });
   };
 
-  // Handle form input changes
+  // Handle form input changes with RxNorm API
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
     if (name === 'medicine') {
-      fetchSuggestions(value);
+      fetchRxNormSuggestions(value);
     }
   };
 
-  // Add new prescription
+  // Add new prescription with RXCUI
   const handleAddPrescription = async (e) => {
     e.preventDefault();
 
@@ -183,9 +239,13 @@ export default function PrescriptionHistoryPage() {
     }
 
     try {
+      // Fetch RXCUI from RxNorm API
+      const rxcui = await fetchRxNormInfo(formData.medicine);
+
       await addDoc(collection(db, "prescriptions"), {
         userId: user.uid,
         ...formData,
+        rxcui: rxcui || null,
         lastRefill: new Date(formData.startDate).toISOString(),
         createdAt: new Date()
       });
@@ -201,6 +261,8 @@ export default function PrescriptionHistoryPage() {
         rxType: 'acute',
         refillDays: 30
       });
+      setSuggestions([]);
+      setShowSuggestions(false);
       await loadPrescriptions(user.uid);
     } catch (error) {
       console.error("Error adding prescription:", error);
@@ -208,14 +270,18 @@ export default function PrescriptionHistoryPage() {
     }
   };
 
-  // Edit prescription
+  // Edit prescription with RXCUI
   const handleEditPrescription = async (e) => {
     e.preventDefault();
 
     try {
+      // Fetch updated RXCUI
+      const rxcui = await fetchRxNormInfo(formData.medicine);
+
       const prescriptionRef = doc(db, "prescriptions", editingIndex);
       await updateDoc(prescriptionRef, {
         ...formData,
+        rxcui: rxcui || null,
         updatedAt: new Date()
       });
 
@@ -306,7 +372,31 @@ export default function PrescriptionHistoryPage() {
     return { total, active, maintenance, upcomingRefills };
   };
 
+  // ✨ NEW: Get dose info for selected medicine
+  const getDoseInfo = () => {
+    if (!selectedDoseMedicine) return null;
+    
+    const log = doseLogs[selectedDoseMedicine];
+    if (!log) return null;
+
+    const lastTaken = new Date(log.lastTaken);
+    const nextDose = new Date(lastTaken.getTime() + 8 * 60 * 60 * 1000); // 8 hours later
+
+    return {
+      lastTaken: lastTaken.toLocaleString(),
+      nextDose: nextDose.toLocaleString()
+    };
+  };
+
+  // ✨ NEW: Update selected dose medicine when prescriptions load
+  useEffect(() => {
+    if (prescriptions.length > 0 && !selectedDoseMedicine) {
+      setSelectedDoseMedicine(prescriptions[0].medicine);
+    }
+  }, [prescriptions, selectedDoseMedicine]);
+
   const analytics = getAnalytics();
+  const doseInfo = getDoseInfo();
 
   if (loading) {
     return (
@@ -454,6 +544,12 @@ export default function PrescriptionHistoryPage() {
                           <span style={currentStyles.detailValue}>{prescription.endDate}</span>
                         </div>
                       )}
+                      {prescription.rxcui && (
+                        <div style={currentStyles.detailRow}>
+                          <span style={currentStyles.detailLabel}>RxCUI:</span>
+                          <span style={currentStyles.detailValue}>{prescription.rxcui}</span>
+                        </div>
+                      )}
                       {prescription.notes && (
                         <div style={currentStyles.detailRow}>
                           <span style={currentStyles.detailLabel}>Notes:</span>
@@ -510,6 +606,46 @@ export default function PrescriptionHistoryPage() {
           {activeTab === 'doseLogs' && (
             <div style={currentStyles.doseLogSection}>
               <h2 style={currentStyles.sectionTitle}>Dose Tracking</h2>
+              
+              {prescriptions.length > 0 && (
+                <div style={currentStyles.doseSelector}>
+                  <label style={currentStyles.doseSelectorLabel}>Select Medicine:</label>
+                  <select
+                    value={selectedDoseMedicine}
+                    onChange={(e) => setSelectedDoseMedicine(e.target.value)}
+                    style={currentStyles.doseSelect}
+                  >
+                    {prescriptions.map((p) => (
+                      <option key={p.id} value={p.medicine}>
+                        {p.medicine}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => handleLogDose(selectedDoseMedicine)}
+                    style={currentStyles.logDoseButton}
+                  >
+                    💉 Log Dose Now
+                  </button>
+                </div>
+              )}
+
+              {doseInfo && (
+                <div style={currentStyles.doseInfoCard}>
+                  <h3 style={currentStyles.doseInfoMedicine}>{selectedDoseMedicine}</h3>
+                  <div style={currentStyles.doseInfoDetails}>
+                    <div style={currentStyles.doseInfoRow}>
+                      <span style={currentStyles.doseInfoLabel}>Last Dose:</span>
+                      <span style={currentStyles.doseInfoValue}>{doseInfo.lastTaken}</span>
+                    </div>
+                    <div style={currentStyles.doseInfoRow}>
+                      <span style={currentStyles.doseInfoLabel}>Next Dose:</span>
+                      <span style={currentStyles.doseInfoValue}>{doseInfo.nextDose}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {Object.keys(doseLogs).length === 0 ? (
                 <div style={currentStyles.emptyState}>
                   <div style={currentStyles.emptyIcon}>💉</div>
@@ -588,7 +724,7 @@ export default function PrescriptionHistoryPage() {
           <div style={currentStyles.modalOverlay} onClick={() => setShowAddForm(false)}>
             <div style={currentStyles.modal} onClick={(e) => e.stopPropagation()}>
               <div style={currentStyles.modalHeader}>
-                <h2 style={currentStyles.modalTitle}>Add Prescription</h2>
+                <h2 style={currentStyles.modalTitle}>💊 Add Prescription</h2>
                 <button 
                   onClick={() => setShowAddForm(false)}
                   style={currentStyles.closeButton}
@@ -598,16 +734,17 @@ export default function PrescriptionHistoryPage() {
               </div>
               <form onSubmit={handleAddPrescription} style={currentStyles.form}>
                 <div style={currentStyles.formGroup}>
-                  <label style={currentStyles.label}>Medicine Name *</label>
+                  <label style={currentStyles.label}>Medicine Name * {loadingSuggestions && <span style={{fontSize: '12px'}}>🔄 Loading...</span>}</label>
                   <input
                     type="text"
                     name="medicine"
                     value={formData.medicine}
                     onChange={handleInputChange}
                     style={currentStyles.input}
+                    placeholder="Start typing medicine name (min 3 characters)"
                     required
                   />
-                  {showSuggestions && (
+                  {showSuggestions && suggestions.length > 0 && (
                     <div style={currentStyles.suggestionsList}>
                       {suggestions.map((suggestion, idx) => (
                         <div 
@@ -726,7 +863,7 @@ export default function PrescriptionHistoryPage() {
           <div style={currentStyles.modalOverlay} onClick={() => setShowEditForm(false)}>
             <div style={currentStyles.modal} onClick={(e) => e.stopPropagation()}>
               <div style={currentStyles.modalHeader}>
-                <h2 style={currentStyles.modalTitle}>Edit Prescription</h2>
+                <h2 style={currentStyles.modalTitle}>✏️ Edit Prescription</h2>
                 <button 
                   onClick={() => setShowEditForm(false)}
                   style={currentStyles.closeButton}
@@ -735,7 +872,6 @@ export default function PrescriptionHistoryPage() {
                 </button>
               </div>
               <form onSubmit={handleEditPrescription} style={currentStyles.form}>
-                {/* Same form fields as Add form */}
                 <div style={currentStyles.formGroup}>
                   <label style={currentStyles.label}>Medicine Name *</label>
                   <input
@@ -842,6 +978,8 @@ export default function PrescriptionHistoryPage() {
           </div>
         )}
       </div>
+      
+      <Footer isDarkMode={isDarkMode} />
     </>
   );
 }
@@ -876,7 +1014,7 @@ const lightStyles = {
   },
   loadingText: {
     fontSize: '16px',
-    color: '#64748b',
+    color: '#1e293b',
     fontWeight: '500'
   },
   header: {
@@ -905,7 +1043,7 @@ const lightStyles = {
   },
   headerSubtitle: {
     fontSize: '16px',
-    color: '#64748b',
+    color: '#475569',
     margin: 0
   },
   addButton: {
@@ -947,7 +1085,7 @@ const lightStyles = {
   },
   statLabel: {
     fontSize: '14px',
-    color: '#64748b',
+    color: '#475569',
     fontWeight: '500'
   },
   tabsContainer: {
@@ -968,7 +1106,7 @@ const lightStyles = {
     borderRadius: '8px',
     fontSize: '14px',
     fontWeight: '600',
-    color: '#64748b',
+    color: '#475569',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
   },
@@ -1024,7 +1162,7 @@ const lightStyles = {
   },
   detailLabel: {
     fontSize: '14px',
-    color: '#64748b',
+    color: '#475569',
     fontWeight: '500'
   },
   detailValue: {
@@ -1050,11 +1188,13 @@ const lightStyles = {
     flex: 1,
     padding: '8px 12px',
     backgroundColor: 'transparent',
-    border: '1px solid #e2e8f0',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: '#e2e8f0',
     borderRadius: '6px',
     fontSize: '13px',
     fontWeight: '600',
-    color: '#64748b',
+    color: '#475569',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
   },
@@ -1077,7 +1217,7 @@ const lightStyles = {
   },
   emptyText: {
     fontSize: '16px',
-    color: '#64748b',
+    color: '#475569',
     marginBottom: '24px'
   },
   emptyButton: {
@@ -1102,6 +1242,76 @@ const lightStyles = {
     color: '#1e293b',
     marginBottom: '20px'
   },
+  doseSelector: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    marginBottom: '24px',
+    flexWrap: 'wrap'
+  },
+  doseSelectorLabel: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#1e293b'
+  },
+  doseSelect: {
+    flex: 1,
+    minWidth: '200px',
+    padding: '10px 14px',
+    fontSize: '14px',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: '#e2e8f0',
+    borderRadius: '8px',
+    outline: 'none',
+    backgroundColor: '#f8fafc',
+    color: '#1e293b',
+    fontFamily: "'Poppins', sans-serif"
+  },
+  logDoseButton: {
+    padding: '10px 20px',
+    backgroundColor: '#10b981',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  },
+  doseInfoCard: {
+    backgroundColor: '#f8fafc',
+    padding: '20px',
+    borderRadius: '12px',
+    border: '2px solid #10b981',
+    marginBottom: '24px'
+  },
+  doseInfoMedicine: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: '16px'
+  },
+  doseInfoDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px'
+  },
+  doseInfoRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  doseInfoLabel: {
+    fontSize: '14px',
+    color: '#475569',
+    fontWeight: '600'
+  },
+  doseInfoValue: {
+    fontSize: '14px',
+    color: '#10b981',
+    fontWeight: '700'
+  },
   doseLogGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
@@ -1111,7 +1321,9 @@ const lightStyles = {
     backgroundColor: '#f8fafc',
     padding: '16px',
     borderRadius: '8px',
-    border: '1px solid #e2e8f0'
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: '#e2e8f0'
   },
   doseLogMedicine: {
     fontSize: '16px',
@@ -1126,7 +1338,7 @@ const lightStyles = {
   },
   doseLogLabel: {
     fontSize: '13px',
-    color: '#64748b',
+    color: '#475569',
     fontWeight: '500',
     display: 'block',
     marginBottom: '4px'
@@ -1155,7 +1367,9 @@ const lightStyles = {
     padding: '16px',
     backgroundColor: '#f8fafc',
     borderRadius: '8px',
-    border: '1px solid #e2e8f0'
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: '#e2e8f0'
   },
   refillMedicine: {
     fontSize: '16px',
@@ -1165,7 +1379,6 @@ const lightStyles = {
     fontSize: '14px',
     fontWeight: '600'
   },
-  // ✨ NEW MODAL DESIGN
   modalOverlay: {
     position: 'fixed',
     top: 0,
@@ -1302,7 +1515,7 @@ const lightStyles = {
     borderRadius: '12px',
     fontSize: '15px',
     fontWeight: '600',
-    color: '#64748b',
+    color: '#475569',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
   },
@@ -1403,6 +1616,29 @@ const darkStyles = {
     ...lightStyles.sectionTitle,
     color: '#f1f5f9'
   },
+  doseSelectorLabel: {
+    ...lightStyles.doseSelectorLabel,
+    color: '#f1f5f9'
+  },
+  doseSelect: {
+    ...lightStyles.doseSelect,
+    backgroundColor: '#0f172a',
+    borderColor: '#334155',
+    color: '#f1f5f9'
+  },
+  doseInfoCard: {
+    ...lightStyles.doseInfoCard,
+    backgroundColor: '#0f172a',
+    borderColor: '#10b981'
+  },
+  doseInfoMedicine: {
+    ...lightStyles.doseInfoMedicine,
+    color: '#f1f5f9'
+  },
+  doseInfoLabel: {
+    ...lightStyles.doseInfoLabel,
+    color: '#94a3b8'
+  },
   doseLogCard: {
     ...lightStyles.doseLogCard,
     backgroundColor: '#0f172a',
@@ -1429,7 +1665,6 @@ const darkStyles = {
     ...lightStyles.refillMedicine,
     color: '#f1f5f9'
   },
-  // ✨ DARK MODE MODAL
   modalOverlay: {
     ...lightStyles.modalOverlay,
     backgroundColor: 'rgba(0, 0, 0, 0.85)'

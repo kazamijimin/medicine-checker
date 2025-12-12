@@ -122,7 +122,7 @@ const Contact = ({ isDarkMode }) => {
       icon: '📍',
       title: 'Office Location',
       description: 'Visit our headquarters',
-      contact: '123 Healthcare Ave, Medical District',
+      contact: 'Laguna State Polytechnic University - Santa Cruz (Main) Campus',
       action: 'https://maps.google.com',
       availability: 'Mon-Fri, 9 AM - 5 PM EST'
     }

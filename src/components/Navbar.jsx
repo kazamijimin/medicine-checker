@@ -292,6 +292,15 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
           >
             Contact
           </a>
+          {user && (
+            <button
+              onClick={() => router.push('/pharmacy-locator')}
+              style={currentStyles.navLink}
+              className="nav-link"
+            >
+              🏥 Pharmacies
+            </button>
+          )}
           
           {/* Theme Toggle */}
           <div className="theme-toggle-desktop">
@@ -459,6 +468,20 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
               Contact
             </a>
             
+            {user && (
+              <button
+                onClick={() => {
+                  router.push('/pharmacy-locator');
+                  setMobileMenuOpen(false);
+                }}
+                style={currentStyles.mobileNavLink}
+                className="mobile-nav-link"
+              >
+                <span style={currentStyles.mobileNavIcon}>🏥</span>
+                Find Pharmacy
+              </button>
+            )}
+            
             {user ? (
               <div style={currentStyles.mobileUserSection}>
                 <div style={currentStyles.mobileUserInfo}>
@@ -587,6 +610,8 @@ const baseStyles = {
     position: "relative",
     padding: "8px 0",
     cursor: "pointer",
+    background: "transparent",
+    border: "none",
   },
   userMenu: {
     position: "relative",
