@@ -74,51 +74,6 @@ export default function HomePage() {
       <div style={currentStyles.container}>
         <Navbar user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         <Hero user={user} isDarkMode={isDarkMode} currentStyles={currentStyles} />
-        
-        {/* Quick Access Section */}
-        <section style={isDarkMode ? darkQuickAccessStyles : lightQuickAccessStyles}>
-          <div style={quickAccessContainer}>
-            <h2 style={quickAccessTitle}>Quick Access</h2>
-            <div style={quickAccessGrid}>
-              <button 
-                onClick={() => router.push('/pharmacy-locator')}
-                style={quickAccessCard}
-              >
-                <div style={quickAccessIcon}>🏥</div>
-                <h3 style={quickAccessCardTitle}>Pharmacy Locator</h3>
-                <p style={quickAccessCardText}>Find nearby pharmacies in your area</p>
-              </button>
-              
-              <button 
-                onClick={() => router.push('/medicines')}
-                style={quickAccessCard}
-              >
-                <div style={quickAccessIcon}>💊</div>
-                <h3 style={quickAccessCardTitle}>Medicine Search</h3>
-                <p style={quickAccessCardText}>Search for medicine information</p>
-              </button>
-              
-              <button 
-                onClick={() => router.push('/prescription-history')}
-                style={quickAccessCard}
-              >
-                <div style={quickAccessIcon}>📋</div>
-                <h3 style={quickAccessCardTitle}>My Prescriptions</h3>
-                <p style={quickAccessCardText}>Track your medications</p>
-              </button>
-              
-              <button 
-                onClick={() => router.push('/reminders')}
-                style={quickAccessCard}
-              >
-                <div style={quickAccessIcon}>⏰</div>
-                <h3 style={quickAccessCardTitle}>Reminders</h3>
-                <p style={quickAccessCardText}>Set medication reminders</p>
-              </button>
-            </div>
-          </div>
-        </section>
-        
         <Stats isDarkMode={isDarkMode} />
         <Features isDarkMode={isDarkMode} />
         <HowItWorks isDarkMode={isDarkMode} />
@@ -126,7 +81,7 @@ export default function HomePage() {
         <Testimonials isDarkMode={isDarkMode} />
         <FAQ isDarkMode={isDarkMode} />
         <Contact isDarkMode={isDarkMode} />
-        <Footer isDarkMode={isDarkMode} />
+        <Footer isDarkTheme={isDarkMode} />
         
         {/* Add AI Assistant - it will appear as floating button */}
         <AIAssistant isDarkMode={isDarkMode} />
