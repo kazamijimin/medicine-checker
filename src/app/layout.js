@@ -20,7 +20,10 @@ const poppins = Poppins({
 });
 
 export const metadata = {
-  title: "Home | MediChecker",
+  title: {
+    default: "MediChecker",
+    template: "%s | MediChecker", // Each page title will append "| MediChecker"
+  },
   description: "Your one-stop solution for medication management",
 };
 
@@ -28,7 +31,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased`}

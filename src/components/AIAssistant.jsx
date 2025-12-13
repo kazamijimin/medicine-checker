@@ -79,13 +79,81 @@ export default function AIAssistant({ isDarkMode }) {
     if (!messageText) setInputMessage('');
     setIsLoading(true);
 
-    // Check if asking about Nick or the team
+    // Check if asking about team members
     const lowerText = textToSend.toLowerCase();
+    
+    // Nick - CEO & Founder
     if (lowerText.includes('who is nick') || lowerText.includes('who\'s nick') || 
         lowerText.includes('about nick') || lowerText.includes('tell me about nick')) {
+      const nickInfoMessage = {
+        type: 'ai',
+        content: ' Nick is the CEO and Founder of MediChecker 💊\n\nHe created this amazing project to help people with their medicine needs and make healthcare information more accessible. Nick leads our team in building innovative solutions for better health management!\n\nWant to know about other team members? Ask me about Jerick, Lance, Nigel, or Ross!',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, nickInfoMessage]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Jerick - Creator of Tsukihime Design
+    if (lowerText.includes('who is jerick') || lowerText.includes('who\'s jerick') || 
+        lowerText.includes('about jerick') || lowerText.includes('tell me about jerick')) {
+      const jerickInfoMessage = {
+        type: 'ai',
+        content: '🌙 Jerick is the Creator of Tsukihime Design\nHe brings beautiful and user-friendly designs to life, creating stunning visual experiences. Jerick\'s design expertise helps make our applications not just functional, but also beautiful and intuitive to use.\n\nWant to know about other team members? Ask me about Nick, Lance, Nigel, or Ross!',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, jerickInfoMessage]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Lance - Co-Founder & Creator of SSC Forum
+    if (lowerText.includes('who is lance') || lowerText.includes('who\'s lance') || 
+        lowerText.includes('about lance') || lowerText.includes('tell me about lance')) {
+      const lanceInfoMessage = {
+        type: 'ai',
+        content: '💬 Lance is the Co-Founder and Creator of SSC Forum!\n\nHe specializes in building community platforms and collaborative tools. Lance\'s expertise in forum development and community engagement helps connect people and foster meaningful discussions.\n\nWant to know about other team members? Ask me about Nick, Jerick, Nigel, or Ross!',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, lanceInfoMessage]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Nigel - Creator of Prescription History
+    if (lowerText.includes('who is nigel') || lowerText.includes('who\'s nigel') || 
+        lowerText.includes('about nigel') || lowerText.includes('tell me about nigel')) {
+      const nigelInfoMessage = {
+        type: 'ai',
+        content: '📋 Nigel is the Creator of Prescription History for MediChecker!\n\nHe developed the prescription tracking system that helps users manage their medication history effectively. Nigel\'s work ensures that you can keep track of all your prescriptions in one secure place.\n\nWant to know about other team members? Ask me about Nick, Jerick, Lance, or Ross!',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, nigelInfoMessage]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Ross - Creator of Freelance Hub
+    if (lowerText.includes('who is ross') || lowerText.includes('who\'s ross') || 
+        lowerText.includes('about ross') || lowerText.includes('tell me about ross')) {
+      const rossInfoMessage = {
+        type: 'ai',
+        content: '💼 Ross is the Creator of Freelance Hub!\n\nHe builds platforms that connect freelancers with opportunities and helps manage freelance work efficiently. Ross\'s expertise in creating professional networking tools contributes to our team\'s diverse skill set.\n\nWant to know about other team members? Ask me about Nick, Jerick, Lance, or Nigel!',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, rossInfoMessage]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Team overview
+    if (lowerText.includes('who is the team') || lowerText.includes('about the team') || 
+        lowerText.includes('tell me about the team') || lowerText.includes('who are you') ||
+        lowerText.includes('your team')) {
       const teamInfoMessage = {
         type: 'ai',
-        content: '🎉 Great question! Nick is the CEO and Founder of MediChecker - he created this amazing project to help people with their medicine needs!\n\n👥 Our amazing team:\n\n• **Nick** - CEO & Founder of MediChecker 💊\n• **Jerick** - Creator of Tsukihime Design 🌙\n• **Lance** - Co-Founder & Creator of SSC Forum 💬\n• **Nigel** - Creator of Prescription History for MediChecker 📋\n• **Ross** - Creator of Freelance Hub 💼\n\nTogether, we\'re building tools to make healthcare and technology more accessible!',
+        content: '👥 Meet our amazing MediChecker team!\n\n• Nick - CEO & Founder of MediChecker 💊\n• Jerick - Creator of Tsukihime Design 🌙\n•Lance - Co-Founder & Creator of SSC Forum 💬\n•Nigel - Creator of Prescription History for MediChecker 📋\n•Ross - Creator of Freelance Hub 💼\n\nTogether, we\'re building tools to make healthcare and technology more accessible!\n\nWant to learn more about a specific team member? Just ask me about them!',
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, teamInfoMessage]);

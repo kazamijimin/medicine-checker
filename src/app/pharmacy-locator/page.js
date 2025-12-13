@@ -341,146 +341,221 @@ export default function PharmacyLocator() {
   };
 
   if (loading) {
+    const currentStyles = isDarkMode ? darkStyles : lightStyles;
     return (
       <>
         <Navbar user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-        <div style={styles.loadingContainer}>
-          <div style={styles.spinner}></div>
-          <p>Loading pharmacy locator...</p>
+        <div style={currentStyles.loadingContainer}>
+          <div style={currentStyles.spinner}></div>
+          <p style={currentStyles.loadingText}>Loading pharmacy locator...</p>
         </div>
       </>
     );
   }
 
+  const currentStyles = isDarkMode ? darkStyles : lightStyles;
+
   return (
     <>
       <Navbar user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+      
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        
+        .pharmacy-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        
+        button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        
+        select:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+      `}</style>
 
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>🏥 Pharmacy Locator</h1>
-          <p style={styles.subtitle}>Find the nearest pharmacies to your location</p>
-          {currentAddress && <p style={styles.address}>📍 {currentAddress}</p>}
+      <div style={currentStyles.container}>
+        {/* Hero Header */}
+        <div style={currentStyles.hero}>
+          <div style={currentStyles.heroContent}>
+            <div style={currentStyles.heroIcon}>🏥</div>
+            <h1 style={currentStyles.heroTitle}>Pharmacy Locator</h1>
+            <p style={currentStyles.heroSubtitle}>Find verified pharmacies near you with real-time data</p>
+            {currentAddress && (
+              <div style={currentStyles.currentLocationBadge}>
+                <span style={currentStyles.locationIcon}>📍</span>
+                <span style={currentStyles.locationText}>{currentAddress}</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div style={styles.searchSection}>
-          <div style={styles.searchCard}>
-            <h3 style={styles.searchTitle}>Find Pharmacies</h3>
-            
-            {/* Search Mode Toggle */}
-            <div style={styles.searchModeToggle}>
+        {/* Search Section */}
+        <div style={currentStyles.searchSection}>
+          <div style={currentStyles.searchCard}>
+            {/* Mode Toggle */}
+            <div style={currentStyles.modeToggleContainer}>
               <button
                 onClick={() => setSearchMode('auto')}
                 style={{
-                  ...styles.toggleButton,
-                  backgroundColor: searchMode === 'auto' ? '#007bff' : '#6c757d'
+                  ...currentStyles.modeToggleButton,
+                  ...(searchMode === 'auto' ? currentStyles.modeToggleActive : currentStyles.modeToggleInactive)
                 }}
               >
-                📍 My Current Location
+                <span style={currentStyles.buttonIcon}>📍</span>
+                <span>My Location</span>
               </button>
               <button
                 onClick={() => setSearchMode('manual')}
                 style={{
-                  ...styles.toggleButton,
-                  backgroundColor: searchMode === 'manual' ? '#007bff' : '#6c757d'
+                  ...currentStyles.modeToggleButton,
+                  ...(searchMode === 'manual' ? currentStyles.modeToggleActive : currentStyles.modeToggleInactive)
                 }}
               >
-                🗺️ Choose Different Location
+                <span style={currentStyles.buttonIcon}>🗺️</span>
+                <span>Choose Location</span>
               </button>
             </div>
 
+            {/* Search Content */}
             {searchMode === 'auto' ? (
-              // AUTO LOCATION (Your current location)
-              <div style={styles.primarySearch}>
+              <div style={currentStyles.searchContent}>
+                <p style={currentStyles.searchDescription}>
+                  Allow location access to find pharmacies near your current position
+                </p>
                 <button
                   onClick={getCurrentLocation}
-                  style={{ ...styles.button, ...styles.primaryButton }}
+                  style={currentStyles.primaryButton}
                   disabled={loadingPharmacies}
                 >
-                  {loadingPharmacies ? "⏳ Searching..." : "📍 Find Nearest Pharmacies"}
+                  {loadingPharmacies ? (
+                    <>
+                      <span style={currentStyles.buttonSpinner}></span>
+                      <span>Searching...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span style={currentStyles.buttonIcon}>🔍</span>
+                      <span>Find Nearest Pharmacies</span>
+                    </>
+                  )}
                 </button>
-                <p style={styles.helpText}>
-                  Use your current GPS location to find nearby pharmacies
-                </p>
               </div>
             ) : (
-              // MANUAL LOCATION (Choose any location)
-              <div style={styles.manualSearch}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Province:</label>
-                  <select
-                    value={selectedProvince}
-                    onChange={(e) => {
-                      setSelectedProvince(e.target.value);
-                      setSelectedCity('');
-                      setSelectedBarangay('');
-                    }}
-                    style={styles.select}
-                  >
-                    <option value="">Select Province</option>
-                    {locationData.provinces.map((province) => (
-                      <option key={province} value={province}>{province}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {selectedProvince && (
-                  <div style={styles.formGroup}>
-                    <label style={styles.label}>City/Municipality:</label>
-                    <select 
-                      value={selectedCity} 
+              <div style={currentStyles.searchContent}>
+                <p style={currentStyles.searchDescription}>
+                  Select a location in the Philippines to search for pharmacies
+                </p>
+                
+                <div style={currentStyles.formGrid}>
+                  <div style={currentStyles.formField}>
+                    <label style={currentStyles.label}>Province</label>
+                    <select
+                      value={selectedProvince}
                       onChange={(e) => {
-                        setSelectedCity(e.target.value);
+                        setSelectedProvince(e.target.value);
+                        setSelectedCity('');
                         setSelectedBarangay('');
                       }}
-                      style={styles.select}
+                      style={currentStyles.select}
                     >
-                      <option value="">Select City</option>
-                      {locationData.cities[selectedProvince]?.map((city) => (
-                        <option key={city} value={city}>{city}</option>
+                      <option value="">Select Province</option>
+                      {locationData.provinces.map((province) => (
+                        <option key={province} value={province}>{province}</option>
                       ))}
                     </select>
                   </div>
-                )}
 
-                {selectedCity && locationData.barangays[selectedCity] && (
-                  <div style={styles.formGroup}>
-                    <label style={styles.label}>Barangay (Optional):</label>
-                    <select 
-                      value={selectedBarangay} 
-                      onChange={(e) => setSelectedBarangay(e.target.value)}
-                      style={styles.select}
-                    >
-                      <option value="">Select Barangay (Optional)</option>
-                      {locationData.barangays[selectedCity]?.map((barangay) => (
-                        <option key={barangay} value={barangay}>{barangay}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                  {selectedProvince && (
+                    <div style={currentStyles.formField}>
+                      <label style={currentStyles.label}>City / Municipality</label>
+                      <select 
+                        value={selectedCity} 
+                        onChange={(e) => {
+                          setSelectedCity(e.target.value);
+                          setSelectedBarangay('');
+                        }}
+                        style={currentStyles.select}
+                      >
+                        <option value="">Select City</option>
+                        {locationData.cities[selectedProvince]?.map((city) => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {selectedCity && locationData.barangays[selectedCity] && (
+                    <div style={currentStyles.formField}>
+                      <label style={currentStyles.label}>Barangay <span style={currentStyles.optionalText}>(Optional)</span></label>
+                      <select 
+                        value={selectedBarangay} 
+                        onChange={(e) => setSelectedBarangay(e.target.value)}
+                        style={currentStyles.select}
+                      >
+                        <option value="">All Barangays</option>
+                        {locationData.barangays[selectedCity]?.map((barangay) => (
+                          <option key={barangay} value={barangay}>{barangay}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
 
                 {selectedProvince && selectedCity && (
                   <button 
                     onClick={searchByChosenLocation} 
-                    style={{ ...styles.button, ...styles.searchButton }}
+                    style={currentStyles.secondaryButton}
                     disabled={loadingPharmacies}
                   >
-                    {loadingPharmacies ? "⏳ Searching..." : 
-                     `🔍 Search in ${selectedBarangay ? selectedBarangay + ', ' : ''}${selectedCity}, ${selectedProvince}`}
+                    {loadingPharmacies ? (
+                      <>
+                        <span style={currentStyles.buttonSpinner}></span>
+                        <span>Searching...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span style={currentStyles.buttonIcon}>🔍</span>
+                        <span>Search in {selectedBarangay ? `${selectedBarangay}, ` : ''}{selectedCity}</span>
+                      </>
+                    )}
                   </button>
                 )}
-
-                <p style={styles.helpText}>
-                  Choose any location in the Philippines to search for pharmacies
-                </p>
               </div>
             )}
 
+            {/* Status Message */}
             {errorMessage && (
               <div style={{
-                ...styles.message,
-                backgroundColor: errorMessage.includes('✅') ? '#d4edda' : '#f8d7da',
-                color: errorMessage.includes('✅') ? '#155724' : '#721c24'
+                ...currentStyles.statusMessage,
+                ...(errorMessage.includes('✅') ? currentStyles.statusSuccess : currentStyles.statusError)
               }}>
                 {errorMessage}
               </div>
@@ -488,70 +563,106 @@ export default function PharmacyLocator() {
           </div>
         </div>
 
-        <div style={styles.resultsSection}>
+        {/* Results Section */}
+        <div style={currentStyles.resultsSection}>
           {loadingPharmacies ? (
-            <div style={styles.loadingResults}>
-              <div style={styles.spinner}></div>
-              <p>Searching for pharmacies...</p>
+            <div style={currentStyles.loadingResults}>
+              <div style={currentStyles.spinner}></div>
+              <p style={currentStyles.loadingText}>Searching for pharmacies...</p>
             </div>
           ) : pharmacies.length > 0 ? (
             <>
-              <div style={styles.resultsHeader}>
-                <h3 style={styles.resultsTitle}>
-                  {pharmacies.length} {pharmacies.length === 1 ? 'Pharmacy' : 'Pharmacies'} Found
-                </h3>
+              <div style={currentStyles.resultsHeader}>
+                <div>
+                  <h2 style={currentStyles.resultsTitle}>
+                    {pharmacies.length} {pharmacies.length === 1 ? 'Pharmacy' : 'Pharmacies'} Found
+                  </h2>
+                  <p style={currentStyles.resultsSubtitle}>Sorted by distance from your location</p>
+                </div>
                 {dataSource === 'real' && (
-                  <span style={styles.realDataBadge}>🟢 Real-time data</span>
+                  <div style={currentStyles.realTimeBadge}>
+                    <span style={currentStyles.pulseDot}></span>
+                    <span>Real-time Data</span>
+                  </div>
                 )}
               </div>
               
-              <div style={styles.pharmacyGrid}>
-                {pharmacies.map((pharmacy) => (
-                  <div key={pharmacy.id} style={styles.pharmacyCard}>
-                    <div style={styles.cardHeader}>
-                      <h4 style={styles.pharmacyName}>{pharmacy.name}</h4>
-                      <span style={{
-                        ...styles.statusBadge,
-                        backgroundColor: pharmacy.isOpen ? '#28a745' : '#dc3545'
-                      }}>
-                        {pharmacy.isOpen ? 'Open' : 'Closed'}
-                      </span>
-                    </div>
-                    
-                    <div style={styles.cardBody}>
-                      <p style={styles.address}>📍 {pharmacy.address}</p>
-                      <p style={styles.phone}>📞 {pharmacy.phone}</p>
-                      <p style={styles.hours}>🕒 {pharmacy.hours}</p>
-                      <p style={styles.rating}>⭐ {pharmacy.rating}</p>
+              <div style={currentStyles.pharmacyGrid}>
+                {pharmacies.map((pharmacy, index) => (
+                  <div 
+                    key={pharmacy.id} 
+                    className="pharmacy-card"
+                    style={{
+                      ...currentStyles.pharmacyCard,
+                      animation: `fadeIn 0.5s ease-out ${index * 0.1}s both`
+                    }}
+                  >
+                    <div style={currentStyles.cardTop}>
+                      <div style={currentStyles.cardHeader}>
+                        <h3 style={currentStyles.pharmacyName}>{pharmacy.name}</h3>
+                        <span style={{
+                          ...currentStyles.statusBadge,
+                          ...(pharmacy.isOpen ? currentStyles.statusOpen : currentStyles.statusClosed)
+                        }}>
+                          <span style={currentStyles.statusDot}></span>
+                          {pharmacy.isOpen ? 'Open' : 'Closed'}
+                        </span>
+                      </div>
                       
                       {pharmacy.distance && (
-                        <p style={styles.distance}>📏 {pharmacy.distance}</p>
+                        <div style={currentStyles.distanceChip}>
+                          <span style={currentStyles.distanceIcon}>📏</span>
+                          <span style={currentStyles.distanceText}>{pharmacy.distance} away</span>
+                        </div>
                       )}
                     </div>
-
-                    <div style={styles.cardActions}>
-                      <button 
-                        onClick={() => callPharmacy(pharmacy.phone)}
-                        style={{ ...styles.button, ...styles.callButton }}
-                      >
-                        📞 Call
-                      </button>
-                      <button 
-                        onClick={() => getDirections(pharmacy)}
-                        style={{ ...styles.button, ...styles.directionsButton }}
-                      >
-                        🗺️ Directions
-                      </button>
+                    
+                    <div style={currentStyles.cardBody}>
+                      <div style={currentStyles.infoRow}>
+                        <span style={currentStyles.infoIcon}>📍</span>
+                        <span style={currentStyles.infoText}>{pharmacy.address}</span>
+                      </div>
+                      <div style={currentStyles.infoRow}>
+                        <span style={currentStyles.infoIcon}>📞</span>
+                        <span style={currentStyles.infoText}>{pharmacy.phone}</span>
+                      </div>
+                      <div style={currentStyles.infoRow}>
+                        <span style={currentStyles.infoIcon}>🕒</span>
+                        <span style={currentStyles.infoText}>{pharmacy.hours}</span>
+                      </div>
+                      <div style={currentStyles.infoRow}>
+                        <span style={currentStyles.infoIcon}>⭐</span>
+                        <span style={currentStyles.infoText}>{pharmacy.rating}</span>
+                      </div>
                     </div>
+
+              <div style={currentStyles.cardActions}>
+                <button 
+                  onClick={() => callPharmacy(pharmacy.phone)}
+                  style={currentStyles.callButton}
+                >
+                  <span style={currentStyles.buttonIcon}>📞</span>
+                  <span>Call Now</span>
+                </button>
+                <button 
+                  onClick={() => getDirections(pharmacy)}
+                  style={currentStyles.directionsButton}
+                >
+                  <span style={currentStyles.buttonIcon}>🧭</span>
+                  <span>Directions</span>
+                </button>
+              </div>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <div style={styles.emptyState}>
-              <div style={styles.emptyIcon}>🏥</div>
-              <h3>No Pharmacies Found</h3>
-              <p>Try adjusting your search criteria or check your location settings.</p>
+            <div style={currentStyles.emptyState}>
+              <div style={currentStyles.emptyIcon}>🏥</div>
+              <h3 style={currentStyles.emptyTitle}>No Pharmacies Found</h3>
+              <p style={currentStyles.emptyText}>
+                Try searching in a different location or check your search criteria
+              </p>
             </div>
           )}
         </div>
@@ -560,291 +671,1004 @@ export default function PharmacyLocator() {
   );
 }
 
-const styles = {
-  // Enhanced styles with better visual hierarchy
+// Light Mode Styles
+const lightStyles = {
   container: {
     minHeight: '100vh',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     paddingTop: '80px',
-    backgroundColor: '#f8f9fa',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    paddingBottom: '4rem',
   },
-  
+
   loadingContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     height: '100vh',
-    paddingTop: '80px'
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
-  
+
   spinner: {
-    width: '40px',
-    height: '40px',
-    border: '4px solid #f3f3f3',
-    borderTop: '4px solid #007bff',
+    width: '50px',
+    height: '50px',
+    border: '4px solid rgba(255, 255, 255, 0.3)',
+    borderTop: '4px solid white',
     borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-    marginBottom: '16px'
+    animation: 'spin 0.8s linear infinite',
   },
-  
-  header: {
-    textAlign: 'center',
-    padding: '40px 20px',
-    backgroundColor: '#ffffff',
-    marginBottom: '30px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-  },
-  
-  title: {
-    fontSize: '2.5rem',
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: '10px'
-  },
-  
-  subtitle: {
-    fontSize: '1.2rem',
-    color: '#666',
-    marginBottom: '10px'
-  },
-  
-  address: {
-    fontSize: '1rem',
-    color: '#28a745',
-    fontWeight: '500'
-  },
-  
-  searchSection: {
-    maxWidth: '800px',
-    margin: '0 auto 40px',
-    padding: '0 20px'
-  },
-  
-  searchCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    padding: '30px',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-  },
-  
-  searchTitle: {
-    fontSize: '1.8rem',
-    fontWeight: 'bold',
-    marginBottom: '25px',
-    color: '#333'
-  },
-  
-  primarySearch: {
-    textAlign: 'center',
-    marginBottom: '30px'
-  },
-  
-  primaryButton: {
-    backgroundColor: '#007bff',
+
+  loadingText: {
+    marginTop: '20px',
     color: 'white',
-    padding: '15px 30px',
     fontSize: '1.1rem',
-    fontWeight: '600',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    minWidth: '280px'
+    fontWeight: '500',
   },
-  
-  helpText: {
-    fontSize: '0.9rem',
-    color: '#666',
-    marginTop: '10px',
-    margin: '10px 0 0 0'
-  },
-  
-  divider: {
+
+  // Hero Section
+  hero: {
+    padding: '60px 20px',
     textAlign: 'center',
-    margin: '25px 0',
-    fontSize: '0.9rem',
-    color: '#999',
-    fontWeight: '500'
+    color: 'white',
   },
-  
-  manualSearch: {
-    display: 'grid',
-    gap: '20px'
+
+  heroContent: {
+    maxWidth: '700px',
+    margin: '0 auto',
   },
-  
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
+
+  heroIcon: {
+    fontSize: '4rem',
+    marginBottom: '20px',
+    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))',
   },
-  
-  label: {
-    fontSize: '1rem',
-    fontWeight: '600',
-    color: '#333'
+
+  heroTitle: {
+    fontSize: '3rem',
+    fontWeight: '700',
+    margin: '0 0 15px 0',
+    textShadow: '0 2px 20px rgba(0,0,0,0.2)',
   },
-  
-  select: {
-    padding: '12px',
-    border: '2px solid #e1e5e9',
-    borderRadius: '6px',
-    fontSize: '1rem',
-    backgroundColor: '#fff',
-    color: '#333'
+
+  heroSubtitle: {
+    fontSize: '1.3rem',
+    margin: '0 0 25px 0',
+    opacity: '0.95',
+    fontWeight: '400',
   },
-  
-  button: {
-    padding: '12px 20px',
-    border: 'none',
-    borderRadius: '6px',
+
+  currentLocationBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '10px',
+    background: 'rgba(255, 255, 255, 0.25)',
+    backdropFilter: 'blur(10px)',
+    padding: '12px 24px',
+    borderRadius: '50px',
     fontSize: '1rem',
     fontWeight: '500',
+  },
+
+  locationIcon: {
+    fontSize: '1.2rem',
+  },
+
+  locationText: {
+    maxWidth: '400px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+
+  // Search Section
+  searchSection: {
+    maxWidth: '900px',
+    margin: '0 auto 50px',
+    padding: '0 20px',
+  },
+
+  searchCard: {
+    background: 'white',
+    borderRadius: '20px',
+    padding: '40px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+  },
+
+  modeToggleContainer: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '30px',
+    padding: '6px',
+    background: '#f5f7fa',
+    borderRadius: '12px',
+  },
+
+  modeToggleButton: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '14px 20px',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    fontWeight: '600',
     cursor: 'pointer',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
-  
-  searchButton: {
-    backgroundColor: '#28a745',
-    color: 'white'
+
+  modeToggleActive: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
   },
-  
-  message: {
-    marginTop: '20px',
-    padding: '15px',
-    borderRadius: '6px',
+
+  modeToggleInactive: {
+    background: 'transparent',
+    color: '#6c757d',
+  },
+
+  searchContent: {
+    marginTop: '30px',
+  },
+
+  searchDescription: {
+    fontSize: '1rem',
+    color: '#6c757d',
+    marginBottom: '25px',
+    textAlign: 'center',
+  },
+
+  formGrid: {
+    display: 'grid',
+    gap: '20px',
+    marginBottom: '30px',
+  },
+
+  formField: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+
+  label: {
     fontSize: '0.95rem',
-    fontWeight: '500'
+    fontWeight: '600',
+    color: '#2d3748',
   },
-  
+
+  optionalText: {
+    fontSize: '0.85rem',
+    fontWeight: '400',
+    color: '#a0aec0',
+  },
+
+  select: {
+    padding: '14px 16px',
+    border: '2px solid #e2e8f0',
+    borderRadius: '10px',
+    fontSize: '1rem',
+    backgroundColor: 'white',
+    color: '#2d3748',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+
+  primaryButton: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '16px 32px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+  },
+
+  secondaryButton: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '16px 32px',
+    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 15px rgba(17, 153, 142, 0.4)',
+  },
+
+  buttonIcon: {
+    fontSize: '1.2rem',
+  },
+
+  buttonSpinner: {
+    width: '18px',
+    height: '18px',
+    border: '2px solid rgba(255, 255, 255, 0.3)',
+    borderTop: '2px solid white',
+    borderRadius: '50%',
+    animation: 'spin 0.6s linear infinite',
+  },
+
+  statusMessage: {
+    marginTop: '25px',
+    padding: '16px 20px',
+    borderRadius: '12px',
+    fontSize: '0.95rem',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+
+  statusSuccess: {
+    background: '#d4edda',
+    color: '#155724',
+    border: '1px solid #c3e6cb',
+  },
+
+  statusError: {
+    background: '#f8d7da',
+    color: '#721c24',
+    border: '1px solid #f5c6cb',
+  },
+
+  // Results Section
   resultsSection: {
-    maxWidth: '1200px',
+    maxWidth: '1400px',
     margin: '0 auto',
-    padding: '0 20px 40px'
+    padding: '0 20px',
   },
-  
+
   loadingResults: {
     textAlign: 'center',
-    padding: '60px 20px'
+    padding: '80px 20px',
+    background: 'white',
+    borderRadius: '20px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
   },
-  
+
   resultsHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '25px'
+    marginBottom: '30px',
+    padding: '30px',
+    background: 'white',
+    borderRadius: '20px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
   },
-  
+
   resultsTitle: {
-    fontSize: '1.8rem',
-    fontWeight: 'bold',
-    color: '#333',
-    margin: 0
+    fontSize: '2rem',
+    fontWeight: '700',
+    color: '#2d3748',
+    margin: '0 0 8px 0',
   },
-  
-  realDataBadge: {
-    padding: '6px 12px',
-    backgroundColor: '#d4edda',
-    color: '#155724',
-    borderRadius: '15px',
-    fontSize: '0.85rem',
-    fontWeight: '600'
+
+  resultsSubtitle: {
+    fontSize: '1rem',
+    color: '#718096',
+    margin: 0,
   },
-  
+
+  realTimeBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 18px',
+    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+    color: 'white',
+    borderRadius: '50px',
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    boxShadow: '0 4px 12px rgba(17, 153, 142, 0.3)',
+  },
+
+  pulseDot: {
+    width: '10px',
+    height: '10px',
+    background: 'white',
+    borderRadius: '50%',
+    animation: 'pulse 2s ease-in-out infinite',
+  },
+
   pharmacyGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-    gap: '20px'
+    gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+    gap: '25px',
   },
-  
+
   pharmacyCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '10px',
-    padding: '20px',
-    boxShadow: '0 3px 15px rgba(0,0,0,0.1)',
-    border: '1px solid #e1e5e9'
+    background: 'white',
+    borderRadius: '16px',
+    padding: '24px',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
+    transition: 'all 0.3s ease',
+    border: '1px solid #e2e8f0',
   },
-  
+
+  cardTop: {
+    marginBottom: '20px',
+  },
+
   cardHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '15px'
+    marginBottom: '12px',
+    gap: '12px',
   },
-  
+
   pharmacyName: {
-    fontSize: '1.3rem',
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: '1.4rem',
+    fontWeight: '700',
+    color: '#2d3748',
     margin: 0,
-    lineHeight: '1.3'
+    lineHeight: '1.3',
+    flex: 1,
   },
-  
+
   statusBadge: {
-    padding: '4px 10px',
-    borderRadius: '12px',
-    fontSize: '0.8rem',
-    fontWeight: '600',
-    color: 'white'
-  },
-  
-  cardBody: {
-    marginBottom: '20px'
-  },
-  
-  distance: {
-    fontSize: '0.9rem',
-    color: '#666',
-    margin: '5px 0'
-  },
-  
-  cardActions: {
     display: 'flex',
-    gap: '10px'
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 14px',
+    borderRadius: '20px',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    whiteSpace: 'nowrap',
   },
-  
+
+  statusOpen: {
+    background: '#d4edda',
+    color: '#155724',
+  },
+
+  statusClosed: {
+    background: '#f8d7da',
+    color: '#721c24',
+  },
+
+  statusDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    background: 'currentColor',
+  },
+
+  distanceChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    borderRadius: '50px',
+    fontSize: '0.9rem',
+    fontWeight: '600',
+  },
+
+  distanceIcon: {
+    fontSize: '1rem',
+  },
+
+  distanceText: {
+    whiteSpace: 'nowrap',
+  },
+
+  cardBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    marginBottom: '20px',
+    padding: '16px',
+    background: '#f7fafc',
+    borderRadius: '12px',
+  },
+
+  infoRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '12px',
+  },
+
+  infoIcon: {
+    fontSize: '1.1rem',
+    marginTop: '2px',
+    flexShrink: 0,
+  },
+
+  infoText: {
+    fontSize: '0.95rem',
+    color: '#4a5568',
+    lineHeight: '1.5',
+  },
+
+  cardActions: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px',
+  },
+
   callButton: {
-    backgroundColor: '#28a745',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '12px 20px',
+    background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
     color: 'white',
-    flex: 1
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
   },
-  
+
   directionsButton: {
-    backgroundColor: '#17a2b8',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '12px 20px',
+    background: 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)',
     color: 'white',
-    flex: 1
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
   },
-  
+
   emptyState: {
     textAlign: 'center',
     padding: '80px 20px',
-    color: '#666'
-  },
-  
-  emptyIcon: {
-    fontSize: '4rem',
-    marginBottom: '20px'
+    background: 'white',
+    borderRadius: '20px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
   },
 
-  // New styles for location search
-  searchModeToggle: {
-    display: 'flex',
-    gap: '10px',
-    marginBottom: '25px',
-    backgroundColor: '#f8f9fa',
-    padding: '5px',
-    borderRadius: '8px'
+  emptyIcon: {
+    fontSize: '4rem',
+    marginBottom: '20px',
+    opacity: 0.5,
   },
-  
-  toggleButton: {
-    flex: 1,
-    padding: '12px 20px',
-    border: 'none',
-    borderRadius: '6px',
+
+  emptyTitle: {
+    fontSize: '1.8rem',
+    fontWeight: '700',
+    color: '#2d3748',
+    marginBottom: '10px',
+  },
+
+  emptyText: {
+    fontSize: '1rem',
+    color: '#718096',
+    maxWidth: '400px',
+    margin: '0 auto',
+  },
+};
+
+// Dark Mode Styles
+const darkStyles = {
+  container: {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+    paddingTop: '80px',
+    paddingBottom: '4rem',
+  },
+
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100vh',
+    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+  },
+
+  spinner: {
+    width: '50px',
+    height: '50px',
+    border: '4px solid rgba(102, 126, 234, 0.3)',
+    borderTop: '4px solid #667eea',
+    borderRadius: '50%',
+    animation: 'spin 0.8s linear infinite',
+  },
+
+  loadingText: {
+    marginTop: '20px',
+    color: '#cbd5e0',
+    fontSize: '1.1rem',
+    fontWeight: '500',
+  },
+
+  // Hero Section
+  hero: {
+    padding: '60px 20px',
+    textAlign: 'center',
+    color: '#e2e8f0',
+  },
+
+  heroContent: {
+    maxWidth: '700px',
+    margin: '0 auto',
+  },
+
+  heroIcon: {
+    fontSize: '4rem',
+    marginBottom: '20px',
+    filter: 'drop-shadow(0 4px 12px rgba(102, 126, 234, 0.3))',
+  },
+
+  heroTitle: {
+    fontSize: '3rem',
+    fontWeight: '700',
+    margin: '0 0 15px 0',
+    textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+    color: '#ffffff',
+  },
+
+  heroSubtitle: {
+    fontSize: '1.3rem',
+    margin: '0 0 25px 0',
+    opacity: '0.9',
+    fontWeight: '400',
+    color: '#cbd5e0',
+  },
+
+  currentLocationBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '10px',
+    background: 'rgba(102, 126, 234, 0.2)',
+    backdropFilter: 'blur(10px)',
+    padding: '12px 24px',
+    borderRadius: '50px',
     fontSize: '1rem',
     fontWeight: '500',
+    border: '1px solid rgba(102, 126, 234, 0.3)',
+  },
+
+  locationIcon: {
+    fontSize: '1.2rem',
+  },
+
+  locationText: {
+    maxWidth: '400px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    color: '#e2e8f0',
+  },
+
+  // Search Section
+  searchSection: {
+    maxWidth: '900px',
+    margin: '0 auto 50px',
+    padding: '0 20px',
+  },
+
+  searchCard: {
+    background: 'rgba(26, 32, 44, 0.8)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '20px',
+    padding: '40px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+
+  modeToggleContainer: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '30px',
+    padding: '6px',
+    background: 'rgba(45, 55, 72, 0.5)',
+    borderRadius: '12px',
+  },
+
+  modeToggleButton: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '14px 20px',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    color: 'white'
-  }
+  },
+
+  modeToggleActive: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+  },
+
+  modeToggleInactive: {
+    background: 'transparent',
+    color: '#cbd5e0',
+  },
+
+  searchContent: {
+    marginTop: '30px',
+  },
+
+  searchDescription: {
+    fontSize: '1rem',
+    color: '#cbd5e0',
+    marginBottom: '25px',
+    textAlign: 'center',
+  },
+
+  formGrid: {
+    display: 'grid',
+    gap: '20px',
+    marginBottom: '30px',
+  },
+
+  formField: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+
+  label: {
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    color: '#e2e8f0',
+  },
+
+  optionalText: {
+    fontSize: '0.85rem',
+    fontWeight: '400',
+    color: '#94a3b8',
+  },
+
+  select: {
+    padding: '14px 16px',
+    border: '2px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '10px',
+    fontSize: '1rem',
+    backgroundColor: 'rgba(45, 55, 72, 0.6)',
+    color: '#e2e8f0',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+
+  primaryButton: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '16px 32px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+  },
+
+  secondaryButton: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '16px 32px',
+    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 15px rgba(17, 153, 142, 0.4)',
+  },
+
+  buttonIcon: {
+    fontSize: '1.2rem',
+  },
+
+  buttonSpinner: {
+    width: '18px',
+    height: '18px',
+    border: '2px solid rgba(255, 255, 255, 0.3)',
+    borderTop: '2px solid white',
+    borderRadius: '50%',
+    animation: 'spin 0.6s linear infinite',
+  },
+
+  statusMessage: {
+    marginTop: '25px',
+    padding: '16px 20px',
+    borderRadius: '12px',
+    fontSize: '0.95rem',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+
+  statusSuccess: {
+    background: 'rgba(34, 197, 94, 0.2)',
+    color: '#86efac',
+    border: '1px solid rgba(34, 197, 94, 0.3)',
+  },
+
+  statusError: {
+    background: 'rgba(239, 68, 68, 0.2)',
+    color: '#fca5a5',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+  },
+
+  // Results Section
+  resultsSection: {
+    maxWidth: '1400px',
+    margin: '0 auto',
+    padding: '0 20px',
+  },
+
+  loadingResults: {
+    textAlign: 'center',
+    padding: '80px 20px',
+    background: 'rgba(26, 32, 44, 0.8)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '20px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+
+  resultsHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '30px',
+    padding: '30px',
+    background: 'rgba(26, 32, 44, 0.8)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '20px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+
+  resultsTitle: {
+    fontSize: '2rem',
+    fontWeight: '700',
+    color: '#ffffff',
+    margin: '0 0 8px 0',
+  },
+
+  resultsSubtitle: {
+    fontSize: '1rem',
+    color: '#94a3b8',
+    margin: 0,
+  },
+
+  realTimeBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 18px',
+    background: 'rgba(34, 197, 94, 0.2)',
+    color: '#86efac',
+    borderRadius: '50px',
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    border: '1px solid rgba(34, 197, 94, 0.3)',
+  },
+
+  pulseDot: {
+    width: '10px',
+    height: '10px',
+    background: '#22c55e',
+    borderRadius: '50%',
+    animation: 'pulse 2s ease-in-out infinite',
+  },
+
+  pharmacyGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+    gap: '25px',
+  },
+
+  pharmacyCard: {
+    background: 'rgba(26, 32, 44, 0.8)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '16px',
+    padding: '24px',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+    transition: 'all 0.3s ease',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+
+  cardTop: {
+    marginBottom: '20px',
+  },
+
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '12px',
+    gap: '12px',
+  },
+
+  pharmacyName: {
+    fontSize: '1.4rem',
+    fontWeight: '700',
+    color: '#ffffff',
+    margin: 0,
+    lineHeight: '1.3',
+    flex: 1,
+  },
+
+  statusBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 14px',
+    borderRadius: '20px',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    whiteSpace: 'nowrap',
+  },
+
+  statusOpen: {
+    background: 'rgba(34, 197, 94, 0.2)',
+    color: '#86efac',
+    border: '1px solid rgba(34, 197, 94, 0.3)',
+  },
+
+  statusClosed: {
+    background: 'rgba(239, 68, 68, 0.2)',
+    color: '#fca5a5',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+  },
+
+  statusDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    background: 'currentColor',
+  },
+
+  distanceChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    background: 'rgba(102, 126, 234, 0.2)',
+    color: '#a5b4fc',
+    borderRadius: '50px',
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    border: '1px solid rgba(102, 126, 234, 0.3)',
+  },
+
+  distanceIcon: {
+    fontSize: '1rem',
+  },
+
+  distanceText: {
+    whiteSpace: 'nowrap',
+  },
+
+  cardBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    marginBottom: '20px',
+    padding: '16px',
+    background: 'rgba(45, 55, 72, 0.4)',
+    borderRadius: '12px',
+  },
+
+  infoRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '12px',
+  },
+
+  infoIcon: {
+    fontSize: '1.1rem',
+    marginTop: '2px',
+    flexShrink: 0,
+  },
+
+  infoText: {
+    fontSize: '0.95rem',
+    color: '#cbd5e0',
+    lineHeight: '1.5',
+  },
+
+  cardActions: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px',
+  },
+
+  callButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '12px 20px',
+    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+
+  directionsButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '12px 20px',
+    background: 'rgba(102, 126, 234, 0.2)',
+    color: '#a5b4fc',
+    border: '1px solid rgba(102, 126, 234, 0.3)',
+    borderRadius: '10px',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+
+  emptyState: {
+    textAlign: 'center',
+    padding: '80px 20px',
+    background: 'rgba(26, 32, 44, 0.8)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '20px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+
+  emptyIcon: {
+    fontSize: '4rem',
+    marginBottom: '20px',
+    opacity: 0.5,
+  },
+
+  emptyTitle: {
+    fontSize: '1.8rem',
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: '10px',
+  },
+
+  emptyText: {
+    fontSize: '1rem',
+    color: '#94a3b8',
+    maxWidth: '400px',
+    margin: '0 auto',
+  },
 };

@@ -261,7 +261,7 @@ export default function Navbar({ user, isDarkMode, setIsDarkMode }) {
     <nav style={currentStyles.nav} className="navbar">
       <div style={currentStyles.navContainer}>
         {/* Logo */}
-        <div style={currentStyles.logo} onClick={() => router.push('/')} className="logo">
+        <div style={currentStyles.logo} onClick={() => router.push('/home')} className="logo">
           <span style={currentStyles.logoIcon}>💊</span>
           <span style={currentStyles.logoText}>MediChecker</span>
         </div>

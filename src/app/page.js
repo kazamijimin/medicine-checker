@@ -99,20 +99,9 @@ export default function Dashboard() {
       url: "https://schoolproject-tsukiwebvn.vercel.app",
       stats: { users: "5K+", rating: "4.9" }
     },
+  
     {
       id: 3,
-      title: "Prescriptory",
-      description: "Advanced prescription and medication tracking system",
-      icon: "💊",
-      category: "healthcare",
-      color: "#10b981",
-      gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-      tags: ["Health", "Tracking", "Management"],
-      url: "https://prescriptory-test.vercel.app",
-      stats: { users: "8K+", rating: "4.7" }
-    },
-    {
-      id: 4,
       title: "SSC Forum",
       description: "Interactive student community for collaboration and learning",
       icon: "💬",
@@ -124,7 +113,7 @@ export default function Dashboard() {
       stats: { users: "15K+", rating: "4.6" }
     },
     {
-      id: 5,
+      id: 4,
       title: "Freelance Hub",
       description: "Professional platform connecting freelancers with clients",
       icon: "💼",
@@ -359,10 +348,7 @@ export default function Dashboard() {
                   <span style={currentStyles.actionIcon}>⏰</span>
                   <span>Reminders</span>
                 </button>
-                <button style={currentStyles.actionButton} onClick={() => router.push('/settings')}>
-                  <span style={currentStyles.actionIcon}>⚙️</span>
-                  <span>Settings</span>
-                </button>
+               
                 <button style={currentStyles.actionButton} onClick={() => router.push('/help')}>
                   <span style={currentStyles.actionIcon}>❓</span>
                   <span>Help</span>

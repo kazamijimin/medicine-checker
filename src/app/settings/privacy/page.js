@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HelpPage() {
+  const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState(null);
 
@@ -212,7 +214,10 @@ export default function HelpPage() {
         <p style={currentStyles.helpCtaText}>
           Can&apos;t find what you&apos;re looking for? Our support team is here to help.
         </p>
-        <button style={currentStyles.helpCtaButton}>
+        <button 
+          onClick={() => router.push('/home#contact')}
+          style={currentStyles.helpCtaButton}
+        >
           Contact Support
         </button>
       </div>

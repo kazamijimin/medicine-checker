@@ -143,20 +143,7 @@ const Features = ({ isDarkMode }) => {
               Join thousands of users who trust our platform for safe medicine management.
             </p>
             <div style={currentStyles.ctaButtons} className="ctaButtons">
-              <button 
-                style={currentStyles.primaryButton}
-                onClick={handleStartTrial}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'scale(1.05)';
-                  e.target.style.boxShadow = '0 8px 25px rgba(40, 167, 69, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'scale(1)';
-                  e.target.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.2)';
-                }}
-              >
-                🚀 Start Free Trial
-              </button>
+  
               
               <button 
                 style={currentStyles.secondaryButton}
