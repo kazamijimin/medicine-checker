@@ -363,8 +363,7 @@ export default function Dashboard() {
       <footer style={currentStyles.footer}>
         <div style={styles.container}>
           <p style={currentStyles.footerText}>
-<Footer>
-  </Footer>
+            <Footer isDarkMode={isDarkMode} />
           </p>
         </div>
       </footer>

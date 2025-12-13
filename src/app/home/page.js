@@ -81,7 +81,7 @@ export default function HomePage() {
         <Testimonials isDarkMode={isDarkMode} />
         <FAQ isDarkMode={isDarkMode} />
         <Contact isDarkMode={isDarkMode} />
-        <Footer isDarkTheme={isDarkMode} />
+        <Footer isDarkMode={isDarkMode} />
         
         {/* Add AI Assistant - it will appear as floating button */}
         <AIAssistant isDarkMode={isDarkMode} />
