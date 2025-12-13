@@ -121,7 +121,7 @@ export default function Dashboard() {
       color: "#06b6d4",
       gradient: "linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)",
       tags: ["Business", "Freelance", "Portfolio"],
-      url: "https://freelance-website-example.vercel.app",
+      url: "https://freelance-ebon.vercel.app",
       stats: { users: "12K+", rating: "4.8" }
     }
   ];
